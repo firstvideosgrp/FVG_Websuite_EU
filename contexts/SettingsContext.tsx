@@ -25,6 +25,7 @@ const defaultSettings: Omit<SiteSettings, keyof Models.Document> = {
     secondaryColor: '#f3f4f6', // tailwind gray-100
     adminTitle: 'FirstVideos Admin',
     footerText: `© {year} FirstVideos Group. All Rights Reserved.`,
+    siteVersion: '1.0.0',
     socialLinks: '[]',
     footerLinks: '[]',
 };

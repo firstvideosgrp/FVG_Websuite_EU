@@ -24,6 +24,8 @@ const Footer: React.FC = () => {
 
   const footerText = settings?.footerText?.replace('{year}', new Date().getFullYear().toString())
     || `© ${new Date().getFullYear()} FirstVideos Group. All Rights Reserved.`;
+  
+  const siteVersion = settings?.siteVersion;
 
   return (
     <footer className="bg-gray-800 py-8">
@@ -42,6 +44,12 @@ const Footer: React.FC = () => {
           {footerLinks.map((link, index) => (
             <a key={index} href={link.url} target="_blank" rel="noopener noreferrer" className="text-xs hover:text-[var(--primary-color)] transition-colors">{link.label}</a>
           ))}
+          {siteVersion && (
+            <>
+              {(footerLinks.length > 0 || true) && <span className="text-xs text-gray-600 hidden sm:inline">|</span>}
+              <span className="text-xs text-gray-500">v{siteVersion}</span>
+            </>
+          )}
         </div>
       </div>
     </footer>

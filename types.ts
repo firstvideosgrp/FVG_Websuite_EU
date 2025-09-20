@@ -44,6 +44,7 @@ export type SiteSettings = Models.Document & {
   secondaryColor: string;
   adminTitle: string;
   footerText: string;
+  siteVersion?: string;
   /** JSON stringified array of SocialLink objects */
   socialLinks: string;
   /** JSON stringified array of FooterLink objects */

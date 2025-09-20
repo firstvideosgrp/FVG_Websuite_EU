@@ -32,6 +32,7 @@ const SiteSettingsPanel: React.FC = () => {
             secondaryColor: settings?.secondaryColor || '#f3f4f6',
             adminTitle: settings?.adminTitle || '',
             footerText: settings?.footerText || '',
+            siteVersion: settings?.siteVersion || '1.0.0',
             socialLinks,
             footerLinks,
             // Mail settings
@@ -165,6 +166,11 @@ const SiteSettingsPanel: React.FC = () => {
                         <div>
                             <label htmlFor="adminTitle" className="block text-sm font-medium text-gray-300 mb-2">Admin Page Title</label>
                             <input type="text" id="adminTitle" name="adminTitle" value={formState.adminTitle} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-[var(--secondary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
+                        </div>
+                        <div>
+                            <label htmlFor="siteVersion" className="block text-sm font-medium text-gray-300 mb-2">Site Version</label>
+                            <input type="text" id="siteVersion" name="siteVersion" value={formState.siteVersion} onChange={handleChange} placeholder="e.g., 1.0.1" className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-[var(--secondary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
+                            <p className="text-xs text-gray-500 mt-1">Displayed in the site footer.</p>
                         </div>
                     </div>
                 </section>

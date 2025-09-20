@@ -108,6 +108,7 @@ This collection stores the global settings for the website, such as title and th
 | `secondaryColor`     | String  | 7    | Yes      | No    | Hex color code, e.g., #f3f4f6       |
 | `adminTitle`         | String  | 255  | Yes      | No    | e.g., "FirstVideos Admin"           |
 | `footerText`         | String  | 500  | Yes      | No    | Supports `{year}` placeholder       |
+| `siteVersion`        | String  | 50   | No       | No    | e.g., "1.0.0"                       |
 | `socialLinks`        | String  | 5000 | No       | No    | JSON string of social links         |
 | `footerLinks`        | String  | 5000 | No       | No    | JSON string of footer links         |
 | `mailEnabled`        | Boolean | -    | No       | No    | Enables/disables all mail functions.|
@@ -227,6 +228,7 @@ The admin dashboard is designed to *update* existing content. You must create th
         -   `secondaryColor`: `#f3f4f6`
         -   `adminTitle`: `FirstVideos Admin`
         -   `footerText`: `© {year} FirstVideos Group. All Rights Reserved.`
+        -   `siteVersion`: `1.0.0`
         -   `socialLinks`: `[]`
         -   `footerLinks`: `[]`
         -   `mailEnabled`: `false`
