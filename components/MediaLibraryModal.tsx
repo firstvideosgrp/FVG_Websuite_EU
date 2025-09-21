@@ -6,9 +6,10 @@ import LoadingSpinner from './LoadingSpinner';
 interface MediaLibraryModalProps {
     onSelect: (url: string) => void;
     onClose: () => void;
+    fileUsageMap: Map<string, string[]>;
 }
 
-const MediaLibraryModal: React.FC<MediaLibraryModalProps> = ({ onSelect, onClose }) => {
+const MediaLibraryModal: React.FC<MediaLibraryModalProps> = ({ onSelect, onClose, fileUsageMap }) => {
     const [files, setFiles] = useState<Models.File[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -52,17 +53,30 @@ const MediaLibraryModal: React.FC<MediaLibraryModalProps> = ({ onSelect, onClose
                         </div>
                     ) : files.length > 0 ? (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {files.map(file => (
+                            {files.map(file => {
+                                const fileUsage = fileUsageMap.get(file.$id) || [];
+                                return (
                                 <button key={file.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg overflow-hidden group relative cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]" onClick={() => handleSelectFile(file.$id)}>
                                     <img src={getFilePreviewUrl(file.$id, 200)} alt={file.name} className="w-full h-32 object-cover" loading="lazy" />
                                     <div className="p-2 text-center">
                                         <p className="text-xs text-[var(--text-secondary)] truncate" title={file.name}>{file.name}</p>
+                                        {fileUsage.length > 0 ? (
+                                            <div className="flex items-center justify-center mt-1" title={`In use: ${fileUsage.join(', ')}`}>
+                                                <i className="fas fa-check-circle text-green-500 text-[11px] mr-1"></i>
+                                                <p className="text-[10px] text-green-400 font-medium">In use</p>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-center mt-1">
+                                                <i className="fas fa-info-circle text-gray-500 text-[11px] mr-1"></i>
+                                                <p className="text-[10px] text-gray-500">Not in use</p>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="absolute inset-0 bg-[var(--primary-color)] bg-opacity-80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                         <span className="text-gray-900 font-bold">Select</span>
                                     </div>
                                 </button>
-                            ))}
+                            )})}
                         </div>
                     ) : (
                         <p className="text-center text-[var(--text-secondary)] py-10">No media files found.</p>

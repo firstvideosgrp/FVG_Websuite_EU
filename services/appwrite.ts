@@ -1,7 +1,7 @@
 // FIX: Imported the `Models` namespace to resolve reference errors below.
 import { Client, Account, Databases, ID, Query, Models, Storage, Functions } from 'appwrite';
-import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID } from '../constants';
-import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory } from '../types';
+import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID } from '../constants';
+import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember } from '../types';
 
 const client = new Client();
 
@@ -58,6 +58,52 @@ export const updateProject = (documentId: string, data: Partial<Omit<Project, ke
 
 export const deleteProject = (documentId: string) => {
     return databases.deleteDocument(APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, documentId);
+};
+
+// Cast
+export const getCast = async (): Promise<CastMember[]> => {
+    try {
+        const response = await databases.listDocuments<CastMember>(APPWRITE_DATABASE_ID, CAST_COLLECTION_ID, [Query.limit(500), Query.orderAsc('name')]);
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to fetch cast members:", error);
+        return [];
+    }
+};
+
+export const createCastMember = (data: Omit<CastMember, keyof Models.Document>) => {
+    return databases.createDocument(APPWRITE_DATABASE_ID, CAST_COLLECTION_ID, ID.unique(), data);
+};
+
+export const updateCastMember = (documentId: string, data: Partial<Omit<CastMember, keyof Models.Document>>) => {
+    return databases.updateDocument(APPWRITE_DATABASE_ID, CAST_COLLECTION_ID, documentId, data);
+};
+
+export const deleteCastMember = (documentId: string) => {
+    return databases.deleteDocument(APPWRITE_DATABASE_ID, CAST_COLLECTION_ID, documentId);
+};
+
+// Crew
+export const getCrew = async (): Promise<CrewMember[]> => {
+    try {
+        const response = await databases.listDocuments<CrewMember>(APPWRITE_DATABASE_ID, CREW_COLLECTION_ID, [Query.limit(500), Query.orderAsc('name')]);
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to fetch crew members:", error);
+        return [];
+    }
+};
+
+export const createCrewMember = (data: Omit<CrewMember, keyof Models.Document>) => {
+    return databases.createDocument(APPWRITE_DATABASE_ID, CREW_COLLECTION_ID, ID.unique(), data);
+};
+
+export const updateCrewMember = (documentId: string, data: Partial<Omit<CrewMember, keyof Models.Document>>) => {
+    return databases.updateDocument(APPWRITE_DATABASE_ID, CREW_COLLECTION_ID, documentId, data);
+};
+
+export const deleteCrewMember = (documentId: string) => {
+    return databases.deleteDocument(APPWRITE_DATABASE_ID, CREW_COLLECTION_ID, documentId);
 };
 
 // Site Settings

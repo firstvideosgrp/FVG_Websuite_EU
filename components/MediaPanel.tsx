@@ -4,7 +4,11 @@ import { listFiles, deleteFile, getFilePreviewUrl } from '../services/appwrite';
 import LoadingSpinner from './LoadingSpinner';
 import UploadMediaModal from './UploadMediaModal';
 
-const MediaPanel: React.FC = () => {
+interface MediaPanelProps {
+    fileUsageMap: Map<string, string[]>;
+}
+
+const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
     const [files, setFiles] = useState<MediaFile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -29,9 +33,15 @@ const MediaPanel: React.FC = () => {
     }, [fetchFiles]);
 
     const handleDeleteFile = async (fileId: string) => {
-        if (!window.confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
+        const usage = fileUsageMap.get(fileId);
+        const confirmMessage = usage && usage.length > 0
+            ? `This file appears to be in use:\n- ${usage.join('\n- ')}\n\nDeleting it may cause broken images on your site. Are you sure you want to delete it?`
+            : 'Are you sure you want to delete this file? This action cannot be undone.';
+
+        if (!window.confirm(confirmMessage)) {
             return;
         }
+
         try {
             await deleteFile(fileId);
             setFiles(prevFiles => prevFiles.filter(f => f.$id !== fileId));
@@ -71,7 +81,9 @@ const MediaPanel: React.FC = () => {
                 </div>
             ) : files.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {files.map(file => (
+                    {files.map(file => {
+                        const fileUsage = fileUsageMap.get(file.$id) || [];
+                        return (
                         <div key={file.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg overflow-hidden group relative">
                             <div className="absolute top-2 left-2 z-10">
                                 <span className="bg-black/70 text-[var(--primary-color)] text-xs font-bold px-2 py-1 rounded">
@@ -82,12 +94,26 @@ const MediaPanel: React.FC = () => {
                             <div className="p-2 text-center">
                                 <p className="text-sm text-[var(--text-secondary)] truncate" title={file.name}>{file.name}</p>
                             </div>
-                             <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity space-y-2 p-2">
-                                <button onClick={() => copyToClipboard(file.$id)} className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1 px-2 rounded">Copy URL</button>
-                                <button onClick={() => handleDeleteFile(file.$id)} className="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded">Delete</button>
+                             <div className="absolute inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity p-2 text-white text-xs text-center">
+                                <div className="w-full">
+                                    <p className="font-bold border-b border-white/20 pb-1 mb-1">Usage</p>
+                                    <div className="max-h-16 overflow-y-auto text-left px-1">
+                                        {fileUsage.length > 0 ? (
+                                            <ul className="list-none space-y-0.5">
+                                               {fileUsage.map((use, index) => <li key={index} className="truncate" title={use}>{use}</li>)}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-gray-400 text-center italic mt-2">Not in use</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="w-full space-y-1 mt-auto pt-2">
+                                    <button onClick={() => copyToClipboard(file.$id)} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">Copy URL</button>
+                                    <button onClick={() => handleDeleteFile(file.$id)} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Delete</button>
+                                </div>
                             </div>
                         </div>
-                    ))}
+                    )})}
                 </div>
             ) : (
                 <p className="text-center text-[var(--text-secondary)] py-10">No media files found. Upload a file to get started.</p>

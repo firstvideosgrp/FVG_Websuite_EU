@@ -3,10 +3,16 @@ import { Models } from 'appwrite';
 export type ProjectType = 'Movie' | 'Short' | 'Series';
 export type ProjectStatus = 'Upcoming' | 'In Production' | 'Released';
 
-export type CastMember = {
-  id: string; // Used for React key prop
+export type CastMember = Models.Document & {
   name: string;
   role: string;
+  bio?: string;
+};
+
+export type CrewMember = Models.Document & {
+  name: string;
+  role: string;
+  bio?: string;
 };
 
 // FIX: Changed interfaces to type aliases using intersection with Models.Document.
@@ -21,7 +27,14 @@ export type Project = Models.Document & {
   status: ProjectStatus;
   dueDate?: string; // Should be ISO date string
   synopsis?: string;
-  castAndCrew?: string; // JSON string of CastMember[]
+  cast?: string[]; // Array of CastMember document IDs
+  crew?: string[]; // Array of CrewMember document IDs
+  language?: string;
+  runtime?: number;
+  hasSubtitles?: boolean;
+  mainSubtitleLanguage?: string;
+  directors?: string[]; // Array of CrewMember document IDs
+  producers?: string[]; // Array of CrewMember document IDs
 };
 
 export type AboutContent = Models.Document & {

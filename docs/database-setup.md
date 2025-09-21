@@ -23,6 +23,8 @@ export const PROJECTS_COLLECTION_ID = "YOUR_PROJECTS_COLLECTION_ID";
 export const ABOUT_COLLECTION_ID = "YOUR_ABOUT_COLLECTION_ID";
 export const SITE_SETTINGS_COLLECTION_ID = "YOUR_SETTINGS_COLLECTION_ID";
 export const MEDIA_METADATA_COLLECTION_ID = "YOUR_MEDIA_METADATA_COLLECTION_ID";
+export const CAST_COLLECTION_ID = "YOUR_CAST_COLLECTION_ID";
+export const CREW_COLLECTION_ID = "YOUR_CREW_COLLECTION_ID";
 export const APPWRITE_STORAGE_BUCKET_ID = "YOUR_STORAGE_BUCKET_ID";
 export const CONTACT_FORM_FUNCTION_ID = "YOUR_CONTACT_FUNCTION_ID"; // e.g., 'sendContactMail'
 export const TEST_EMAIL_FUNCTION_ID = "YOUR_TEST_FUNCTION_ID"; // e.g., 'sendTestMail'
@@ -37,7 +39,7 @@ export const TEST_EMAIL_FUNCTION_ID = "YOUR_TEST_FUNCTION_ID"; // e.g., 'sendTes
 
 ## 4. Collection Setup
 
-We need four collections: "About", "Projects", "Settings", and "MediaMetadata".
+We need six collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", and "Crew".
 
 ### 4.1. About Collection
 
@@ -73,18 +75,24 @@ This collection stores the individual projects showcased on the website.
 
 Create the following attributes for the `Projects` collection:
 
-| Key           | Type     | Size | Required | Array | Notes                                               |
-| :------------ | :------- | :--- | :------- | :---- | :-------------------------------------------------- |
-| `title`       | String   | 255  | Yes      | No    |                                                     |
-| `description` | String   | 1000 | Yes      | No    |                                                     |
-| `posterUrl`   | URL      | 2048 | Yes      | No    | URL to the poster image.                            |
-| `releaseYear` | Integer  | -    | Yes      | No    | Set min/max if desired.                             |
-| `projectType` | String   | 50   | Yes      | No    | e.g., 'Movie', 'Short', 'Series'                    |
-| `status`      | String   | 50   | Yes      | No    | e.g., 'Upcoming', 'In Production', 'Released'       |
-| `dueDate`     | Datetime | -    | No       | No    | Required for 'Upcoming' or 'In Production' status    |
-| `synopsis`    | String   | 5000 | No       | No    | Detailed movie synopsis.                            |
-| `castAndCrew` | String   | 5000 | No       | No    | JSON string for cast & crew members array.          |
-
+| Key                  | Type    | Size | Required | Array | Notes                                               |
+| :------------------- | :------ | :--- | :------- | :---- | :-------------------------------------------------- |
+| `title`              | String  | 255  | Yes      | No    |                                                     |
+| `description`        | String  | 1000 | Yes      | No    |                                                     |
+| `posterUrl`          | URL     | 2048 | Yes      | No    | URL to the poster image.                            |
+| `releaseYear`        | Integer | -    | Yes      | No    | Set min/max if desired.                             |
+| `projectType`        | String  | 50   | Yes      | No    | e.g., 'Movie', 'Short', 'Series'                    |
+| `status`             | String  | 50   | Yes      | No    | e.g., 'Upcoming', 'In Production', 'Released'       |
+| `dueDate`            | Datetime| -    | No       | No    | Required for 'Upcoming' or 'In Production' status    |
+| `synopsis`           | String  | 5000 | No       | No    | Detailed movie synopsis.                            |
+| `cast`               | String  | -    | No       | Yes   | Array of Cast document IDs.                         |
+| `crew`               | String  | -    | No       | Yes   | Array of Crew document IDs.                         |
+| `language`           | String  | 255  | No       | No    | Main language of the project.                       |
+| `runtime`            | Integer | -    | No       | No    | Project runtime in minutes.                         |
+| `hasSubtitles`       | Boolean | -    | No       | No    | Whether subtitles are available.                    |
+| `mainSubtitleLanguage`| String | 255 | No       | No    | Main language of the subtitles.                     |
+| `directors`          | String  | -    | No       | Yes   | Array of Crew document IDs for directors.           |
+| `producers`          | String  | -    | No       | Yes   | Array of Crew document IDs for producers.           |
 
 #### Settings (Permissions)
 
@@ -164,6 +172,49 @@ It's recommended to create an index to improve query performance when deleting f
 4.  **Type**: `key`
 5.  **Attributes**: Select `fileId`.
 6.  Click **Create**.
+
+### 4.5. Cast Collection
+
+This collection stores a global list of all cast members.
+
+-   **Name**: `Cast`
+-   **Collection ID**: Copy the generated ID and paste it into `constants.ts` for `CAST_COLLECTION_ID`.
+
+#### Attributes
+
+| Key        | Type   | Size | Required | Array | Notes                               |
+| :--------- | :----- | :--- | :------- | :---- | :---------------------------------- |
+| `name`     | String | 255  | Yes      | No    | Cast member's full name.            |
+| `role`     | String | 255  | Yes      | No    | Default role (e.g., "Actor").       |
+| `bio`      | String | 5000 | No       | No    | A short biography for the member.   |
+
+#### Settings (Permissions)
+
+-   **Permissions**:
+    -   Select **Read Access** and choose **role:all** (Any).
+    -   Select **Write Access** and choose **role:member** (Users).
+
+### 4.6. Crew Collection
+
+This collection stores a global list of all crew members.
+
+-   **Name**: `Crew`
+-   **Collection ID**: Copy the generated ID and paste it into `constants.ts` for `CREW_COLLECTION_ID`.
+
+#### Attributes
+
+| Key        | Type   | Size | Required | Array | Notes                               |
+| :--------- | :----- | :--- | :------- | :---- | :---------------------------------- |
+| `name`     | String | 255  | Yes      | No    | Crew member's full name.            |
+| `role`     | String | 255  | Yes      | No    | Job title (e.g., "Director").       |
+| `bio`      | String | 5000 | No       | No    | A short biography for the member.   |
+
+#### Settings (Permissions)
+
+-   **Permissions**:
+    -   Select **Read Access** and choose **role:all** (Any).
+    -   Select **Write Access** and choose **role:member** (Users).
+
 
 ## 5. Storage (Media Bucket) Setup
 

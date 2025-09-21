@@ -8,7 +8,12 @@ import MediaLibraryModal from './MediaLibraryModal';
 type SocialLinkWithId = SocialLink & { id: string };
 type FooterLinkWithId = FooterLink & { id: string };
 
-const SiteSettingsPanel: React.FC = () => {
+// FIX: Added props interface to accept `fileUsageMap`.
+interface SiteSettingsPanelProps {
+    fileUsageMap: Map<string, string[]>;
+}
+
+const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) => {
     const { settings, updateSettings, isUpdating } = useSettings();
     
     const initialFormState = useMemo(() => {
@@ -410,7 +415,8 @@ const SiteSettingsPanel: React.FC = () => {
                     </button>
                 </div>
             </form>
-            {isMediaModalOpen && <MediaLibraryModal onSelect={handleImageSelect} onClose={() => setIsMediaModalOpen(false)} />}
+            {/* FIX: Passed the `fileUsageMap` prop to MediaLibraryModal to satisfy its required props. */}
+            {isMediaModalOpen && <MediaLibraryModal onSelect={handleImageSelect} onClose={() => setIsMediaModalOpen(false)} fileUsageMap={fileUsageMap} />}
         </div>
     );
 };

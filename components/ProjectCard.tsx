@@ -3,6 +3,7 @@ import type { Project, ProjectStatus } from '../types';
 
 interface ProjectCardProps {
   project: Project;
+  onOpenModal: (project: Project) => void;
 }
 
 const statusColors: Record<ProjectStatus, string> = {
@@ -11,10 +12,17 @@ const statusColors: Record<ProjectStatus, string> = {
     'Upcoming': 'bg-blue-500',
 };
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, onOpenModal }) => {
   return (
-    // Main card container.
-    <div className="bg-[var(--bg-card)] rounded-lg overflow-hidden shadow-lg shadow-black/5 dark:shadow-lg dark:shadow-[var(--primary-color)]/10 transition-all duration-300 border border-[var(--border-color)] hover:-translate-y-1">
+    // Main card container, now acts as a button to open the modal.
+    <div 
+      className="bg-[var(--bg-card)] rounded-lg overflow-hidden shadow-lg shadow-black/5 dark:shadow-lg dark:shadow-[var(--primary-color)]/10 transition-all duration-300 border border-[var(--border-color)] hover:-translate-y-2 hover:shadow-2xl cursor-pointer"
+      onClick={() => onOpenModal(project)}
+      onKeyPress={(e) => e.key === 'Enter' && onOpenModal(project)}
+      role="button"
+      tabIndex={0}
+      aria-label={`View details for ${project.title}`}
+    >
       
       {/* Image Section: contains poster and status tags */}
       <div className="relative aspect-[2/3]">
