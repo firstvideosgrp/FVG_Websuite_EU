@@ -41,6 +41,8 @@ const SiteSettingsPanel: React.FC = () => {
             heroTitle: settings?.heroTitle || '',
             heroDescription: settings?.heroDescription || '',
             heroButtonText: settings?.heroButtonText || '',
+            heroUseImage: settings?.heroUseImage ?? true,
+            heroUsePlexus: settings?.heroUsePlexus ?? false,
             // Mail settings
             mailEnabled: settings?.mailEnabled ?? false,
             mailSenderEmail: settings?.mailSenderEmail || '',
@@ -79,14 +81,21 @@ const SiteSettingsPanel: React.FC = () => {
     }, [formState, initialFormState]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value, type } = e.target;
+        const { name, type } = e.target;
         
         if (type === 'checkbox') {
             const { checked } = e.target as HTMLInputElement;
-            setFormState(prevState => ({ ...prevState, [name]: checked }));
+             if (name === 'heroUseImage') {
+                setFormState(prevState => ({ ...prevState, heroUseImage: checked, heroUsePlexus: checked ? false : prevState.heroUsePlexus }));
+            } else if (name === 'heroUsePlexus') {
+                setFormState(prevState => ({ ...prevState, heroUsePlexus: checked, heroUseImage: checked ? false : prevState.heroUseImage }));
+            } else {
+                setFormState(prevState => ({ ...prevState, [name]: checked }));
+            }
             return;
         }
 
+        const { value } = e.target;
         const isNumberInput = type === 'number';
         setFormState(prevState => ({ 
             ...prevState, 
@@ -134,6 +143,12 @@ const SiteSettingsPanel: React.FC = () => {
             // Don't save password if it hasn't changed from the placeholder
             if (settingsToSave.mailSmtpPassword === '••••••••') {
                  delete settingsToSave.mailSmtpPassword;
+            }
+            
+            // FIX: If heroBackgroundImageUrl is an empty string, convert it to null before sending to Appwrite.
+            // Appwrite's URL attribute type does not accept empty strings, but it accepts null for optional fields.
+            if (settingsToSave.heroBackgroundImageUrl === '') {
+                (settingsToSave as any).heroBackgroundImageUrl = null;
             }
 
             await updateSettings(settingsToSave);
@@ -206,11 +221,33 @@ const SiteSettingsPanel: React.FC = () => {
                 <section>
                     <h3 className="text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 mb-4">Hero Section</h3>
                     <div className="space-y-4">
-                        <div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-300">Background Type</span>
+                            <div className="flex items-center space-x-6">
+                                <label htmlFor="heroUseImage" className="flex items-center cursor-pointer">
+                                    <span className="mr-3 text-sm font-medium text-gray-300">Use Background Image</span>
+                                    <div className="relative">
+                                        <input type="checkbox" id="heroUseImage" name="heroUseImage" className="sr-only" checked={formState.heroUseImage} onChange={handleChange} />
+                                        <div className="block bg-gray-600 w-14 h-8 rounded-full"></div>
+                                        <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formState.heroUseImage ? 'translate-x-6' : ''}`}></div>
+                                    </div>
+                                </label>
+                                 <label htmlFor="heroUsePlexus" className="flex items-center cursor-pointer">
+                                    <span className="mr-3 text-sm font-medium text-gray-300">Use Plexus Animation</span>
+                                    <div className="relative">
+                                        <input type="checkbox" id="heroUsePlexus" name="heroUsePlexus" className="sr-only" checked={formState.heroUsePlexus} onChange={handleChange} />
+                                        <div className="block bg-gray-600 w-14 h-8 rounded-full"></div>
+                                        <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formState.heroUsePlexus ? 'translate-x-6' : ''}`}></div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className={formState.heroUseImage ? '' : 'opacity-50'}>
                             <label htmlFor="heroBackgroundImageUrl" className="block text-sm font-medium text-gray-300 mb-2">Background Image</label>
                             <div className="flex items-center space-x-2">
-                                <input type="text" id="heroBackgroundImageUrl" name="heroBackgroundImageUrl" value={formState.heroBackgroundImageUrl} onChange={handleChange} className="flex-grow bg-gray-700 border border-gray-600 rounded-md p-3" placeholder="Enter URL or select from media" />
-                                <button type="button" onClick={() => setIsMediaModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm whitespace-nowrap h-[46px]" aria-label="Select from Media Library">
+                                <input type="text" id="heroBackgroundImageUrl" name="heroBackgroundImageUrl" value={formState.heroBackgroundImageUrl} onChange={handleChange} className="flex-grow bg-gray-700 border border-gray-600 rounded-md p-3" placeholder="Enter URL or select from media" disabled={!formState.heroUseImage}/>
+                                <button type="button" onClick={() => setIsMediaModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm whitespace-nowrap h-[46px]" aria-label="Select from Media Library" disabled={!formState.heroUseImage}>
                                     <i className="fas fa-photo-video"></i>
                                 </button>
                             </div>

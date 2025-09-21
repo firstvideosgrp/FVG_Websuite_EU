@@ -1,5 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
+
+declare global {
+  interface Window {
+    particlesJS: any;
+    pJSDom: any[];
+  }
+}
 
 const HeroSection: React.FC = () => {
   const { settings } = useSettings();
@@ -8,6 +15,65 @@ const HeroSection: React.FC = () => {
   const heroTitle = settings?.heroTitle || 'Storytelling Redefined';
   const heroDescription = settings?.heroDescription || 'FirstVideos Group crafts compelling narratives that captivate audiences and shape the future of entertainment.';
   const heroButtonText = settings?.heroButtonText || 'View Our Work';
+
+  const useImage = settings?.heroUseImage ?? true;
+  const usePlexus = settings?.heroUsePlexus ?? false;
+
+  useEffect(() => {
+    const cleanupParticles = () => {
+      if (window.pJSDom && window.pJSDom.length > 0) {
+        window.pJSDom[0].pJS.fn.vendors.destroypJS();
+        window.pJSDom = [];
+      }
+    };
+    
+    cleanupParticles();
+
+    if (usePlexus && !useImage && window.particlesJS) {
+      const primaryColor = settings?.primaryColor || '#22d3ee';
+      const particlesConfig = {
+        particles: {
+          number: { value: 120, density: { enable: true, value_area: 800 } },
+          color: { value: primaryColor },
+          shape: { type: 'circle' },
+          opacity: { value: 0.9, random: true }, // Brighter particles
+          size: { value: 4, random: true }, // Larger particles
+          line_linked: {
+            enable: true,
+            distance: 150,
+            color: primaryColor,
+            opacity: 0.8, // Brighter lines
+            width: 2.5,   // Thicker lines
+          },
+          move: {
+            enable: true,
+            speed: 2,
+            direction: 'none',
+            random: false,
+            straight: false,
+            out_mode: 'out',
+            bounce: false,
+          },
+        },
+        interactivity: {
+          detect_on: 'canvas',
+          events: {
+            onhover: { enable: true, mode: 'repulse' },
+            onclick: { enable: true, mode: 'push' },
+            resize: true,
+          },
+          modes: {
+            repulse: { distance: 100, duration: 0.4 },
+            push: { particles_nb: 4 },
+          },
+        },
+        retina_detect: true,
+      };
+      window.particlesJS('particles-js', particlesConfig);
+    }
+    
+    return cleanupParticles;
+  }, [usePlexus, useImage, settings?.primaryColor]);
 
   const handleScrollToProjects = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -27,7 +93,12 @@ const HeroSection: React.FC = () => {
 
   return (
     <section id="home" className="relative h-screen flex items-center justify-center text-center overflow-hidden">
-      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${heroBackgroundImageUrl})` }}></div>
+      {useImage && heroBackgroundImageUrl && (
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${heroBackgroundImageUrl})` }}></div>
+      )}
+      {usePlexus && !useImage && (
+        <div id="particles-js" className="absolute inset-0 z-0" style={{ filter: 'blur(2px)' }}></div>
+      )}
       <div className="absolute inset-0 bg-black opacity-60"></div>
       <div className="relative z-10 px-6">
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-wider leading-tight animate-fade-in-down text-[var(--secondary-color)]">

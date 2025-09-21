@@ -32,6 +32,8 @@ const defaultSettings: Omit<SiteSettings, keyof Models.Document> = {
     heroTitle: 'Storytelling Redefined',
     heroDescription: 'FirstVideos Group crafts compelling narratives that captivate audiences and shape the future of entertainment.',
     heroButtonText: 'View Our Work',
+    heroUseImage: true,
+    heroUsePlexus: false,
 };
 
 

@@ -123,6 +123,8 @@ This collection stores the global settings for the website, such as title and th
 | `heroTitle`          | String  | 255  | No       | No    | Main headline for the hero section. |
 | `heroDescription`    | String  | 1000 | No       | No    | Paragraph for the hero section.     |
 | `heroButtonText`     | String  | 100  | No       | No    | Call-to-action button text.         |
+| `heroUseImage`       | Boolean | -    | No       | No    | Use image for hero background.      |
+| `heroUsePlexus`      | Boolean | -    | No       | No    | Use plexus effect for hero background.|
 
 
 #### Settings (Permissions)
@@ -236,7 +238,9 @@ The admin dashboard is designed to *update* existing content. You must create th
         -   `socialLinks`: `[]`
         -   `footerLinks`: `[]`
         -   `mailEnabled`: `false`
-        -   Leave all other `mail...` fields blank initially. They will be configured via the admin panel.
+        -   `heroUseImage`: `true`
+        -   `heroUsePlexus`: `false`
+        -   Leave all other `mail...` and `hero...` fields blank initially. They will be configured via the admin panel.
     -   Click **Create**. This single document will be updated by the admin panel.
 
 2.  **About Content**:
