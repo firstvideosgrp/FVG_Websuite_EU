@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { Project, CastMember, CrewMember } from '../types';
 
 interface ProjectModalProps {
@@ -36,10 +36,16 @@ const MemberList: React.FC<{ title: string; members: (CastMember | CrewMember)[]
 };
 
 const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClose }) => {
+    const [isPosterEnlarged, setIsPosterEnlarged] = useState(false);
+
     useEffect(() => {
         const handleEsc = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
-                onClose();
+                if (isPosterEnlarged) {
+                    setIsPosterEnlarged(false);
+                } else {
+                    onClose();
+                }
             }
         };
         window.addEventListener('keydown', handleEsc);
@@ -49,7 +55,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClos
             window.removeEventListener('keydown', handleEsc);
             document.body.style.overflow = 'auto';
         };
-    }, [onClose]);
+    }, [onClose, isPosterEnlarged]);
 
     const projectCast = useMemo(() => {
         if (!project.cast) return [];
@@ -103,7 +109,20 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClos
                 <div className="flex-grow overflow-y-auto pr-4 -mr-4 space-y-6">
                     <div className="md:flex md:space-x-8">
                         <div className="md:w-1/3 mb-6 md:mb-0">
-                            <img src={project.posterUrl} alt={`${project.title} poster`} className="w-full h-auto object-cover rounded-lg shadow-lg"/>
+                             <button 
+                                onClick={() => setIsPosterEnlarged(true)} 
+                                className="w-full relative group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-card)] focus:ring-[var(--primary-color)] rounded-lg"
+                                aria-label="Enlarge poster"
+                            >
+                                <img 
+                                    src={project.posterUrl} 
+                                    alt={`${project.title} poster`} 
+                                    className="w-full h-auto object-cover rounded-lg shadow-lg"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center rounded-lg">
+                                    <i className="fas fa-search-plus text-white text-4xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                                </div>
+                            </button>
                         </div>
                         <div className="md:w-2/3 space-y-4">
                             <div>
@@ -135,6 +154,30 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClos
                     </div>
                 </div>
             </div>
+
+            {isPosterEnlarged && (
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[110] p-4 animate-fade-in"
+                    onClick={() => setIsPosterEnlarged(false)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Enlarged poster view"
+                >
+                    <button 
+                        onClick={() => setIsPosterEnlarged(false)} 
+                        className="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 transition-colors z-[120]"
+                        aria-label="Close enlarged poster"
+                    >
+                        &times;
+                    </button>
+                    <img 
+                        src={project.posterUrl} 
+                        alt={`Enlarged poster for ${project.title}`} 
+                        className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                        onClick={e => e.stopPropagation()}
+                    />
+                </div>
+            )}
         </div>
     );
 };
