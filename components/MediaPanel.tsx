@@ -51,7 +51,7 @@ const MediaPanel: React.FC = () => {
     };
 
     return (
-        <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
+        <div className="bg-[var(--bg-primary)] p-6 rounded-lg shadow-lg border border-[var(--border-color)]">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-[var(--primary-color)] flex items-center">
                     <i className="fas fa-photo-video mr-3"></i>Media Library
@@ -72,15 +72,15 @@ const MediaPanel: React.FC = () => {
             ) : files.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {files.map(file => (
-                        <div key={file.$id} className="bg-gray-800 rounded-lg overflow-hidden group relative">
+                        <div key={file.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg overflow-hidden group relative">
                             <div className="absolute top-2 left-2 z-10">
-                                <span className="bg-gray-900 bg-opacity-70 text-[var(--primary-color)] text-xs font-bold px-2 py-1 rounded">
+                                <span className="bg-black/70 text-[var(--primary-color)] text-xs font-bold px-2 py-1 rounded">
                                     {file.category}
                                 </span>
                             </div>
                             <img src={getFilePreviewUrl(file.$id, 200)} alt={file.name} className="w-full h-40 object-cover" loading="lazy" />
                             <div className="p-2 text-center">
-                                <p className="text-sm text-gray-300 truncate" title={file.name}>{file.name}</p>
+                                <p className="text-sm text-[var(--text-secondary)] truncate" title={file.name}>{file.name}</p>
                             </div>
                              <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity space-y-2 p-2">
                                 <button onClick={() => copyToClipboard(file.$id)} className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1 px-2 rounded">Copy URL</button>
@@ -90,7 +90,7 @@ const MediaPanel: React.FC = () => {
                     ))}
                 </div>
             ) : (
-                <p className="text-center text-gray-400 py-10">No media files found. Upload a file to get started.</p>
+                <p className="text-center text-[var(--text-secondary)] py-10">No media files found. Upload a file to get started.</p>
             )}
 
             {isUploadModalOpen && (

@@ -9,8 +9,10 @@ import Footer from '../components/Footer';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { getAboutContent, getProjects } from '../services/appwrite';
 import type { AboutContent, Project } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 
 const HomePage: React.FC = () => {
+  const { siteTheme } = useTheme();
   const [aboutContent, setAboutContent] = useState<AboutContent | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,24 +35,24 @@ const HomePage: React.FC = () => {
     fetchData();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-gray-900">
-      <Header />
-      <main>
-        <HeroSection />
-        <AboutSection content={aboutContent?.content} />
-        <ProjectsSection projects={projects} />
-        <ContactSection />
-      </main>
-      <Footer />
+    <div className={`bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300 ${siteTheme}`}>
+      {loading ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <LoadingSpinner />
+        </div>
+      ) : (
+        <>
+          <Header />
+          <main>
+            <HeroSection />
+            <AboutSection content={aboutContent?.content} />
+            <ProjectsSection projects={projects} />
+            <ContactSection />
+          </main>
+          <Footer />
+        </>
+      )}
     </div>
   );
 };

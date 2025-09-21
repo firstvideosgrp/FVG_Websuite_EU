@@ -101,10 +101,10 @@ const HeroSection: React.FC = () => {
       )}
       <div className="absolute inset-0 bg-black opacity-60"></div>
       <div className="relative z-10 px-6">
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-wider leading-tight animate-fade-in-down text-[var(--secondary-color)]">
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-wider leading-tight animate-fade-in-down text-white">
           {heroTitle}
         </h1>
-        <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+        <p className="mt-4 text-lg md:text-xl text-gray-200 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
           {heroDescription}
         </p>
         <a 

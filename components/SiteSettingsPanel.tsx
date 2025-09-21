@@ -177,55 +177,55 @@ const SiteSettingsPanel: React.FC = () => {
 
 
     return (
-        <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
+        <div className="bg-[var(--bg-primary)] p-6 rounded-lg shadow-lg border border-[var(--border-color)]">
             <h2 className="text-2xl font-bold mb-6 text-[var(--primary-color)] flex items-center">
                 <i className="fas fa-cogs mr-3"></i>Site Settings
             </h2>
             <form onSubmit={handleSubmit} className="space-y-8">
                 {/* General Settings */}
                 <section>
-                    <h3 className="text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 mb-4">General</h3>
+                    <h3 className="text-lg font-semibold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 mb-4">General</h3>
                     <div className="space-y-4">
                         <div>
-                            <label htmlFor="siteTitle" className="block text-sm font-medium text-gray-300 mb-2">Public Site Title</label>
-                            <input type="text" id="siteTitle" name="siteTitle" value={formState.siteTitle} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-[var(--secondary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
+                            <label htmlFor="siteTitle" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Public Site Title</label>
+                            <input type="text" id="siteTitle" name="siteTitle" value={formState.siteTitle} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
                         </div>
                         <div>
-                            <label htmlFor="adminTitle" className="block text-sm font-medium text-gray-300 mb-2">Admin Page Title</label>
-                            <input type="text" id="adminTitle" name="adminTitle" value={formState.adminTitle} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-[var(--secondary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
+                            <label htmlFor="adminTitle" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Admin Page Title</label>
+                            <input type="text" id="adminTitle" name="adminTitle" value={formState.adminTitle} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
                         </div>
                         <div>
-                            <label htmlFor="siteVersion" className="block text-sm font-medium text-gray-300 mb-2">Site Version</label>
-                            <input type="text" id="siteVersion" name="siteVersion" value={formState.siteVersion} onChange={handleChange} placeholder="e.g., 1.0.1" className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-[var(--secondary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
-                            <p className="text-xs text-gray-500 mt-1">Displayed in the site footer.</p>
+                            <label htmlFor="siteVersion" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Site Version</label>
+                            <input type="text" id="siteVersion" name="siteVersion" value={formState.siteVersion} onChange={handleChange} placeholder="e.g., 1.0.1" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
+                            <p className="text-xs text-[var(--text-secondary)] mt-1">Displayed in the site footer.</p>
                         </div>
                     </div>
                 </section>
 
                 {/* Color Settings */}
                 <section>
-                    <h3 className="text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 mb-4">Colors</h3>
+                    <h3 className="text-lg font-semibold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 mb-4">Colors</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label htmlFor="primaryColor" className="block text-sm font-medium text-gray-300 mb-2">Primary Color (Accent)</label>
-                            <div className="flex items-center space-x-3"><input type="color" id="primaryColor" name="primaryColor" value={formState.primaryColor} onChange={handleChange} className="w-12 h-12 p-1 bg-gray-700 border border-gray-600 rounded-md cursor-pointer" /><input type="text" value={formState.primaryColor} onChange={handleChange} name="primaryColor" className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-[var(--secondary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" /></div>
+                            <label htmlFor="primaryColor" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Primary Color (Accent)</label>
+                            <div className="flex items-center space-x-3"><input type="color" id="primaryColor" name="primaryColor" value={formState.primaryColor} onChange={handleChange} className="w-12 h-12 p-1 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md cursor-pointer" /><input type="text" value={formState.primaryColor} onChange={handleChange} name="primaryColor" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" /></div>
                         </div>
                         <div>
-                            <label htmlFor="secondaryColor" className="block text-sm font-medium text-gray-300 mb-2">Secondary Color (Text)</label>
-                            <div className="flex items-center space-x-3"><input type="color" id="secondaryColor" name="secondaryColor" value={formState.secondaryColor} onChange={handleChange} className="w-12 h-12 p-1 bg-gray-700 border border-gray-600 rounded-md cursor-pointer" /><input type="text" value={formState.secondaryColor} onChange={handleChange} name="secondaryColor" className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-[var(--secondary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" /></div>
+                            <label htmlFor="secondaryColor" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Dark Theme Text Color</label>
+                            <div className="flex items-center space-x-3"><input type="color" id="secondaryColor" name="secondaryColor" value={formState.secondaryColor} onChange={handleChange} className="w-12 h-12 p-1 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md cursor-pointer" /><input type="text" value={formState.secondaryColor} onChange={handleChange} name="secondaryColor" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" /></div>
                         </div>
                     </div>
                 </section>
 
                 {/* Hero Section Settings */}
                 <section>
-                    <h3 className="text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 mb-4">Hero Section</h3>
+                    <h3 className="text-lg font-semibold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 mb-4">Hero Section</h3>
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-300">Background Type</span>
+                            <span className="text-sm font-medium text-[var(--text-primary)]">Background Type</span>
                             <div className="flex items-center space-x-6">
                                 <label htmlFor="heroUseImage" className="flex items-center cursor-pointer">
-                                    <span className="mr-3 text-sm font-medium text-gray-300">Use Background Image</span>
+                                    <span className="mr-3 text-sm font-medium text-[var(--text-secondary)]">Use Background Image</span>
                                     <div className="relative">
                                         <input type="checkbox" id="heroUseImage" name="heroUseImage" className="sr-only" checked={formState.heroUseImage} onChange={handleChange} />
                                         <div className="block bg-gray-600 w-14 h-8 rounded-full"></div>
@@ -233,7 +233,7 @@ const SiteSettingsPanel: React.FC = () => {
                                     </div>
                                 </label>
                                  <label htmlFor="heroUsePlexus" className="flex items-center cursor-pointer">
-                                    <span className="mr-3 text-sm font-medium text-gray-300">Use Plexus Animation</span>
+                                    <span className="mr-3 text-sm font-medium text-[var(--text-secondary)]">Use Plexus Animation</span>
                                     <div className="relative">
                                         <input type="checkbox" id="heroUsePlexus" name="heroUsePlexus" className="sr-only" checked={formState.heroUsePlexus} onChange={handleChange} />
                                         <div className="block bg-gray-600 w-14 h-8 rounded-full"></div>
@@ -244,35 +244,35 @@ const SiteSettingsPanel: React.FC = () => {
                         </div>
 
                         <div className={formState.heroUseImage ? '' : 'opacity-50'}>
-                            <label htmlFor="heroBackgroundImageUrl" className="block text-sm font-medium text-gray-300 mb-2">Background Image</label>
+                            <label htmlFor="heroBackgroundImageUrl" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Background Image</label>
                             <div className="flex items-center space-x-2">
-                                <input type="text" id="heroBackgroundImageUrl" name="heroBackgroundImageUrl" value={formState.heroBackgroundImageUrl} onChange={handleChange} className="flex-grow bg-gray-700 border border-gray-600 rounded-md p-3" placeholder="Enter URL or select from media" disabled={!formState.heroUseImage}/>
+                                <input type="text" id="heroBackgroundImageUrl" name="heroBackgroundImageUrl" value={formState.heroBackgroundImageUrl} onChange={handleChange} className="flex-grow bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3" placeholder="Enter URL or select from media" disabled={!formState.heroUseImage}/>
                                 <button type="button" onClick={() => setIsMediaModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm whitespace-nowrap h-[46px]" aria-label="Select from Media Library" disabled={!formState.heroUseImage}>
                                     <i className="fas fa-photo-video"></i>
                                 </button>
                             </div>
                         </div>
                         <div>
-                            <label htmlFor="heroTitle" className="block text-sm font-medium text-gray-300 mb-2">Title Text</label>
-                            <input type="text" id="heroTitle" name="heroTitle" value={formState.heroTitle} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3" />
+                            <label htmlFor="heroTitle" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Title Text</label>
+                            <input type="text" id="heroTitle" name="heroTitle" value={formState.heroTitle} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3" />
                         </div>
                         <div>
-                            <label htmlFor="heroDescription" className="block text-sm font-medium text-gray-300 mb-2">Description Text</label>
-                            <textarea id="heroDescription" name="heroDescription" value={formState.heroDescription} onChange={handleChange} rows={3} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3"></textarea>
+                            <label htmlFor="heroDescription" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Description Text</label>
+                            <textarea id="heroDescription" name="heroDescription" value={formState.heroDescription} onChange={handleChange} rows={3} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3"></textarea>
                         </div>
                         <div>
-                            <label htmlFor="heroButtonText" className="block text-sm font-medium text-gray-300 mb-2">Button Text</label>
-                            <input type="text" id="heroButtonText" name="heroButtonText" value={formState.heroButtonText} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3" />
+                            <label htmlFor="heroButtonText" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Button Text</label>
+                            <input type="text" id="heroButtonText" name="heroButtonText" value={formState.heroButtonText} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3" />
                         </div>
                     </div>
                 </section>
 
                 {/* Mail Settings */}
                 <section>
-                    <h3 className="text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 mb-4 flex justify-between items-center">
+                    <h3 className="text-lg font-semibold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 mb-4 flex justify-between items-center">
                         <span>Mail Settings</span>
                          <label htmlFor="mailEnabled" className="flex items-center cursor-pointer">
-                            <span className="mr-3 text-sm font-medium text-gray-300">Enable Sending</span>
+                            <span className="mr-3 text-sm font-medium text-[var(--text-secondary)]">Enable Sending</span>
                             <div className="relative">
                                 <input
                                     type="checkbox"
@@ -289,27 +289,27 @@ const SiteSettingsPanel: React.FC = () => {
                     </h3>
                     <div className="space-y-4">
                          <div>
-                            <label htmlFor="mailSenderEmail" className="block text-sm font-medium text-gray-300 mb-2">Sender Email Address</label>
-                            <input type="email" id="mailSenderEmail" name="mailSenderEmail" value={formState.mailSenderEmail} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3" placeholder="sender@example.com" />
-                            <p className="text-xs text-gray-500 mt-1">The "From" address for all outgoing system emails.</p>
+                            <label htmlFor="mailSenderEmail" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Sender Email Address</label>
+                            <input type="email" id="mailSenderEmail" name="mailSenderEmail" value={formState.mailSenderEmail} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3" placeholder="sender@example.com" />
+                            <p className="text-xs text-[var(--text-secondary)] mt-1">The "From" address for all outgoing system emails.</p>
                         </div>
                         <div>
-                            <label htmlFor="mailContactRecipient" className="block text-sm font-medium text-gray-300 mb-2">Contact Form Recipient</label>
-                            <input type="email" id="mailContactRecipient" name="mailContactRecipient" value={formState.mailContactRecipient} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3" placeholder="recipient@example.com" />
-                            <p className="text-xs text-gray-500 mt-1">The email address where submissions from the public "Contact Us" form will be sent.</p>
+                            <label htmlFor="mailContactRecipient" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Contact Form Recipient</label>
+                            <input type="email" id="mailContactRecipient" name="mailContactRecipient" value={formState.mailContactRecipient} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3" placeholder="recipient@example.com" />
+                            <p className="text-xs text-[var(--text-secondary)] mt-1">The email address where submissions from the public "Contact Us" form will be sent.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label htmlFor="mailSmtpHost" className="block text-sm font-medium text-gray-300 mb-2">SMTP Host</label>
-                                <input type="text" id="mailSmtpHost" name="mailSmtpHost" value={formState.mailSmtpHost} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3" placeholder="smtp.mailtrap.io" />
+                                <label htmlFor="mailSmtpHost" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">SMTP Host</label>
+                                <input type="text" id="mailSmtpHost" name="mailSmtpHost" value={formState.mailSmtpHost} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3" placeholder="smtp.mailtrap.io" />
                             </div>
                             <div>
-                                <label htmlFor="mailSmtpPort" className="block text-sm font-medium text-gray-300 mb-2">SMTP Port</label>
-                                <input type="number" id="mailSmtpPort" name="mailSmtpPort" value={formState.mailSmtpPort} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3" />
+                                <label htmlFor="mailSmtpPort" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">SMTP Port</label>
+                                <input type="number" id="mailSmtpPort" name="mailSmtpPort" value={formState.mailSmtpPort} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3" />
                             </div>
                             <div>
-                                <label htmlFor="mailSmtpEncryption" className="block text-sm font-medium text-gray-300 mb-2">Encryption</label>
-                                <select id="mailSmtpEncryption" name="mailSmtpEncryption" value={formState.mailSmtpEncryption} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3">
+                                <label htmlFor="mailSmtpEncryption" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Encryption</label>
+                                <select id="mailSmtpEncryption" name="mailSmtpEncryption" value={formState.mailSmtpEncryption} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3">
                                     <option value="none">None</option>
                                     <option value="ssl">SSL</option>
                                     <option value="tls">TLS</option>
@@ -318,19 +318,19 @@ const SiteSettingsPanel: React.FC = () => {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label htmlFor="mailSmtpUsername" className="block text-sm font-medium text-gray-300 mb-2">SMTP Username</label>
-                                <input type="text" id="mailSmtpUsername" name="mailSmtpUsername" value={formState.mailSmtpUsername} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3" autoComplete="off"/>
+                                <label htmlFor="mailSmtpUsername" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">SMTP Username</label>
+                                <input type="text" id="mailSmtpUsername" name="mailSmtpUsername" value={formState.mailSmtpUsername} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3" autoComplete="off"/>
                             </div>
                             <div>
-                                <label htmlFor="mailSmtpPassword" className="block text-sm font-medium text-gray-300 mb-2">SMTP Password</label>
-                                <input type="password" id="mailSmtpPassword" name="mailSmtpPassword" onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3" placeholder="Enter new password" autoComplete="new-password"/>
+                                <label htmlFor="mailSmtpPassword" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">SMTP Password</label>
+                                <input type="password" id="mailSmtpPassword" name="mailSmtpPassword" onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3" placeholder="Enter new password" autoComplete="new-password"/>
                             </div>
                         </div>
                     </div>
                     {/* Test Mail Sub-section */}
-                    <div className="mt-6 pt-6 border-t border-gray-700">
-                        <h4 className="text-md font-semibold text-gray-300 mb-3">Test Configuration</h4>
-                        <p className="text-sm text-gray-400 mb-4">
+                    <div className="mt-6 pt-6 border-t border-[var(--border-color)]">
+                        <h4 className="text-md font-semibold text-[var(--text-primary)] mb-3">Test Configuration</h4>
+                        <p className="text-sm text-[var(--text-secondary)] mb-4">
                             After saving your settings above, you can send a test email to verify the configuration.
                             The test will use the saved credentials.
                         </p>
@@ -340,7 +340,7 @@ const SiteSettingsPanel: React.FC = () => {
                                 value={testRecipient} 
                                 onChange={e => setTestRecipient(e.target.value)}
                                 placeholder="To: recipient@example.com"
-                                className="flex-grow bg-gray-700 border border-gray-600 rounded-md p-2"
+                                className="flex-grow bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2"
                             />
                             <button 
                                 type="button" 
@@ -369,12 +369,12 @@ const SiteSettingsPanel: React.FC = () => {
 
                 {/* Social Links */}
                 <section>
-                     <h3 className="text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 mb-4">Social Media Links</h3>
+                     <h3 className="text-lg font-semibold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 mb-4">Social Media Links</h3>
                      <div className="space-y-3">
                         {formState.socialLinks.map((link, index) => (
-                            <div key={link.id} className="flex items-center space-x-2 p-2 bg-gray-800 rounded-md">
-                                <input type="text" value={link.icon} onChange={(e) => handleSocialLinkChange(index, 'icon', e.target.value)} placeholder="Icon (e.g., fab fa-twitter)" className="w-1/3 bg-gray-700 border border-gray-600 rounded p-2" />
-                                <input type="text" value={link.url} onChange={(e) => handleSocialLinkChange(index, 'url', e.target.value)} placeholder="URL" className="flex-grow bg-gray-700 border border-gray-600 rounded p-2" />
+                            <div key={link.id} className="flex items-center space-x-2 p-2 bg-[var(--bg-secondary)] rounded-md">
+                                <input type="text" value={link.icon} onChange={(e) => handleSocialLinkChange(index, 'icon', e.target.value)} placeholder="Icon (e.g., fab fa-twitter)" className="w-1/3 bg-[var(--input-bg)] border border-[var(--border-color)] rounded p-2" />
+                                <input type="text" value={link.url} onChange={(e) => handleSocialLinkChange(index, 'url', e.target.value)} placeholder="URL" className="flex-grow bg-[var(--input-bg)] border border-[var(--border-color)] rounded p-2" />
                                 <button type="button" onClick={() => removeSocialLink(index)} className="bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded w-10 h-10 flex items-center justify-center"><i className="fas fa-trash"></i></button>
                             </div>
                         ))}
@@ -384,18 +384,18 @@ const SiteSettingsPanel: React.FC = () => {
                 
                 {/* Footer Settings */}
                 <section>
-                    <h3 className="text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 mb-4">Footer</h3>
+                    <h3 className="text-lg font-semibold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 mb-4">Footer</h3>
                     <div>
-                        <label htmlFor="footerText" className="block text-sm font-medium text-gray-300 mb-2">Footer Text (use `{'{year}'}` for current year)</label>
-                        <textarea id="footerText" name="footerText" value={formState.footerText} onChange={handleChange} rows={3} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-[var(--secondary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
+                        <label htmlFor="footerText" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Footer Text (use `{'{year}'}` for current year)</label>
+                        <textarea id="footerText" name="footerText" value={formState.footerText} onChange={handleChange} rows={3} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
                     </div>
                     <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Footer Additional Links</label>
+                        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Footer Additional Links</label>
                         <div className="space-y-3">
                             {formState.footerLinks.map((link, index) => (
-                                <div key={link.id} className="flex items-center space-x-2 p-2 bg-gray-800 rounded-md">
-                                    <input type="text" value={link.label} onChange={(e) => handleFooterLinkChange(index, 'label', e.target.value)} placeholder="Label (e.g., Privacy Policy)" className="w-1/3 bg-gray-700 border border-gray-600 rounded p-2" />
-                                    <input type="text" value={link.url} onChange={(e) => handleFooterLinkChange(index, 'url', e.target.value)} placeholder="URL" className="flex-grow bg-gray-700 border border-gray-600 rounded p-2" />
+                                <div key={link.id} className="flex items-center space-x-2 p-2 bg-[var(--bg-secondary)] rounded-md">
+                                    <input type="text" value={link.label} onChange={(e) => handleFooterLinkChange(index, 'label', e.target.value)} placeholder="Label (e.g., Privacy Policy)" className="w-1/3 bg-[var(--input-bg)] border border-[var(--border-color)] rounded p-2" />
+                                    <input type="text" value={link.url} onChange={(e) => handleFooterLinkChange(index, 'url', e.target.value)} placeholder="URL" className="flex-grow bg-[var(--input-bg)] border border-[var(--border-color)] rounded p-2" />
                                     <button type="button" onClick={() => removeFooterLink(index)} className="bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded w-10 h-10 flex items-center justify-center"><i className="fas fa-trash"></i></button>
                                 </div>
                             ))}
@@ -404,7 +404,7 @@ const SiteSettingsPanel: React.FC = () => {
                     </div>
                 </section>
 
-                <div className="pt-4 border-t border-gray-700">
+                <div className="pt-4 border-t border-[var(--border-color)]">
                     <button type="submit" disabled={isUpdating || !isDirty} className="bg-[var(--primary-color)] hover:brightness-110 text-gray-900 font-bold py-2 px-6 rounded transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         {isUpdating ? <><i className="fas fa-spinner animate-spin"></i><span>Saving...</span></> : <><i className="fas fa-save"></i><span>Save Settings</span></>}
                     </button>

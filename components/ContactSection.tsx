@@ -42,10 +42,10 @@ const ContactSection: React.FC = () => {
   }
 
   return (
-    <section id="contact" className="py-20 md:py-32 bg-gray-900">
+    <section id="contact" className="py-20 md:py-32 bg-[var(--bg-primary)]">
       <div className="container mx-auto px-6">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-black uppercase tracking-wider text-[var(--secondary-color)]">
+          <h2 className="text-4xl md:text-5xl font-black uppercase tracking-wider text-[var(--text-primary)]">
             Get In <span className="text-[var(--primary-color)]">Touch</span>
           </h2>
           <div className="w-24 h-1 bg-[var(--primary-color)] mx-auto mt-4"></div>
@@ -54,32 +54,32 @@ const ContactSection: React.FC = () => {
           <form className="space-y-6" onSubmit={handleSubmit}>
              <fieldset disabled={!mailEnabled} className="space-y-6 relative">
                 {!mailEnabled && (
-                    <div className="absolute inset-0 bg-gray-800 bg-opacity-95 flex flex-col items-center justify-center rounded-md z-10 p-4 text-center border border-gray-700">
+                    <div className="absolute inset-0 bg-[var(--bg-secondary)] bg-opacity-95 flex flex-col items-center justify-center rounded-md z-10 p-4 text-center border border-[var(--border-color)]">
                         <i className="fas fa-tools text-4xl text-yellow-400 mb-4"></i>
-                        <h3 className="text-xl font-bold text-gray-200">Function In Development</h3>
-                        <p className="text-gray-400 mt-2">This function is currently in development.</p>
+                        <h3 className="text-xl font-bold text-[var(--text-primary)]">Function In Development</h3>
+                        <p className="text-[var(--text-secondary)] mt-2">This function is currently in development.</p>
                     </div>
                 )}
                 <div className="relative">
                   <label htmlFor="contact-name" className="sr-only">Your Name</label>
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-[var(--text-secondary)]">
                     <i className="fas fa-user"></i>
                   </span>
-                  <input id="contact-name" type="text" placeholder="Your Name" value={name} onChange={e => setName(e.target.value)} required className="w-full bg-gray-800 border border-gray-700 rounded-md py-3 px-4 pl-12 text-[var(--secondary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
+                  <input id="contact-name" type="text" placeholder="Your Name" value={name} onChange={e => setName(e.target.value)} required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md py-3 px-4 pl-12 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
                 </div>
                 <div className="relative">
                   <label htmlFor="contact-email" className="sr-only">Your Email</label>
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-[var(--text-secondary)]">
                     <i className="fas fa-envelope"></i>
                   </span>
-                  <input id="contact-email" type="email" placeholder="Your Email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full bg-gray-800 border border-gray-700 rounded-md py-3 px-4 pl-12 text-[var(--secondary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
+                  <input id="contact-email" type="email" placeholder="Your Email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md py-3 px-4 pl-12 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
                 </div>
                  <div className="relative">
                   <label htmlFor="contact-message" className="sr-only">Your Message</label>
-                  <span className="absolute top-4 left-0 flex items-center pl-4 text-gray-500">
+                  <span className="absolute top-4 left-0 flex items-center pl-4 text-[var(--text-secondary)]">
                     <i className="fas fa-pen"></i>
                   </span>
-                  <textarea id="contact-message" placeholder="Your Message" rows={5} value={message} onChange={e => setMessage(e.target.value)} required className="w-full bg-gray-800 border border-gray-700 rounded-md py-3 px-4 pl-12 text-[var(--secondary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all"></textarea>
+                  <textarea id="contact-message" placeholder="Your Message" rows={5} value={message} onChange={e => setMessage(e.target.value)} required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md py-3 px-4 pl-12 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all"></textarea>
                 </div>
                 {responseMessage && (
                   <div role="alert" className={`p-4 rounded-md text-center text-sm font-medium ${getStatusColor()}`} aria-live="polite">

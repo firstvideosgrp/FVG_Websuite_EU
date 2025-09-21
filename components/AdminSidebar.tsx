@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Models } from 'appwrite';
 import { useSettings } from '../contexts/SettingsContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface AdminSidebarProps {
     user: Models.User<Models.Preferences>;
@@ -12,6 +13,7 @@ interface AdminSidebarProps {
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ user, onLogout, activeView, setActiveView }) => {
     const { settings } = useSettings();
+    const { adminTheme, toggleAdminTheme } = useTheme();
     const adminTitle = settings?.adminTitle || 'FirstVideos Admin';
     const adminTitleParts = adminTitle.split(' ');
     const coloredPart = adminTitleParts.pop() || 'Admin';
@@ -26,8 +28,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ user, onLogout, activeView,
     ];
 
     return (
-        <div className="w-64 bg-gray-900 text-white flex flex-col h-screen fixed top-0 left-0">
-            <div className="p-6 text-center border-b border-gray-700">
+        <div className="w-64 bg-[var(--bg-card)] text-[var(--text-primary)] flex flex-col h-screen fixed top-0 left-0 border-r border-[var(--border-color)]">
+            <div className="p-6 text-center border-b border-[var(--border-color)]">
                 <h2 className="text-2xl font-black tracking-wider uppercase">{mainPart} <span className="text-[var(--primary-color)]">{coloredPart}</span></h2>
             </div>
             <nav className="flex-grow p-4">
@@ -37,7 +39,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ user, onLogout, activeView,
                             <button
                                 onClick={() => setActiveView(item.id)}
                                 className={`w-full text-left flex items-center p-3 my-1 rounded-lg transition-colors duration-200 ${
-                                    activeView === item.id ? 'bg-[var(--primary-color)] text-gray-900 font-bold' : 'hover:bg-gray-700 text-white'
+                                    activeView === item.id ? 'bg-[var(--primary-color)] text-gray-900 font-bold' : 'hover:bg-[var(--bg-secondary)] text-[var(--text-primary)]'
                                 }`}
                                 aria-current={activeView === item.id ? 'page' : undefined}
                             >
@@ -48,14 +50,23 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ user, onLogout, activeView,
                     ))}
                 </ul>
             </nav>
-            <div className="p-4 border-t border-gray-700">
-                <div className="mb-4">
-                    <p className="text-xs text-gray-400">Logged in as</p>
-                    <p className="text-sm font-semibold truncate" title={user.email}>{user.name || user.email}</p>
+            <div className="p-4 border-t border-[var(--border-color)]">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <p className="text-xs text-[var(--text-secondary)]">Logged in as</p>
+                        <p className="text-sm font-semibold truncate" title={user.email}>{user.name || user.email}</p>
+                    </div>
+                     <button
+                        onClick={toggleAdminTheme}
+                        className="text-[var(--text-secondary)] hover:text-[var(--primary-color)] text-xl w-10 h-10 flex items-center justify-center rounded-lg transition-colors"
+                        aria-label="Toggle admin panel theme"
+                    >
+                        <i className={`fas ${adminTheme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
+                    </button>
                 </div>
                 <Link
                     to="/"
-                    className="w-full mb-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition-colors flex items-center justify-center space-x-2"
+                    className="w-full mb-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors flex items-center justify-center space-x-2"
                 >
                     <i className="fas fa-arrow-left"></i>
                     <span>Back to Site</span>

@@ -4,13 +4,16 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import AdminPage from './pages/AdminPage';
 import { SettingsProvider, useSettings } from './contexts/SettingsContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import LoadingSpinner from './components/LoadingSpinner';
 
 function App() {
   return (
-    <SettingsProvider>
-      <AppContent />
-    </SettingsProvider>
+    <ThemeProvider>
+      <SettingsProvider>
+        <AppContent />
+      </SettingsProvider>
+    </ThemeProvider>
   );
 }
 
@@ -19,7 +22,7 @@ function AppContent() {
 
   if (settingsLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen bg-[var(--bg-primary)]">
         <LoadingSpinner />
       </div>
     );

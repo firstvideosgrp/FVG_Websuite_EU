@@ -9,10 +9,10 @@ interface ProjectsSectionProps {
 
 const ProjectsSection: React.FC<ProjectsSectionProps> = ({ projects }) => {
   return (
-    <section id="projects" className="py-20 md:py-32 bg-gray-800">
+    <section id="projects" className="py-20 md:py-32 bg-[var(--bg-secondary)] border-y border-[var(--border-color)]">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-black uppercase tracking-wider text-[var(--secondary-color)]">
+          <h2 className="text-4xl md:text-5xl font-black uppercase tracking-wider text-[var(--text-primary)]">
             Our <span className="text-[var(--primary-color)]">Projects</span>
           </h2>
           <div className="w-24 h-1 bg-[var(--primary-color)] mx-auto mt-4"></div>
@@ -24,7 +24,7 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({ projects }) => {
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-400">No projects to display at the moment. Check back soon!</p>
+          <p className="text-center text-[var(--text-secondary)]">No projects to display at the moment. Check back soon!</p>
         )}
       </div>
     </section>
