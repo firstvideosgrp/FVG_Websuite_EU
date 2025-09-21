@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { sendTestEmail } from '../services/appwrite';
 import type { SocialLink, FooterLink, SiteSettings } from '../types';
+import MediaLibraryModal from './MediaLibraryModal';
 
 // Add a temporary ID for list rendering
 type SocialLinkWithId = SocialLink & { id: string };
@@ -35,6 +36,11 @@ const SiteSettingsPanel: React.FC = () => {
             siteVersion: settings?.siteVersion || '1.0.0',
             socialLinks,
             footerLinks,
+            // Hero settings
+            heroBackgroundImageUrl: settings?.heroBackgroundImageUrl || '',
+            heroTitle: settings?.heroTitle || '',
+            heroDescription: settings?.heroDescription || '',
+            heroButtonText: settings?.heroButtonText || '',
             // Mail settings
             mailEnabled: settings?.mailEnabled ?? false,
             mailSenderEmail: settings?.mailSenderEmail || '',
@@ -51,6 +57,7 @@ const SiteSettingsPanel: React.FC = () => {
     const [isDirty, setIsDirty] = useState(false);
     const [testRecipient, setTestRecipient] = useState('');
     const [isSendingTest, setIsSendingTest] = useState(false);
+    const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
 
     useEffect(() => {
         setFormState(initialFormState);
@@ -106,6 +113,11 @@ const SiteSettingsPanel: React.FC = () => {
 
     const addFooterLink = () => setFormState(prev => ({ ...prev, footerLinks: [...prev.footerLinks, { id: crypto.randomUUID(), label: '', url: '' }] }));
     const removeFooterLink = (index: number) => setFormState(prev => ({ ...prev, footerLinks: prev.footerLinks.filter((_, i) => i !== index) }));
+    
+    const handleImageSelect = (url: string) => {
+        setFormState(prev => ({ ...prev, heroBackgroundImageUrl: url }));
+        setIsMediaModalOpen(false);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -186,6 +198,34 @@ const SiteSettingsPanel: React.FC = () => {
                         <div>
                             <label htmlFor="secondaryColor" className="block text-sm font-medium text-gray-300 mb-2">Secondary Color (Text)</label>
                             <div className="flex items-center space-x-3"><input type="color" id="secondaryColor" name="secondaryColor" value={formState.secondaryColor} onChange={handleChange} className="w-12 h-12 p-1 bg-gray-700 border border-gray-600 rounded-md cursor-pointer" /><input type="text" value={formState.secondaryColor} onChange={handleChange} name="secondaryColor" className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-[var(--secondary-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" /></div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Hero Section Settings */}
+                <section>
+                    <h3 className="text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 mb-4">Hero Section</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="heroBackgroundImageUrl" className="block text-sm font-medium text-gray-300 mb-2">Background Image</label>
+                            <div className="flex items-center space-x-2">
+                                <input type="text" id="heroBackgroundImageUrl" name="heroBackgroundImageUrl" value={formState.heroBackgroundImageUrl} onChange={handleChange} className="flex-grow bg-gray-700 border border-gray-600 rounded-md p-3" placeholder="Enter URL or select from media" />
+                                <button type="button" onClick={() => setIsMediaModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm whitespace-nowrap h-[46px]" aria-label="Select from Media Library">
+                                    <i className="fas fa-photo-video"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label htmlFor="heroTitle" className="block text-sm font-medium text-gray-300 mb-2">Title Text</label>
+                            <input type="text" id="heroTitle" name="heroTitle" value={formState.heroTitle} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3" />
+                        </div>
+                        <div>
+                            <label htmlFor="heroDescription" className="block text-sm font-medium text-gray-300 mb-2">Description Text</label>
+                            <textarea id="heroDescription" name="heroDescription" value={formState.heroDescription} onChange={handleChange} rows={3} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3"></textarea>
+                        </div>
+                        <div>
+                            <label htmlFor="heroButtonText" className="block text-sm font-medium text-gray-300 mb-2">Button Text</label>
+                            <input type="text" id="heroButtonText" name="heroButtonText" value={formState.heroButtonText} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3" />
                         </div>
                     </div>
                 </section>
@@ -333,6 +373,7 @@ const SiteSettingsPanel: React.FC = () => {
                     </button>
                 </div>
             </form>
+            {isMediaModalOpen && <MediaLibraryModal onSelect={handleImageSelect} onClose={() => setIsMediaModalOpen(false)} />}
         </div>
     );
 };

@@ -8,10 +8,10 @@ const Header: React.FC = () => {
   const siteTitleColor = settings?.siteTitle.split(' ')[1] || 'Videos';
 
   const navLinks = [
-    { href: '#home', label: 'Home' },
-    { href: '#about', label: 'About' },
-    { href: '#projects', label: 'Projects' },
-    { href: '#contact', label: 'Contact' },
+    { href: '#home', label: 'Home', icon: 'fas fa-home' },
+    { href: '#about', label: 'About', icon: 'fas fa-info-circle' },
+    { href: '#projects', label: 'Projects', icon: 'fas fa-film' },
+    { href: '#contact', label: 'Contact', icon: 'fas fa-envelope' },
   ];
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -47,7 +47,10 @@ const Header: React.FC = () => {
         
         <nav className="hidden md:flex space-x-8 items-center">
           {navLinks.map(link => (
-            <a key={link.href} href={link.href} onClick={(e) => handleNavClick(e, link.href)} className="text-gray-300 hover:text-[var(--primary-color)] transition-colors duration-300 font-medium">{link.label}</a>
+            <a key={link.href} href={link.href} onClick={(e) => handleNavClick(e, link.href)} className="flex items-center text-gray-300 hover:text-[var(--primary-color)] transition-colors duration-300 font-medium">
+              <i className={`${link.icon} mr-2`}></i>
+              <span>{link.label}</span>
+            </a>
           ))}
         </nav>
 
@@ -62,7 +65,10 @@ const Header: React.FC = () => {
         <div className="md:hidden bg-gray-900">
           <nav className="flex flex-col items-center space-y-4 py-4">
              {navLinks.map(link => (
-              <a key={link.href} href={link.href} onClick={(e) => handleNavClick(e, link.href)} className="text-gray-300 hover:text-[var(--primary-color)] transition-colors duration-300 font-medium">{link.label}</a>
+              <a key={link.href} href={link.href} onClick={(e) => handleNavClick(e, link.href)} className="flex items-center text-gray-300 hover:text-[var(--primary-color)] transition-colors duration-300 font-medium text-lg">
+                <i className={`${link.icon} w-6 text-center mr-3`}></i>
+                <span>{link.label}</span>
+              </a>
             ))}
           </nav>
         </div>

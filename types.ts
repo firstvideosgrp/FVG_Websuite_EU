@@ -58,6 +58,11 @@ export type SiteSettings = Models.Document & {
   mailSmtpEncryption?: 'none' | 'ssl' | 'tls';
   mailSmtpUsername?: string;
   mailSmtpPassword?: string;
+  // Hero Section Customization
+  heroBackgroundImageUrl?: string;
+  heroTitle?: string;
+  heroDescription?: string;
+  heroButtonText?: string;
 };
 
 // New types for Media Library

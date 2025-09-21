@@ -119,6 +119,10 @@ This collection stores the global settings for the website, such as title and th
 | `mailSmtpEncryption` | String  | 10   | No       | No    | 'none', 'ssl', or 'tls'             |
 | `mailSmtpUsername`   | String  | 255  | No       | No    | SMTP authentication username.       |
 | `mailSmtpPassword`   | String  | 255  | No       | No    | SMTP authentication password.       |
+| `heroBackgroundImageUrl` | URL | 2048 | No   | No    | URL for the hero section background.|
+| `heroTitle`          | String  | 255  | No       | No    | Main headline for the hero section. |
+| `heroDescription`    | String  | 1000 | No       | No    | Paragraph for the hero section.     |
+| `heroButtonText`     | String  | 100  | No       | No    | Call-to-action button text.         |
 
 
 #### Settings (Permissions)

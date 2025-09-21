@@ -28,6 +28,10 @@ const defaultSettings: Omit<SiteSettings, keyof Models.Document> = {
     siteVersion: '1.0.0',
     socialLinks: '[]',
     footerLinks: '[]',
+    heroBackgroundImageUrl: 'https://picsum.photos/1920/1080?grayscale&blur=2',
+    heroTitle: 'Storytelling Redefined',
+    heroDescription: 'FirstVideos Group crafts compelling narratives that captivate audiences and shape the future of entertainment.',
+    heroButtonText: 'View Our Work',
 };
 
 
