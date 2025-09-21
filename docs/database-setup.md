@@ -83,6 +83,7 @@ Create the following attributes for the `Projects` collection:
 | `releaseYear`        | Integer | -    | Yes      | No    | Set min/max if desired.                             |
 | `projectType`        | String  | 50   | Yes      | No    | e.g., 'Movie', 'Short', 'Series'                    |
 | `status`             | String  | 50   | Yes      | No    | e.g., 'Upcoming', 'In Production', 'Released'       |
+| `isRework`           | Boolean | -    | No       | No    | Indicates if the project is a rework.               |
 | `dueDate`            | Datetime| -    | No       | No    | Required for 'Upcoming' or 'In Production' status    |
 | `synopsis`           | String  | 5000 | No       | No    | Detailed movie synopsis.                            |
 | `cast`               | String  | -    | No       | Yes   | Array of Cast document IDs.                         |

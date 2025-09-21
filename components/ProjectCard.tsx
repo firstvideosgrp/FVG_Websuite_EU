@@ -47,9 +47,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onOpenModal }) => {
 
       {/* Content Section: Separated from the image, displayed below it */}
       <div className="p-4">
-        <h3 className="text-xl font-bold text-[var(--text-primary)] truncate" title={project.title}>
-          {project.title}
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-xl font-bold text-[var(--text-primary)] truncate" title={project.title}>
+            {project.title}
+          </h3>
+          {project.isRework && (
+            <span className="flex-shrink-0 bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                REWORK
+            </span>
+          )}
+        </div>
         <span className="text-sm text-[var(--primary-color)] font-semibold flex items-center mt-1">
             <i className="far fa-calendar-alt mr-2"></i>
             {project.releaseYear}

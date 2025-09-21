@@ -25,6 +25,7 @@ export type Project = Models.Document & {
   releaseYear: number;
   projectType: ProjectType;
   status: ProjectStatus;
+  isRework?: boolean;
   dueDate?: string; // Should be ISO date string
   synopsis?: string;
   cast?: string[]; // Array of CastMember document IDs

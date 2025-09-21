@@ -66,6 +66,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         language: '',
         runtime: '',
         hasSubtitles: false,
+        isRework: false,
         mainSubtitleLanguage: '',
         directors: [] as string[],
         producers: [] as string[],
@@ -223,6 +224,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             language: project.language || '',
             runtime: project.runtime?.toString() || '',
             hasSubtitles: project.hasSubtitles || false,
+            isRework: project.isRework || false,
             mainSubtitleLanguage: project.mainSubtitleLanguage || '',
             directors: project.directors || [],
             producers: project.producers || [],
@@ -243,6 +245,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             language: '',
             runtime: '',
             hasSubtitles: false,
+            isRework: false,
             mainSubtitleLanguage: '',
             directors: [],
             producers: [],
@@ -514,13 +517,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                             <input type="number" name="runtime" value={projectForm.runtime} onChange={handleProjectFormChange} placeholder="e.g., 120" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2 text-[var(--text-primary)]" />
                                         </div>
                                     </div>
-                                    <div className="flex items-center space-x-4 p-2 bg-[var(--bg-secondary)] rounded-md">
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 p-2 bg-[var(--bg-secondary)] rounded-md">
                                         <label htmlFor="hasSubtitles" className="flex items-center space-x-2 text-sm font-medium text-[var(--text-secondary)] cursor-pointer">
                                             <input type="checkbox" id="hasSubtitles" name="hasSubtitles" checked={projectForm.hasSubtitles} onChange={handleProjectFormChange} className="h-4 w-4 rounded bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
                                             <span>Has Subtitles?</span>
                                         </label>
+                                        <label htmlFor="isRework" className="flex items-center space-x-2 text-sm font-medium text-[var(--text-secondary)] cursor-pointer">
+                                            <input type="checkbox" id="isRework" name="isRework" checked={projectForm.isRework} onChange={handleProjectFormChange} className="h-4 w-4 rounded bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
+                                            <span>Is a Rework?</span>
+                                        </label>
                                         {projectForm.hasSubtitles && (
-                                            <div className="flex-grow">
+                                            <div className="flex-grow min-w-[200px]">
                                                 <label htmlFor="mainSubtitleLanguage" className="sr-only">Main Subtitle Language</label>
                                                 <input type="text" name="mainSubtitleLanguage" value={projectForm.mainSubtitleLanguage} onChange={handleProjectFormChange} placeholder="Main Subtitle Language" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2 text-[var(--text-primary)]" />
                                             </div>

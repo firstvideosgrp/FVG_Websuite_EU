@@ -102,8 +102,15 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClos
                 <button onClick={onClose} aria-label="Close modal" className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-3xl font-light z-10">&times;</button>
                 
                 <header className="mb-4 pr-8">
-                    <h2 id="project-modal-title" className="text-3xl md:text-4xl font-black text-[var(--primary-color)]">{project.title}</h2>
-                    <p className="text-[var(--text-secondary)] text-lg">{project.releaseYear}</p>
+                    <div className="flex items-center gap-3">
+                        <h2 id="project-modal-title" className="text-3xl md:text-4xl font-black text-[var(--primary-color)]">{project.title}</h2>
+                        {project.isRework && (
+                            <span className="bg-purple-600 text-white text-sm font-bold px-3 py-1 rounded-full">
+                                REWORK
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-[var(--text-secondary)] text-lg mt-1">{project.releaseYear}</p>
                 </header>
                 
                 <div className="flex-grow overflow-y-auto pr-4 -mr-4 space-y-6">
