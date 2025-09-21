@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import HeroSection from '../components/HeroSection';
@@ -7,6 +6,7 @@ import ProjectsSection from '../components/ProjectsSection';
 import ContactSection from '../components/ContactSection';
 import Footer from '../components/Footer';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ProjectModal from '../components/ProjectModal';
 import { getAboutContent, getProjects, getCast, getCrew } from '../services/appwrite';
 import type { AboutContent, Project, CastMember, CrewMember } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
@@ -18,6 +18,7 @@ const HomePage: React.FC = () => {
   const [cast, setCast] = useState<CastMember[]>([]);
   const [crew, setCrew] = useState<CrewMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,6 +41,14 @@ const HomePage: React.FC = () => {
     };
     fetchData();
   }, []);
+  
+  const handleOpenModal = (project: Project) => {
+    setSelectedProject(project);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedProject(null);
+  };
 
   return (
     <div className={`bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300 ${siteTheme}`}>
@@ -50,13 +59,16 @@ const HomePage: React.FC = () => {
       ) : (
         <>
           <Header />
-          <main>
-            <HeroSection />
-            <AboutSection content={aboutContent?.content} />
-            <ProjectsSection projects={projects} cast={cast} crew={crew} />
-            <ContactSection />
-          </main>
-          <Footer />
+          <div className={`transition-all duration-300 ${selectedProject ? 'blur-sm' : ''}`}>
+            <main>
+              <HeroSection />
+              <AboutSection content={aboutContent?.content} />
+              <ProjectsSection projects={projects} cast={cast} crew={crew} onOpenModal={handleOpenModal} />
+              <ContactSection />
+            </main>
+            <Footer />
+          </div>
+          {selectedProject && <ProjectModal project={selectedProject} cast={cast} crew={crew} onClose={handleCloseModal} />}
         </>
       )}
     </div>
