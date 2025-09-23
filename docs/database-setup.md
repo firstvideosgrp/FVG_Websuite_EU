@@ -235,43 +235,288 @@ The media library requires a storage bucket to store uploaded image files.
 
 ## 6. Server-Side Functions for Email (Crucial)
 
-To securely send emails, you must create **two server-side Appwrite Functions**: one for the public contact form and one for sending test emails from the admin panel.
+### 6.1. Overview
 
-### 6.1. Contact Form Function (`sendContactMail`)
+This project uses Appwrite Functions to handle all email-sending operations securely. Exposing SMTP credentials on the client-side (in the React app) would be a major security risk. By moving this logic to the backend, we ensure that sensitive information like your SMTP password is never visible to users.
 
-This function handles submissions from the public "Contact Us" form.
+There are two essential functions:
+1.  **`sendContactMail`**: Handles submissions from the public "Contact Us" form.
+2.  **`sendTestMail`**: Triggered from the admin panel to verify that the configured SMTP settings are working correctly.
 
-1.  Go to the **Functions** section and click **Create function**. Name it `sendContactMail` and choose a runtime (e.g., Node.js).
-2.  Copy the **Function ID** and paste it into `constants.ts` for `CONTACT_FORM_FUNCTION_ID`.
-3.  **Permissions**: In the function's Settings tab, give **role:all** (Any) execute access.
-4.  **Code**: Implement the function logic. It should:
-    -   Receive a payload with `name`, `email`, and `message`.
-    -   Initialize the Appwrite Node SDK and fetch the site settings document.
-    -   Use a library like `nodemailer` to send an email using the fetched SMTP settings (`mailSmtp...`).
-    -   **Crucially, construct the email like this:**
-        -   `To`: The `mailContactRecipient` from your settings.
-        -   `From`: `"Sender Name" <sender@yourdomain.com>`. Use the `name` from the payload as the "Sender Name" and the `mailSenderEmail` from your settings as the email address.
-        -   `Reply-To`: The `email` from the payload. This ensures replies go to the person who filled out the form.
-        -   `Subject`: Something like `New Contact Submission from ${name}`.
-        -   `Body`: The `message` from the payload.
-5.  Deploy the function.
+### 6.2. Prerequisites
 
-### 6.2. Test Email Function (`sendTestMail`)
+Before creating the functions, ensure you have the following:
 
-This function is triggered from the admin panel to verify SMTP settings.
+1.  **Appwrite Project**: Your Appwrite project is fully set up as described in the sections above.
+2.  **Node.js Runtime**: These instructions assume you will use a **Node.js** runtime for your functions (e.g., `Node.js 18.0` or higher).
+3.  **Appwrite API Key**:
+    -   Go to **API Keys** in your Appwrite project dashboard.
+    -   Click **Create API key**.
+    -   Give it a name (e.g., "Email Functions Key").
+    -   Grant it the following scopes:
+        -   `databases.read`
+        -   `documents.read`
+    -   Create the key and **copy the Secret**. You will need this for the function configuration.
 
-1.  Go to the **Functions** section and click **Create function**. Name it `sendTestMail` and choose a runtime.
-2.  Copy the **Function ID** and paste it into `constants.ts` for `TEST_EMAIL_FUNCTION_ID`.
-3.  **Permissions**: In the function's Settings tab, give **role:member** (Users) execute access. Only logged-in admins should be able to trigger this.
-4.  **Code**: Implement the function logic. It should:
-    -   Receive a payload with `recipientEmail`.
-    -   Initialize the Appwrite Node SDK and fetch the site settings document.
-    -   Use a library like `nodemailer` to send a **pre-defined test email** using the fetched SMTP settings.
-    -   `To`: The `recipientEmail` from the payload.
-    -   `From`: The `mailSenderEmail` from your settings.
-    -   `Subject`: "Test Email from FirstVideos Group"
-    -   `Body`: "This is a test email to confirm your SMTP settings are configured correctly."
-5.  Deploy the function.
+### 6.3. Function 1: `sendContactMail` (Public Contact Form)
+
+This function receives data from the public contact form, fetches mail settings from the database, and sends the email.
+
+#### Step 1: Create the Function in Appwrite
+
+1.  Navigate to the **Functions** section in your Appwrite dashboard.
+2.  Click **Create function**.
+3.  Select **Appwrite CLI** if you want to create and deploy from your terminal, or **Manual** to upload a compressed file. We will proceed with the manual method for clarity.
+4.  Name the function `sendContactMail`.
+5.  Choose a Node.js runtime (e.g., `Node.js 18.0`).
+6.  Click **Create**.
+7.  Once created, copy the **Function ID** and paste it into your `src/constants.ts` file for the `CONTACT_FORM_FUNCTION_ID` variable.
+
+#### Step 2: Configure Settings
+
+Go to the **Settings** tab for your new function.
+
+1.  **Permissions**:
+    -   Under **Execute Access**, click **Add Role**.
+    -   Select **Any** (`role:all`). This is crucial, as it allows unauthenticated users from the public website to submit the form.
+
+2.  **Variables (Environment Variables)**:
+    -   This is where you'll securely store the configuration values for the function. Add the following key-value pairs. **Do not hardcode these in your function's code.**
+    -   | Key                             | Value                                                              |
+        | :------------------------------ | :----------------------------------------------------------------- |
+        | `APPWRITE_API_KEY`              | The API key secret you created in the prerequisites.               |
+        | `APPWRITE_ENDPOINT`             | Your project's API Endpoint (e.g., `https://cloud.appwrite.io/v1`). |
+        | `APPWRITE_PROJECT_ID`           | Your Appwrite Project ID.                                          |
+        | `APPWRITE_DATABASE_ID`          | The ID of your database (e.g., `fvgwebdata`).                      |
+        | `SITE_SETTINGS_COLLECTION_ID`   | The Collection ID for your `Settings` collection.                  |
+
+3.  **Timeout**: The default is 15 seconds. If your SMTP provider is slow, you might need to increase this to `30` seconds.
+
+#### Step 3: Prepare the Code
+
+On your local machine, create a new folder named `sendContactMail`. Inside it, create two files: `package.json` and `src/index.js`.
+
+**File: `package.json`**
+This file lists the function's dependencies.
+
+```json
+{
+  "name": "send-contact-mail",
+  "version": "1.0.0",
+  "description": "Appwrite function to send contact form emails for FirstVideos Group.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "node-appwrite": "^12.0.1",
+    "nodemailer": "^6.9.13"
+  }
+}
+```
+
+**File: `src/index.js`**
+This is the main logic for the function.
+
+```javascript
+const { Client, Databases, Query } = require('node-appwrite');
+const nodemailer = require('nodemailer');
+
+module.exports = async (req, res) => {
+  // Initialize Appwrite client from environment variables
+  const client = new Client()
+    .setEndpoint(process.env.APPWRITE_ENDPOINT)
+    .setProject(process.env.APPWRITE_PROJECT_ID)
+    .setKey(process.env.APPWRITE_API_KEY);
+
+  const databases = new Databases(client);
+
+  // Parse payload from the frontend
+  let payload;
+  try {
+    payload = JSON.parse(req.payload);
+  } catch (e) {
+    res.json({ success: false, error: 'Invalid payload.' }, 400);
+    return;
+  }
+  
+  const { name, email, message } = payload;
+  if (!name || !email || !message) {
+    res.json({ success: false, error: 'Missing required fields: name, email, message.' }, 400);
+    return;
+  }
+  
+  try {
+    // 1. Fetch site settings from the database
+    const settingsResponse = await databases.listDocuments(
+      process.env.APPWRITE_DATABASE_ID,
+      process.env.SITE_SETTINGS_COLLECTION_ID,
+      [Query.limit(1)]
+    );
+
+    if (settingsResponse.total === 0) {
+      throw new Error('Site settings not found in the database.');
+    }
+    const settings = settingsResponse.documents[0];
+    
+    // Check if mail is enabled in settings
+    if (!settings.mailEnabled) {
+        throw new Error('Mail sending is currently disabled in site settings.');
+    }
+
+    // 2. Configure Nodemailer transporter with fetched settings
+    const transporter = nodemailer.createTransport({
+      host: settings.mailSmtpHost,
+      port: settings.mailSmtpPort,
+      secure: settings.mailSmtpEncryption === 'ssl', // true for 465, false for other ports
+      auth: {
+        user: settings.mailSmtpUsername,
+        pass: settings.mailSmtpPassword,
+      },
+      requireTLS: settings.mailSmtpEncryption === 'tls',
+    });
+
+    // 3. Send the email
+    await transporter.sendMail({
+      from: `"${name}" <${settings.mailSenderEmail}>`, // "From" uses the sender name from payload and system email
+      to: settings.mailContactRecipient, // Send to the admin
+      replyTo: email, // Reply-To is set to the user's email
+      subject: `New Contact Form Submission from ${name}`,
+      text: message,
+      html: `<p>You have a new contact form submission from:</p>
+             <p><b>Name:</b> ${name}</p>
+             <p><b>Email:</b> ${email}</p>
+             <hr>
+             <p><b>Message:</b></p>
+             <p>${message.replace(/\n/g, '<br>')}</p>`,
+    });
+
+    res.json({ success: true, message: 'Email sent successfully.' });
+  } catch (error) {
+    console.error('Failed to send email:', error.message);
+    res.json({ success: false, error: error.message }, 500);
+  }
+};
+```
+
+#### Step 4: Deploy the Function
+
+1.  In your terminal, navigate inside the `sendContactMail` folder.
+2.  Install the dependencies locally: `npm install`. This creates the `node_modules` folder.
+3.  Compress the folder's contents (`src` folder, `package.json`, `package-lock.json`, `node_modules`) into a `.tar.gz` file.
+    -   On macOS/Linux: `tar -czf code.tar.gz .`
+    -   On Windows, use a tool like 7-Zip.
+4.  Go to your function's **Deployments** tab in the Appwrite dashboard.
+5.  Click **Create deployment**.
+6.  Under **Upload a compressed file**, upload the `code.tar.gz` file you just created. For the **Entrypoint command**, use `node src/index.js`.
+7.  Click **Create**. After a moment, your deployment will become the active one.
+
+### 6.4. Function 2: `sendTestMail` (Admin Panel Test)
+
+This function is similar but is triggered by a logged-in admin to test the SMTP configuration.
+
+#### Step 1: Create and Configure
+
+Follow the same steps as for `sendContactMail`, but with these differences:
+
+1.  **Name**: `sendTestMail`
+2.  **Function ID**: Paste the new ID into `src/constants.ts` for `TEST_EMAIL_FUNCTION_ID`.
+3.  **Permissions**: Under **Execute Access**, add the role **Users** (`role:member`). This ensures only logged-in admin users can trigger it.
+4.  **Variables**: Use the exact same environment variables as the `sendContactMail` function.
+
+#### Step 2: Prepare and Deploy Code
+
+Create a new folder `sendTestMail` and add the following files. The `package.json` can be identical to the one for `sendContactMail`.
+
+**File: `src/index.js`**
+
+```javascript
+const { Client, Databases, Query } = require('node-appwrite');
+const nodemailer = require('nodemailer');
+
+module.exports = async (req, res) => {
+  // Initialize Appwrite client
+  const client = new Client()
+    .setEndpoint(process.env.APPWRITE_ENDPOINT)
+    .setProject(process.env.APPWRITE_PROJECT_ID)
+    .setKey(process.env.APPWRITE_API_KEY);
+
+  const databases = new Databases(client);
+
+  // Parse payload
+  let payload;
+  try {
+    payload = JSON.parse(req.payload);
+  } catch (e) {
+    res.json({ success: false, error: 'Invalid payload.' }, 400);
+    return;
+  }
+  
+  const { recipientEmail } = payload;
+  if (!recipientEmail) {
+    res.json({ success: false, error: 'Missing required field: recipientEmail.' }, 400);
+    return;
+  }
+  
+  try {
+    // 1. Fetch site settings
+    const settingsResponse = await databases.listDocuments(
+      process.env.APPWRITE_DATABASE_ID,
+      process.env.SITE_SETTINGS_COLLECTION_ID,
+      [Query.limit(1)]
+    );
+
+    if (settingsResponse.total === 0) {
+      throw new Error('Site settings not found.');
+    }
+    const settings = settingsResponse.documents[0];
+    
+    // 2. Configure Nodemailer
+    const transporter = nodemailer.createTransport({
+      host: settings.mailSmtpHost,
+      port: settings.mailSmtpPort,
+      secure: settings.mailSmtpEncryption === 'ssl',
+      auth: {
+        user: settings.mailSmtpUsername,
+        pass: settings.mailSmtpPassword,
+      },
+      requireTLS: settings.mailSmtpEncryption === 'tls',
+    });
+
+    // 3. Send the test email
+    await transporter.sendMail({
+      from: `"FirstVideos Group" <${settings.mailSenderEmail}>`,
+      to: recipientEmail,
+      subject: 'SMTP Configuration Test | FirstVideos Group',
+      text: 'This is a test email to confirm your SMTP settings are configured correctly.',
+      html: `<p>This is a test email to confirm your SMTP settings are configured correctly.</p>`,
+    });
+
+    res.json({ success: true, message: `Test email sent to ${recipientEmail}.` });
+  } catch (error) {
+    console.error('Failed to send test email:', error.message);
+    res.json({ success: false, error: error.message }, 500);
+  }
+};
+```
+
+**Deploy** this function using the same compression and upload process as before.
+
+### 6.5. Troubleshooting Common Issues
+
+-   **Function Execution Fails / "Internal Server Error"**:
+    -   Go to the function's **Logs** tab in the Appwrite dashboard. This is the most important place to find errors. The logs will show `console.error` messages and any exceptions that occurred.
+-   **Permission Denied Errors**:
+    -   **For API Key**: Ensure the API key has `databases.read` and `documents.read` scopes.
+    -   **For `sendContactMail`**: Ensure execute permission is set to `role:all` (Any).
+    -   **For `sendTestMail`**: Ensure execute permission is set to `role:member` (Users).
+-   **Emails Not Being Sent (but function execution succeeds)**:
+    -   The issue is likely with your SMTP provider or credentials.
+    -   Double-check all `mailSmtp...` values in your Site Settings via the admin panel.
+    -   Check the function logs for any specific error messages from Nodemailer (e.g., "Invalid credentials", "Connection timed out").
+    -   Make sure your SMTP provider doesn't have firewall rules blocking connections from Appwrite's servers.
+-   **"Environment variable not found"**:
+    -   Go to the function's **Settings -> Variables** tab and ensure all required variables (`APPWRITE_API_KEY`, etc.) are present and spelled correctly. Remember to redeploy after changing variables to ensure they are applied.
 
 ## 7. Initial Data Entry (Crucial Step)
 
