@@ -20,6 +20,8 @@ const statusColors: Record<ProjectStatus, string> = {
     'Upcoming': 'bg-blue-500/20 text-blue-300',
 };
 
+const GENRE_OPTIONS = ['Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Family', 'Fantasy', 'History', 'Horror', 'Music', 'Mystery', 'Romance', 'Science Fiction', 'Thriller', 'TV Movie', 'War', 'Western'];
+
 const getFileIdFromUrl = (url: string): string | null => {
     if (!url) return null;
     const match = url.match(/\/files\/([a-zA-Z0-9_.-]+)\/view/);
@@ -70,6 +72,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         mainSubtitleLanguage: '',
         directors: [] as string[],
         producers: [] as string[],
+        rating: '',
+        genres: [] as string[],
     });
 
     useEffect(() => {
@@ -228,6 +232,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             mainSubtitleLanguage: project.mainSubtitleLanguage || '',
             directors: project.directors || [],
             producers: project.producers || [],
+            rating: project.rating || '',
+            genres: project.genres || [],
         });
     };
     
@@ -249,6 +255,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             mainSubtitleLanguage: '',
             directors: [],
             producers: [],
+            rating: '',
+            genres: [],
         });
     };
 
@@ -507,7 +515,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                         <div>
                                             <label htmlFor="language" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Language</label>
                                             <input type="text" name="language" value={projectForm.language} onChange={handleProjectFormChange} placeholder="e.g., English" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2 text-[var(--text-primary)]" />
@@ -515,6 +523,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                         <div>
                                             <label htmlFor="runtime" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Runtime (minutes)</label>
                                             <input type="number" name="runtime" value={projectForm.runtime} onChange={handleProjectFormChange} placeholder="e.g., 120" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2 text-[var(--text-primary)]" />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="rating" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Rating</label>
+                                            <input type="text" name="rating" value={projectForm.rating} onChange={handleProjectFormChange} placeholder="e.g., PG-13" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2 text-[var(--text-primary)]" />
                                         </div>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 p-2 bg-[var(--bg-secondary)] rounded-md">
@@ -546,6 +558,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                                 {allCrew.map(member => <option key={member.$id} value={member.$id}>{member.name} ({member.role})</option>)}
                                             </select>
                                         </div>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="genres" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Genre(s)</label>
+                                        <select multiple id="genres" name="genres" value={projectForm.genres} onChange={handleProjectFormChange} className="w-full h-32 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2 text-[var(--text-primary)]">
+                                            {GENRE_OPTIONS.map(genre => <option key={genre} value={genre}>{genre}</option>)}
+                                        </select>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>

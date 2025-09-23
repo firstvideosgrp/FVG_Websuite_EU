@@ -136,7 +136,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClos
                                 <h3 className="text-xl font-bold border-b border-[var(--border-color)] pb-2 mb-3">Synopsis</h3>
                                 <p className="text-[var(--text-secondary)] leading-relaxed">{project.synopsis || project.description}</p>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 pt-4">
                                 <DetailItem icon="fas fa-clock" label="Runtime" value={project.runtime ? `${project.runtime} min` : null} />
                                 <DetailItem icon="fas fa-language" label="Language" value={project.language} />
                                 <DetailItem 
@@ -144,6 +144,23 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClos
                                     label="Subtitles" 
                                     value={project.hasSubtitles ? (project.mainSubtitleLanguage || 'Available') : 'Not Available'} 
                                 />
+                                <DetailItem icon="fas fa-star" label="Rating" value={project.rating} />
+
+                                {project.genres && project.genres.length > 0 && (
+                                    <div className="flex items-start space-x-2 sm:col-span-2">
+                                        <i className="fas fa-tag text-[var(--primary-color)] w-5 text-center mt-1"></i>
+                                        <div>
+                                            <span className="font-semibold">Genres:</span>
+                                            <div className="mt-1 flex flex-wrap gap-2">
+                                                {project.genres.map(genre => (
+                                                    <span key={genre} className="bg-[var(--primary-color)]/20 text-[var(--primary-color)] text-xs font-bold px-2 py-1 rounded-full">
+                                                        {genre}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

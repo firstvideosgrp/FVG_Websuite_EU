@@ -61,7 +61,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onOpenModal }) => {
             <i className="far fa-calendar-alt mr-2"></i>
             {project.releaseYear}
         </span>
-        <p className="text-[var(--text-secondary)] text-sm mt-3 leading-relaxed h-24 overflow-hidden">
+        {project.genres && project.genres.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+                {project.genres.slice(0, 3).map(genre => (
+                    <span key={genre} className="bg-[var(--primary-color)]/20 text-[var(--primary-color)] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {genre}
+                    </span>
+                ))}
+            </div>
+        )}
+        <p className="text-[var(--text-secondary)] text-sm mt-3 leading-relaxed h-20 overflow-hidden">
             {project.description}
         </p>
       </div>

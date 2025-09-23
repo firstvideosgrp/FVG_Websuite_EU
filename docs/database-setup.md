@@ -94,6 +94,8 @@ Create the following attributes for the `Projects` collection:
 | `mainSubtitleLanguage`| String | 255 | No       | No    | Main language of the subtitles.                     |
 | `directors`          | String  | -    | No       | Yes   | Array of Crew document IDs for directors.           |
 | `producers`          | String  | -    | No       | Yes   | Array of Crew document IDs for producers.           |
+| `rating`             | String  | 50   | No       | No    | e.g., "PG-13", "7.8/10".                            |
+| `genres`             | String  | 50   | No       | Yes   | Array of genres, e.g., ["Action", "Sci-Fi"].        |
 
 #### Settings (Permissions)
 

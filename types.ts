@@ -36,6 +36,8 @@ export type Project = Models.Document & {
   mainSubtitleLanguage?: string;
   directors?: string[]; // Array of CrewMember document IDs
   producers?: string[]; // Array of CrewMember document IDs
+  rating?: string;
+  genres?: string[];
 };
 
 export type AboutContent = Models.Document & {
