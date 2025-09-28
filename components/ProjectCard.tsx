@@ -26,11 +26,18 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onOpenModal }) => {
       
       {/* Image Section: contains poster and status tags */}
       <div className="relative aspect-[2/3]">
-        <img 
-          src={project.posterUrl || 'https://picsum.photos/400/600'} 
-          alt={project.title} 
-          className="w-full h-full object-cover"
-        />
+        {project.posterUrl ? (
+          <img 
+            src={project.posterUrl} 
+            alt={project.title} 
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-[var(--bg-secondary)] flex flex-col items-center justify-center text-center p-4 text-[var(--text-secondary)]">
+            <i className="fas fa-camera-slash text-4xl mb-2"></i>
+            <span className="text-xs">No poster available</span>
+          </div>
+        )}
         
         {/* Top-right status tags remain overlaid on the image */}
         <div className="absolute top-3 right-3 flex flex-col items-end gap-2 z-10">

@@ -115,9 +115,9 @@ const ProductionPhasesPanel: React.FC<ProductionPhasesPanelProps> = ({ projects 
 
     const handlePhaseDelete = async (phaseId: string) => {
         if (window.confirm('Are you sure you want to delete this entire phase and all its steps?')) {
+            // In a real app, you'd delete all child steps first in a transaction or loop.
+            // For simplicity, we assume the backend handles this or we accept orphaned steps.
             try {
-                // In a real app, you'd delete all child steps first in a transaction or loop.
-                // For simplicity, we assume the backend handles this or we accept orphaned steps.
                 await deleteProductionPhase(phaseId);
                 alert('Phase deleted.');
                 fetchPhasesAndSteps();
@@ -215,46 +215,66 @@ const ProductionPhasesPanel: React.FC<ProductionPhasesPanelProps> = ({ projects 
 
             {isLoading ? <div className="flex justify-center py-8"><LoadingSpinner /></div> : (
                 <div className="space-y-4">
-                    {phases.length > 0 ? phases.map(phase => (
-                        <div key={phase.$id} className="bg-[var(--bg-secondary)] p-4 rounded-lg border border-[var(--border-color)]">
-                            <div className="flex justify-between items-center mb-3">
-                                <div>
-                                    <h4 className="font-bold text-lg flex items-center gap-2">{phase.phaseName} <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[phase.status]}`}>{phase.status}</span></h4>
-                                    <p className="text-sm text-[var(--text-secondary)] mt-1">{phase.startDate && `Starts: ${new Date(phase.startDate).toLocaleDateString()}`}{phase.startDate && phase.endDate && ' - '}{phase.endDate && `Ends: ${new Date(phase.endDate).toLocaleDateString()}`}</p>
+                    {phases.length > 0 ? phases.map(phase => {
+                        const totalSteps = phase.steps?.length || 0;
+                        const completedSteps = phase.steps?.filter(step => step.status === 'Completed').length || 0;
+                        const progress = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+                        return (
+                            <div key={phase.$id} className="bg-[var(--bg-secondary)] p-4 rounded-lg border border-[var(--border-color)]">
+                                <div className="flex justify-between items-center mb-3">
+                                    <div>
+                                        <h4 className="font-bold text-lg flex items-center gap-2">{phase.phaseName} <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[phase.status]}`}>{phase.status}</span></h4>
+                                        <p className="text-sm text-[var(--text-secondary)] mt-1">{phase.startDate && `Starts: ${new Date(phase.startDate).toLocaleDateString()}`}{phase.startDate && phase.endDate && ' - '}{phase.endDate && `Ends: ${new Date(phase.endDate).toLocaleDateString()}`}</p>
+                                    </div>
+                                    <div className="flex space-x-2"><button onClick={() => openPhaseModal(phase)} className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded text-sm"><i className="fas fa-pencil-alt"></i></button><button onClick={() => handlePhaseDelete(phase.$id)} className="bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-sm"><i className="fas fa-trash"></i></button></div>
                                 </div>
-                                <div className="flex space-x-2"><button onClick={() => openPhaseModal(phase)} className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded text-sm"><i className="fas fa-pencil-alt"></i></button><button onClick={() => handlePhaseDelete(phase.$id)} className="bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-sm"><i className="fas fa-trash"></i></button></div>
-                            </div>
-                            
-                            {/* Steps Section */}
-                            <div className="pl-4 border-l-2 border-[var(--border-color)] ml-2">
-                                <div className="flex justify-between items-center mb-2">
-                                    <h5 className="text-md font-semibold text-[var(--text-secondary)]">Steps</h5>
-                                    <button onClick={() => openStepModal(null, phase)} className="bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 font-bold py-1 px-3 rounded-md text-xs flex items-center space-x-1.5"><i className="fas fa-plus"></i><span>Add Step</span></button>
-                                </div>
-                                {phase.steps && phase.steps.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {phase.steps.map((step, index) => (
-                                            <div key={step.$id} className="bg-[var(--bg-primary)] p-3 rounded-md flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <i className={`${statusIcon[step.status]} text-lg`}></i>
-                                                    <div>
-                                                        <p className="font-semibold">{step.stepName}</p>
-                                                        {step.description && <p className="text-xs text-[var(--text-secondary)]">{step.description}</p>}
+                                
+                                {totalSteps > 0 && (
+                                    <div className="mb-4">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="text-xs font-semibold text-[var(--text-secondary)]">Progress</span>
+                                            <span className="text-xs font-semibold text-[var(--primary-color)]">{progress}%</span>
+                                        </div>
+                                        <div className="w-full bg-[var(--bg-primary)] rounded-full h-2.5">
+                                            <div 
+                                                className="bg-[var(--primary-color)] h-2.5 rounded-full transition-all duration-500" 
+                                                style={{ width: `${progress}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Steps Section */}
+                                <div className="pl-4 border-l-2 border-[var(--border-color)] ml-2">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <h5 className="text-md font-semibold text-[var(--text-secondary)]">Steps</h5>
+                                        <button onClick={() => openStepModal(null, phase)} className="bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 font-bold py-1 px-3 rounded-md text-xs flex items-center space-x-1.5"><i className="fas fa-plus"></i><span>Add Step</span></button>
+                                    </div>
+                                    {phase.steps && phase.steps.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {phase.steps.map((step, index) => (
+                                                <div key={step.$id} className="bg-[var(--bg-primary)] p-3 rounded-md flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <i className={`${statusIcon[step.status]} text-lg`}></i>
+                                                        <div>
+                                                            <p className="font-semibold">{step.stepName}</p>
+                                                            {step.description && <p className="text-xs text-[var(--text-secondary)]">{step.description}</p>}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center space-x-1">
+                                                        <button onClick={() => handleMoveStep(phase, index, 'up')} disabled={index === 0} className="text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed w-7 h-7 rounded-md hover:bg-white/10"><i className="fas fa-arrow-up"></i></button>
+                                                        <button onClick={() => handleMoveStep(phase, index, 'down')} disabled={index === phase.steps!.length - 1} className="text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed w-7 h-7 rounded-md hover:bg-white/10"><i className="fas fa-arrow-down"></i></button>
+                                                        <button onClick={() => openStepModal(step, phase)} className="text-blue-400 hover:text-blue-300 w-7 h-7 rounded-md hover:bg-white/10"><i className="fas fa-pencil-alt"></i></button>
+                                                        <button onClick={() => handleStepDelete(step.$id)} className="text-red-400 hover:text-red-300 w-7 h-7 rounded-md hover:bg-white/10"><i className="fas fa-trash"></i></button>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center space-x-1">
-                                                    <button onClick={() => handleMoveStep(phase, index, 'up')} disabled={index === 0} className="text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed w-7 h-7 rounded-md hover:bg-white/10"><i className="fas fa-arrow-up"></i></button>
-                                                    <button onClick={() => handleMoveStep(phase, index, 'down')} disabled={index === phase.steps!.length - 1} className="text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed w-7 h-7 rounded-md hover:bg-white/10"><i className="fas fa-arrow-down"></i></button>
-                                                    <button onClick={() => openStepModal(step, phase)} className="text-blue-400 hover:text-blue-300 w-7 h-7 rounded-md hover:bg-white/10"><i className="fas fa-pencil-alt"></i></button>
-                                                    <button onClick={() => handleStepDelete(step.$id)} className="text-red-400 hover:text-red-300 w-7 h-7 rounded-md hover:bg-white/10"><i className="fas fa-trash"></i></button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : <p className="text-sm text-center text-[var(--text-secondary)] py-2">No steps yet. Add one!</p>}
+                                            ))}
+                                        </div>
+                                    ) : <p className="text-sm text-center text-[var(--text-secondary)] py-2">No steps yet. Add one!</p>}
+                                </div>
                             </div>
-                        </div>
-                    )) : <p className="text-center text-[var(--text-secondary)] py-6">No production phases found for this project.</p>}
+                        )
+                    }) : <p className="text-center text-[var(--text-secondary)] py-6">No production phases found for this project.</p>}
                 </div>
             )}
 
