@@ -139,7 +139,8 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
         try {
             const { socialLinks, footerLinks, ...rest } = formState;
 
-            const settingsToSave: Partial<Omit<SiteSettings, keyof import('appwrite').Models.Document>> = {
+            // FIX: Typed as 'any' to easily allow conditional property deletion without TypeScript errors.
+            const settingsToSave: any = {
                 ...rest,
                 socialLinks: JSON.stringify(socialLinks.map(({ id, ...rest }) => rest)),
                 footerLinks: JSON.stringify(footerLinks.map(({ id, ...rest }) => rest)),
@@ -150,10 +151,10 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
                  delete settingsToSave.mailSmtpPassword;
             }
             
-            // FIX: If heroBackgroundImageUrl is an empty string, convert it to null before sending to Appwrite.
+            // If heroBackgroundImageUrl is an empty string, convert it to null before sending to Appwrite.
             // Appwrite's URL attribute type does not accept empty strings, but it accepts null for optional fields.
             if (settingsToSave.heroBackgroundImageUrl === '') {
-                (settingsToSave as any).heroBackgroundImageUrl = null;
+                settingsToSave.heroBackgroundImageUrl = null;
             }
 
             await updateSettings(settingsToSave);

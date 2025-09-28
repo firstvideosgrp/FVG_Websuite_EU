@@ -1,7 +1,7 @@
 // FIX: Imported the `Models` namespace to resolve reference errors below.
 import { Client, Account, Databases, ID, Query, Models, Storage, Functions } from 'appwrite';
-import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID } from '../constants';
-import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember } from '../types';
+import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID } from '../constants';
+import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep } from '../types';
 
 const client = new Client();
 
@@ -104,6 +104,75 @@ export const updateCrewMember = (documentId: string, data: Partial<Omit<CrewMemb
 
 export const deleteCrewMember = (documentId: string) => {
     return databases.deleteDocument(APPWRITE_DATABASE_ID, CREW_COLLECTION_ID, documentId);
+};
+
+// Production Phases
+export const getProductionPhasesForProject = async (projectId: string): Promise<ProductionPhase[]> => {
+    try {
+        const response = await databases.listDocuments<ProductionPhase>(
+            APPWRITE_DATABASE_ID,
+            PRODUCTION_PHASES_COLLECTION_ID,
+            [
+                Query.equal('projectId', projectId),
+                Query.orderAsc('$createdAt')
+            ]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to fetch production phases:", error);
+        return [];
+    }
+};
+
+export const createProductionPhase = (data: Omit<ProductionPhase, keyof Models.Document>) => {
+    // FIX: Corrected typo in variable name from PRODUCTION_PHASES_COLlection_ID to PRODUCTION_PHASES_COLLECTION_ID.
+    return databases.createDocument(APPWRITE_DATABASE_ID, PRODUCTION_PHASES_COLLECTION_ID, ID.unique(), data);
+};
+
+export const updateProductionPhase = (documentId: string, data: Partial<Omit<ProductionPhase, keyof Models.Document>>) => {
+    return databases.updateDocument(APPWRITE_DATABASE_ID, PRODUCTION_PHASES_COLLECTION_ID, documentId, data);
+};
+
+export const deleteProductionPhase = (documentId: string) => {
+    return databases.deleteDocument(APPWRITE_DATABASE_ID, PRODUCTION_PHASES_COLLECTION_ID, documentId);
+};
+
+// Production Phase Steps
+export const getPhaseStepsForPhase = async (phaseId: string): Promise<ProductionPhaseStep[]> => {
+    try {
+        const response = await databases.listDocuments<ProductionPhaseStep>(
+            APPWRITE_DATABASE_ID,
+            PHASE_STEPS_COLLECTION_ID,
+            [
+                Query.equal('phaseId', phaseId),
+                Query.orderAsc('order')
+            ]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to fetch phase steps:", error);
+        return [];
+    }
+};
+
+export const createPhaseStep = (data: Omit<ProductionPhaseStep, keyof Models.Document>) => {
+    return databases.createDocument(APPWRITE_DATABASE_ID, PHASE_STEPS_COLLECTION_ID, ID.unique(), data);
+};
+
+export const updatePhaseStep = (documentId: string, data: Partial<Omit<ProductionPhaseStep, keyof Models.Document>>) => {
+    return databases.updateDocument(APPWRITE_DATABASE_ID, PHASE_STEPS_COLLECTION_ID, documentId, data);
+};
+
+export const deletePhaseStep = (documentId: string) => {
+    return databases.deleteDocument(APPWRITE_DATABASE_ID, PHASE_STEPS_COLLECTION_ID, documentId);
+};
+
+// Batch update for reordering
+export const updateStepOrder = (steps: { $id: string; order: number }[]) => {
+    const promises = steps.map(step =>
+        databases.updateDocument(APPWRITE_DATABASE_ID, PHASE_STEPS_COLLECTION_ID, step.$id, { order: step.order })
+    );
+    return Promise.all(promises);
 };
 
 // Site Settings

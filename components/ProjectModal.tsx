@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import type { Project, CastMember, CrewMember } from '../types';
+import type { Project, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep } from '../types';
+import { getProductionPhasesForProject, getPhaseStepsForPhase } from '../services/appwrite';
+import LoadingSpinner from './LoadingSpinner';
 
 interface ProjectModalProps {
     project: Project;
@@ -7,6 +9,12 @@ interface ProjectModalProps {
     crew: CrewMember[];
     onClose: () => void;
 }
+
+const statusIcon: Record<ProductionPhase['status'], string> = {
+    'Pending': 'fas fa-circle-notch text-gray-500',
+    'In Progress': 'fas fa-spinner fa-spin text-blue-500',
+    'Completed': 'fas fa-check-circle text-green-500',
+};
 
 const DetailItem: React.FC<{ icon: string; label: string; value?: string | number | null; }> = ({ icon, label, value }) => {
     if (!value) return null;
@@ -37,6 +45,8 @@ const MemberList: React.FC<{ title: string; members: (CastMember | CrewMember)[]
 
 const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClose }) => {
     const [isPosterEnlarged, setIsPosterEnlarged] = useState(false);
+    const [phases, setPhases] = useState<ProductionPhase[]>([]);
+    const [isLoadingPhases, setIsLoadingPhases] = useState(true);
 
     useEffect(() => {
         const handleEsc = (event: KeyboardEvent) => {
@@ -51,11 +61,31 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClos
         window.addEventListener('keydown', handleEsc);
         document.body.style.overflow = 'hidden';
 
+        const fetchProductionData = async () => {
+            setIsLoadingPhases(true);
+            try {
+                const fetchedPhases = await getProductionPhasesForProject(project.$id);
+                const phasesWithSteps = await Promise.all(
+                    fetchedPhases.map(async (phase) => {
+                        const steps = await getPhaseStepsForPhase(phase.$id);
+                        return { ...phase, steps };
+                    })
+                );
+                setPhases(phasesWithSteps);
+            } catch (error) {
+                console.error("Failed to fetch production phases for modal", error);
+            } finally {
+                setIsLoadingPhases(false);
+            }
+        };
+        
+        fetchProductionData();
+
         return () => {
             window.removeEventListener('keydown', handleEsc);
             document.body.style.overflow = 'auto';
         };
-    }, [onClose, isPosterEnlarged]);
+    }, [onClose, isPosterEnlarged, project.$id]);
 
     const projectCast = useMemo(() => {
         if (!project.cast) return [];
@@ -176,6 +206,45 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClos
                             </div>
                         </div>
                     </div>
+                    
+                    {/* Production Progress Section */}
+                    {(project.status === 'In Production' || project.status === 'Upcoming' || phases.length > 0) && (
+                        <div className="pt-4 border-t border-[var(--border-color)]">
+                            <h3 className="text-xl font-bold mb-4">Production Progress</h3>
+                             {isLoadingPhases ? (
+                                <div className="flex justify-center py-4"><LoadingSpinner/></div>
+                             ) : phases.length > 0 ? (
+                                <div className="space-y-4">
+                                    {phases.map(phase => (
+                                        <div key={phase.$id}>
+                                            <h4 className="text-lg font-bold text-[var(--primary-color)] mb-2 flex items-center gap-2">
+                                                <i className={`${statusIcon[phase.status]}`}></i>
+                                                {phase.phaseName}
+                                            </h4>
+                                            {phase.steps && phase.steps.length > 0 ? (
+                                                <ul className="ml-5 border-l-2 border-[var(--primary-color)]/30 pl-6 space-y-2 py-2">
+                                                    {phase.steps.map(step => (
+                                                        <li key={step.$id} className="flex items-start gap-3">
+                                                            <i className={`${statusIcon[step.status]} mt-1`}></i>
+                                                            <div>
+                                                                <p className="font-semibold text-[var(--text-primary)]">{step.stepName}</p>
+                                                                {step.description && <p className="text-sm text-[var(--text-secondary)]">{step.description}</p>}
+                                                            </div>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            ) : (
+                                                <p className="text-sm text-[var(--text-secondary)] ml-7 pl-6">No steps defined for this phase yet.</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                             ) : (
+                                <p className="text-[var(--text-secondary)]">Production phases have not been detailed for this project yet.</p>
+                             )}
+                        </div>
+                    )}
+
                 </div>
             </div>
 

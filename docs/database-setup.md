@@ -11,7 +11,7 @@ Once you have your project, you will need its **Project ID** and the **API Endpo
 
 ## 2. Update `constants.ts`
 
-Before proceeding, open the `constants.ts` file in the source code. You will need to replace the placeholder values with the actual IDs you create in the following steps.
+Before proceeding, open the `src/constants.ts` file in the source code. You will need to replace the placeholder values with the actual IDs you create in the following steps.
 
 ```typescript
 // src/constants.ts
@@ -25,6 +25,8 @@ export const SITE_SETTINGS_COLLECTION_ID = "YOUR_SETTINGS_COLLECTION_ID";
 export const MEDIA_METADATA_COLLECTION_ID = "YOUR_MEDIA_METADATA_COLLECTION_ID";
 export const CAST_COLLECTION_ID = "YOUR_CAST_COLLECTION_ID";
 export const CREW_COLLECTION_ID = "YOUR_CREW_COLLECTION_ID";
+export const PRODUCTION_PHASES_COLLECTION_ID = "YOUR_PHASES_COLLECTION_ID";
+export const PHASE_STEPS_COLLECTION_ID = "YOUR_PHASE_STEPS_COLLECTION_ID";
 export const APPWRITE_STORAGE_BUCKET_ID = "YOUR_STORAGE_BUCKET_ID";
 export const CONTACT_FORM_FUNCTION_ID = "YOUR_CONTACT_FUNCTION_ID"; // e.g., 'sendContactMail'
 export const TEST_EMAIL_FUNCTION_ID = "YOUR_TEST_FUNCTION_ID"; // e.g., 'sendTestMail'
@@ -39,7 +41,7 @@ export const TEST_EMAIL_FUNCTION_ID = "YOUR_TEST_FUNCTION_ID"; // e.g., 'sendTes
 
 ## 4. Collection Setup
 
-We need six collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", and "Crew".
+We need eight collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", and "PhaseSteps".
 
 ### 4.1. About Collection
 
@@ -217,6 +219,74 @@ This collection stores a global list of all crew members.
 -   **Permissions**:
     -   Select **Read Access** and choose **role:all** (Any).
     -   Select **Write Access** and choose **role:member** (Users).
+
+### 4.7. Production Phases Collection
+
+This collection stores the production phases for each project.
+
+-   **Name**: `ProductionPhases`
+-   **Collection ID**: Copy the generated ID and paste it into `constants.ts` for `PRODUCTION_PHASES_COLLECTION_ID`.
+
+#### Attributes
+
+| Key         | Type     | Size | Required | Array | Notes                                        |
+| :---------- | :------- | :--- | :------- | :---- | :------------------------------------------- |
+| `projectId` | String   | 255  | Yes      | No    | ID of the linked project.                    |
+| `phaseName` | String   | 255  | Yes      | No    | e.g., "Pre-Production", "Filming".           |
+| `status`    | String   | 50   | Yes      | No    | "Pending", "In Progress", or "Completed".    |
+| `startDate` | Datetime | -    | No       | No    | The start date of the phase.                 |
+| `endDate`   | Datetime | -    | No       | No    | The end date of the phase.                   |
+
+#### Settings (Permissions)
+
+-   **Permissions**:
+    -   Select **Read Access** and choose **role:all** (Any).
+    -   Select **Write Access** and choose **role:member** (Users).
+
+#### Indexes
+
+Create an index to improve performance when querying phases by project.
+
+1.  Go to the **Indexes** tab for the `ProductionPhases` collection.
+2.  Click **Create index**.
+3.  **Key**: `projectId_index`
+4.  **Type**: `key`
+5.  **Attributes**: Select `projectId`.
+6.  Click **Create**.
+
+### 4.8. Phase Steps Collection
+
+This collection stores the individual steps within a production phase.
+
+-   **Name**: `PhaseSteps`
+-   **Collection ID**: Copy the generated ID and paste it into `constants.ts` for `PHASE_STEPS_COLLECTION_ID`.
+
+#### Attributes
+
+| Key         | Type    | Size | Required | Array | Notes                                        |
+| :---------- | :------ | :--- | :------- | :---- | :------------------------------------------- |
+| `phaseId`   | String  | 255  | Yes      | No    | ID of the linked production phase.           |
+| `stepName`  | String  | 255  | Yes      | No    | e.g., "Scriptwriting".                       |
+| `description`| String | 1000 | No       | No    | A brief description of the step.             |
+| `status`    | String  | 50   | Yes      | No    | "Pending", "In Progress", or "Completed".    |
+| `order`     | Integer | -    | Yes      | No    | The display order of the step within a phase.|
+
+#### Settings (Permissions)
+
+-   **Permissions**:
+    -   Select **Read Access** and choose **role:all** (Any).
+    -   Select **Write Access** and choose **role:member** (Users).
+
+#### Indexes
+
+Create an index to improve performance when querying steps by phase.
+
+1.  Go to the **Indexes** tab for the `PhaseSteps` collection.
+2.  Click **Create index**.
+3.  **Key**: `phaseId_index`
+4.  **Type**: `key`
+5.  **Attributes**: Select `phaseId`.
+6.  Click **Create**.
 
 
 ## 5. Storage (Media Bucket) Setup

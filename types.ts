@@ -95,3 +95,24 @@ export type MediaMetadata = Models.Document & {
 export type MediaFile = Models.File & {
   category: MediaCategory;
 };
+
+// New types for Production Phases
+export type ProductionPhaseStatus = 'Pending' | 'In Progress' | 'Completed';
+
+export type ProductionPhase = Models.Document & {
+  projectId: string;
+  phaseName: string;
+  status: ProductionPhaseStatus;
+  startDate?: string; // ISO date string
+  endDate?: string; // ISO date string
+  steps?: ProductionPhaseStep[]; // For frontend convenience
+};
+
+// New type for Phase Steps
+export type ProductionPhaseStep = Models.Document & {
+  phaseId: string;
+  stepName: string;
+  description?: string;
+  status: ProductionPhaseStatus;
+  order: number;
+};

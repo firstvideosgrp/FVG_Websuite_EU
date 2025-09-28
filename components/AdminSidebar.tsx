@@ -23,6 +23,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ user, onLogout, activeView,
     const navItems = [
         { id: 'about', label: 'About Section', icon: 'fas fa-info-circle' },
         { id: 'projects', label: 'Projects', icon: 'fas fa-film' },
+        { id: 'phases', label: 'Production Phases', icon: 'fas fa-tasks' },
         { id: 'cast', label: 'Cast Members', icon: 'fas fa-user-friends' },
         { id: 'crew', label: 'Crew Members', icon: 'fas fa-users-cog' },
         { id: 'media', label: 'Media Library', icon: 'fas fa-photo-video' },
