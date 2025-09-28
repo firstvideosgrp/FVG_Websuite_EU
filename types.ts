@@ -21,7 +21,7 @@ export type CrewMember = Models.Document & {
 export type Project = Models.Document & {
   title: string;
   description: string;
-  posterUrl: string;
+  posterUrl?: string;
   releaseYear: number;
   projectType: ProjectType;
   status: ProjectStatus;

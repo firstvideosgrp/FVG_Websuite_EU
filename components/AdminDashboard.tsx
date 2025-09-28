@@ -181,6 +181,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         try {
             const dataToSubmit = {
                 ...projectForm,
+                posterUrl: projectForm.posterUrl || null,
                 dueDate: ['Upcoming', 'In Production'].includes(projectForm.status) ? projectForm.dueDate : null,
                 releaseYear: Number(projectForm.releaseYear),
                 runtime: projectForm.runtime ? Number(projectForm.runtime) : null,
@@ -220,7 +221,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         setProjectForm({
             title: project.title,
             description: project.description,
-            posterUrl: project.posterUrl,
+            posterUrl: project.posterUrl || '',
             synopsis: project.synopsis || '',
             releaseYear: project.releaseYear.toString(),
             projectType: project.projectType || 'Movie',
@@ -429,7 +430,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                     {projects.length > 0 ? projects.map(project => (
                                         <div key={project.$id} className="bg-[var(--bg-secondary)] p-4 rounded-md flex justify-between items-center border border-[var(--border-color)]">
                                             <div className="flex items-center gap-4">
-                                                <img src={project.posterUrl} alt={project.title} className="w-16 h-10 object-cover rounded-md hidden sm:block" />
+                                                {project.posterUrl ? (
+                                                    <img src={project.posterUrl} alt={project.title} className="w-16 h-10 object-cover rounded-md hidden sm:block" />
+                                                ) : (
+                                                    <div className="w-16 h-10 bg-[var(--bg-primary)] rounded-md hidden sm:flex items-center justify-center">
+                                                        <i className="fas fa-image text-2xl text-[var(--text-secondary)]"></i>
+                                                    </div>
+                                                )}
                                                 <div>
                                                     <h3 className="font-bold text-lg flex items-center gap-2">{project.title} 
                                                         {project.status && <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusColors[project.status]}`}>{project.status}</span>}
@@ -512,7 +519,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                      <div>
                                         <label htmlFor="posterUrl" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Poster Image URL</label>
                                         <div className="flex items-center space-x-2">
-                                            <input id="posterUrl" type="text" name="posterUrl" value={projectForm.posterUrl} onChange={handleProjectFormChange} placeholder="Enter URL or select from media" required className="flex-grow bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2 text-[var(--text-primary)]" />
+                                            <input id="posterUrl" type="text" name="posterUrl" value={projectForm.posterUrl} onChange={handleProjectFormChange} placeholder="Enter URL or select from media" className="flex-grow bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2 text-[var(--text-primary)]" />
                                             <button type="button" onClick={() => openMediaModalFor(url => setProjectForm(prev => ({...prev, posterUrl: url})))} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm whitespace-nowrap" aria-label="Select from Media Library">
                                                 <i className="fas fa-photo-video"></i>
                                             </button>
