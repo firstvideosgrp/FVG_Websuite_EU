@@ -41,6 +41,9 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
             siteVersion: settings?.siteVersion || '1.0.0',
             socialLinks,
             footerLinks,
+            // Logo Settings
+            logoLightUrl: settings?.logoLightUrl || '',
+            logoDarkUrl: settings?.logoDarkUrl || '',
             // Hero settings
             heroBackgroundImageUrl: settings?.heroBackgroundImageUrl || '',
             heroTitle: settings?.heroTitle || '',
@@ -65,6 +68,7 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
     const [testRecipient, setTestRecipient] = useState('');
     const [isSendingTest, setIsSendingTest] = useState(false);
     const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+    const [fieldToSet, setFieldToSet] = useState<'hero' | 'lightLogo' | 'darkLogo' | null>(null);
 
     useEffect(() => {
         setFormState(initialFormState);
@@ -129,8 +133,15 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
     const removeFooterLink = (index: number) => setFormState(prev => ({ ...prev, footerLinks: prev.footerLinks.filter((_, i) => i !== index) }));
     
     const handleImageSelect = (url: string) => {
-        setFormState(prev => ({ ...prev, heroBackgroundImageUrl: url }));
+        if (fieldToSet === 'hero') {
+            setFormState(prev => ({ ...prev, heroBackgroundImageUrl: url }));
+        } else if (fieldToSet === 'lightLogo') {
+            setFormState(prev => ({ ...prev, logoLightUrl: url }));
+        } else if (fieldToSet === 'darkLogo') {
+            setFormState(prev => ({ ...prev, logoDarkUrl: url }));
+        }
         setIsMediaModalOpen(false);
+        setFieldToSet(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -151,11 +162,11 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
                  delete settingsToSave.mailSmtpPassword;
             }
             
-            // If heroBackgroundImageUrl is an empty string, convert it to null before sending to Appwrite.
+            // If URL fields are empty strings, convert them to null before sending to Appwrite.
             // Appwrite's URL attribute type does not accept empty strings, but it accepts null for optional fields.
-            if (settingsToSave.heroBackgroundImageUrl === '') {
-                settingsToSave.heroBackgroundImageUrl = null;
-            }
+            if (settingsToSave.heroBackgroundImageUrl === '') settingsToSave.heroBackgroundImageUrl = null;
+            if (settingsToSave.logoLightUrl === '') settingsToSave.logoLightUrl = null;
+            if (settingsToSave.logoDarkUrl === '') settingsToSave.logoDarkUrl = null;
 
             await updateSettings(settingsToSave);
             alert('Site settings updated successfully!');
@@ -195,6 +206,25 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
                         <div>
                             <label htmlFor="siteTitle" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Public Site Title</label>
                             <input type="text" id="siteTitle" name="siteTitle" value={formState.siteTitle} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
+                             <p className="text-xs text-[var(--text-secondary)] mt-1">Used as a fallback when logos are not set.</p>
+                        </div>
+                         <div>
+                            <label htmlFor="logoLightUrl" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Light Theme Logo</label>
+                            <div className="flex items-center space-x-2">
+                                <input id="logoLightUrl" type="text" name="logoLightUrl" value={formState.logoLightUrl} onChange={handleChange} placeholder="Enter URL or select from media" className="flex-grow bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3 h-[50px]" />
+                                <button type="button" onClick={() => { setFieldToSet('lightLogo'); setIsMediaModalOpen(true); }} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm whitespace-nowrap h-[50px]" aria-label="Select from Media Library">
+                                    <i className="fas fa-photo-video"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label htmlFor="logoDarkUrl" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Dark Theme Logo</label>
+                            <div className="flex items-center space-x-2">
+                                <input id="logoDarkUrl" type="text" name="logoDarkUrl" value={formState.logoDarkUrl} onChange={handleChange} placeholder="Enter URL or select from media" className="flex-grow bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3 h-[50px]" />
+                                <button type="button" onClick={() => { setFieldToSet('darkLogo'); setIsMediaModalOpen(true); }} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm whitespace-nowrap h-[50px]" aria-label="Select from Media Library">
+                                    <i className="fas fa-photo-video"></i>
+                                </button>
+                            </div>
                         </div>
                         <div>
                             <label htmlFor="adminTitle" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Admin Page Title</label>
@@ -253,7 +283,7 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
                             <label htmlFor="heroBackgroundImageUrl" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Background Image</label>
                             <div className="flex items-center space-x-2">
                                 <input type="text" id="heroBackgroundImageUrl" name="heroBackgroundImageUrl" value={formState.heroBackgroundImageUrl} onChange={handleChange} className="flex-grow bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3" placeholder="Enter URL or select from media" disabled={!formState.heroUseImage}/>
-                                <button type="button" onClick={() => setIsMediaModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm whitespace-nowrap h-[46px]" aria-label="Select from Media Library" disabled={!formState.heroUseImage}>
+                                <button type="button" onClick={() => { setFieldToSet('hero'); setIsMediaModalOpen(true); }} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm whitespace-nowrap h-[50px]" aria-label="Select from Media Library" disabled={!formState.heroUseImage}>
                                     <i className="fas fa-photo-video"></i>
                                 </button>
                             </div>
@@ -416,7 +446,6 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
                     </button>
                 </div>
             </form>
-            {/* FIX: Passed the `fileUsageMap` prop to MediaLibraryModal to satisfy its required props. */}
             {isMediaModalOpen && <MediaLibraryModal onSelect={handleImageSelect} onClose={() => setIsMediaModalOpen(false)} fileUsageMap={fileUsageMap} />}
         </div>
     );

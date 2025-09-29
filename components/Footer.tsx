@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
+import { useTheme } from '../contexts/ThemeContext';
 import type { SocialLink, FooterLink } from '../types';
 
 const Footer: React.FC = () => {
   const { settings } = useSettings();
+  const { siteTheme: theme } = useTheme();
 
   const socialLinks: SocialLink[] = React.useMemo(() => {
     try {
@@ -27,9 +29,24 @@ const Footer: React.FC = () => {
   
   const siteVersion = settings?.siteVersion;
 
+  const logoUrl = theme === 'dark' ? settings?.logoDarkUrl : settings?.logoLightUrl;
+  const showLogo = !!logoUrl;
+  const siteTitle = settings?.siteTitle.split(' ')[0] || 'First';
+  const siteTitleColor = settings?.siteTitle.split(' ')[1] || 'Videos';
+
   return (
     <footer className="bg-[var(--bg-secondary)] py-8 border-t border-[var(--border-color)]">
       <div className="container mx-auto px-6 text-center text-[var(--text-secondary)]">
+        <div className="mb-6 flex justify-center">
+            <Link to="/">
+                {showLogo ? (
+                    <img src={logoUrl} alt={settings?.siteTitle || 'Site Logo'} className="h-12 max-w-[220px] object-contain" />
+                ) : (
+                    <h3 className="text-2xl font-black tracking-wider uppercase text-[var(--text-primary)]">{siteTitle}<span className="text-[var(--primary-color)]">{siteTitleColor}</span></h3>
+                )}
+            </Link>
+        </div>
+
         <div className="flex justify-center space-x-6 mb-6">
           {socialLinks.map((link, index) => (
             <a key={index} href={link.url} aria-label={link.icon.split('fa-')[1]?.replace('-', ' ')} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-[var(--primary-color)] transition-colors">

@@ -9,6 +9,9 @@ const Header: React.FC = () => {
   const siteTitle = settings?.siteTitle.split(' ')[0] || 'First';
   const siteTitleColor = settings?.siteTitle.split(' ')[1] || 'Videos';
 
+  const logoUrl = theme === 'dark' ? settings?.logoDarkUrl : settings?.logoLightUrl;
+  const showLogo = !!logoUrl;
+
   const navLinks = [
     { href: '#home', label: 'Home', icon: 'fas fa-home' },
     { href: '#about', label: 'About', icon: 'fas fa-info-circle' },
@@ -45,7 +48,13 @@ const Header: React.FC = () => {
   return (
     <header className="bg-[var(--header-bg)] backdrop-blur-md fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-[var(--border-color)]">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <a href="#home" onClick={(e) => handleNavClick(e, '#home')} className="text-2xl font-black tracking-wider uppercase text-[var(--text-primary)]">{siteTitle}<span className="text-[var(--primary-color)]">{siteTitleColor}</span></a>
+        <a href="#home" onClick={(e) => handleNavClick(e, '#home')} className="text-2xl font-black tracking-wider uppercase text-[var(--text-primary)]">
+          {showLogo ? (
+            <img src={logoUrl} alt={settings?.siteTitle || 'Site Logo'} className="h-10 max-w-[200px] object-contain" />
+          ) : (
+            <>{siteTitle}<span className="text-[var(--primary-color)]">{siteTitleColor}</span></>
+          )}
+        </a>
         
         <nav className="hidden md:flex space-x-8 items-center">
           {navLinks.map(link => (

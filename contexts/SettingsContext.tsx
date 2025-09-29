@@ -34,6 +34,8 @@ const defaultSettings: Omit<SiteSettings, keyof Models.Document> = {
     heroButtonText: 'View Our Work',
     heroUseImage: true,
     heroUsePlexus: false,
+    logoLightUrl: '',
+    logoDarkUrl: '',
 };
 
 

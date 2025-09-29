@@ -81,6 +81,9 @@ export type SiteSettings = Models.Document & {
   heroButtonText?: string;
   heroUseImage?: boolean;
   heroUsePlexus?: boolean;
+  // Logo Settings
+  logoLightUrl?: string;
+  logoDarkUrl?: string;
 };
 
 // New types for Media Library

@@ -138,6 +138,8 @@ This collection stores the global settings for the website, such as title and th
 | `heroButtonText`     | String  | 100  | No       | No    | Call-to-action button text.         |
 | `heroUseImage`       | Boolean | -    | No       | No    | Use image for hero background.      |
 | `heroUsePlexus`      | Boolean | -    | No       | No    | Use plexus effect for hero background.|
+| `logoLightUrl`       | URL     | 2048 | No       | No    | URL for the light theme logo.       |
+| `logoDarkUrl`        | URL     | 2048 | No       | No    | URL for the dark theme logo.        |
 
 
 #### Settings (Permissions)
@@ -609,7 +611,7 @@ The admin dashboard is designed to *update* existing content. You must create th
         -   `mailEnabled`: `false`
         -   `heroUseImage`: `true`
         -   `heroUsePlexus`: `false`
-        -   Leave all other `mail...` and `hero...` fields blank initially. They will be configured via the admin panel.
+        -   Leave all other `mail...`, `hero...`, and `logo...` fields blank initially. They will be configured via the admin panel.
     -   Click **Create**. This single document will be updated by the admin panel.
 
 2.  **About Content**:
