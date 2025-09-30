@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import type { MediaFile } from '../types';
-import { listFiles, deleteFile, getFilePreviewUrl } from '../services/appwrite';
+import type { MediaFile, MediaCategory } from '../types';
+import { listFiles, deleteFile, getFilePreviewUrl, updateMediaMetadata } from '../services/appwrite';
 import LoadingSpinner from './LoadingSpinner';
 import UploadMediaModal from './UploadMediaModal';
 
@@ -8,11 +8,18 @@ interface MediaPanelProps {
     fileUsageMap: Map<string, string[]>;
 }
 
+const categories: MediaCategory[] = ['Image', 'Poster', 'Soundtrack', 'Document', 'Video', 'Logo', 'Behind-the-Scenes', 'Hero Background', 'Project Poster'];
+
 const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
     const [files, setFiles] = useState<MediaFile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // State for the new edit modal
+    const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
+    const [editForm, setEditForm] = useState({ name: '', category: 'Image' as MediaCategory });
+    const [isUpdating, setIsUpdating] = useState(false);
 
     const fetchFiles = useCallback(async () => {
         setIsLoading(true);
@@ -31,6 +38,13 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
     useEffect(() => {
         fetchFiles();
     }, [fetchFiles]);
+    
+    // Effect to populate edit form when a file is selected for editing
+    useEffect(() => {
+        if (editingFile) {
+            setEditForm({ name: editingFile.name, category: editingFile.category });
+        }
+    }, [editingFile]);
 
     const handleDeleteFile = async (fileId: string) => {
         const usage = fileUsageMap.get(fileId);
@@ -59,6 +73,31 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
             alert('Failed to copy URL.');
         });
     };
+    
+    const openEditModal = (file: MediaFile) => {
+        setEditingFile(file);
+        setError(null);
+    };
+
+    const handleUpdateSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingFile) return;
+
+        setIsUpdating(true);
+        setError(null);
+        try {
+            await updateMediaMetadata(editingFile.$id, editForm);
+            alert('Media updated successfully!');
+            setEditingFile(null);
+            await fetchFiles(); // Refresh list
+        } catch (err) {
+            setError('Failed to update media details.');
+            console.error(err);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
 
     return (
         <div className="bg-[var(--bg-primary)] p-6 rounded-lg shadow-lg border border-[var(--border-color)]">
@@ -73,7 +112,7 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
                 </div>
             </div>
             
-            {error && <div className="bg-red-500 text-white p-3 rounded-md mb-4">{error}</div>}
+            {error && !editingFile && <div className="bg-red-500 text-white p-3 rounded-md mb-4">{error}</div>}
 
             {isLoading ? (
                 <div className="flex justify-center items-center py-10">
@@ -108,8 +147,9 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
                                     </div>
                                 </div>
                                 <div className="w-full space-y-1 mt-auto pt-2">
-                                    <button onClick={() => copyToClipboard(file.$id)} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">Copy URL</button>
-                                    <button onClick={() => handleDeleteFile(file.$id)} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Delete</button>
+                                    <button onClick={() => openEditModal(file)} className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-2 rounded text-xs">Edit Details</button>
+                                    <button onClick={() => copyToClipboard(file.$id)} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs">Copy URL</button>
+                                    <button onClick={() => handleDeleteFile(file.$id)} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs">Delete</button>
                                 </div>
                             </div>
                         </div>
@@ -127,6 +167,47 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
                         fetchFiles();
                     }}
                 />
+            )}
+            
+            {editingFile && (
+                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4" role="dialog" aria-modal="true">
+                    <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 rounded-lg shadow-2xl w-full max-w-md relative text-[var(--text-primary)]">
+                        <button onClick={() => setEditingFile(null)} aria-label="Close modal" className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-2xl">&times;</button>
+                        <h2 className="text-2xl font-bold mb-6 text-center">Edit Media</h2>
+                        <form onSubmit={handleUpdateSubmit} className="space-y-6">
+                            <div>
+                                <label htmlFor="edit-name" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Name</label>
+                                <input
+                                    id="edit-name"
+                                    type="text"
+                                    value={editForm.name}
+                                    onChange={e => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                                    className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2 text-[var(--text-primary)]"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="edit-category" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Category</label>
+                                <select
+                                    id="edit-category"
+                                    value={editForm.category}
+                                    onChange={e => setEditForm(prev => ({ ...prev, category: e.target.value as MediaCategory }))}
+                                    className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2 text-[var(--text-primary)]"
+                                    required
+                                >
+                                    {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                </select>
+                            </div>
+                            {error && <p className="text-red-500 text-sm">{error}</p>}
+                            <div className="flex justify-end space-x-4 pt-4">
+                                <button type="button" onClick={() => setEditingFile(null)} disabled={isUpdating} className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50">Cancel</button>
+                                <button type="submit" disabled={isUpdating} className="bg-[var(--primary-color)] hover:brightness-110 text-gray-900 font-bold py-2 px-4 rounded disabled:opacity-50 flex items-center justify-center w-28">
+                                    {isUpdating ? <div className="w-5 h-5 border-2 border-dashed rounded-full animate-spin border-gray-900"></div> : 'Update'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
         </div>
     );

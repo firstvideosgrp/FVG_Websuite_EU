@@ -260,6 +260,27 @@ export const uploadFile = async (file: File, category: MediaCategory) => {
     return storageFile;
 };
 
+export const updateMediaMetadata = async (fileId: string, data: { category?: MediaCategory, name?: string }) => {
+    try {
+        const metadataDocs = await databases.listDocuments<MediaMetadata>(APPWRITE_DATABASE_ID, MEDIA_METADATA_COLLECTION_ID, [
+            Query.equal('fileId', fileId),
+            Query.limit(1)
+        ]);
+
+        if (metadataDocs.documents.length > 0) {
+            const documentId = metadataDocs.documents[0].$id;
+            return await databases.updateDocument(APPWRITE_DATABASE_ID, MEDIA_METADATA_COLLECTION_ID, documentId, data);
+        } else {
+            // This case should ideally not happen if uploads are transactional
+            console.warn(`No metadata found for fileId: ${fileId}. Cannot update.`);
+            return null;
+        }
+    } catch (error) {
+        console.error("Failed to update media metadata:", error);
+        throw error;
+    }
+};
+
 // FIX: As per user request, switched from `getFilePreview` to `getFileView` to resolve issues with image rendering.
 // The `getFileView` method provides a direct link to view the file in the browser.
 // Note that this method does not support width and height parameters for thumbnail generation.

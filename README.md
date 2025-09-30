@@ -2,27 +2,53 @@
 
 A modern, one-page website for the entertainment and movie studio group "FirstVideos Group," complete with a comprehensive content management dashboard powered by Appwrite.
 
+This project is a fully-featured, single-page application (SPA) with a powerful admin panel, designed to provide a sleek, responsive, and easily manageable web presence for a creative studio.
+
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
+- [Installation & Setup](#installation--setup)
+- [Usage Guide](#usage-guide)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Project Overview
 
 This project provides a sleek, responsive, and fully manageable website for a fictional movie studio. The public-facing site is a single-page application designed to showcase the studio's work, introduce the team, and provide contact information.
 
-The core of the project is its powerful admin dashboard, which allows non-technical users to manage every aspect of the site's content without touching a single line of code.
+The core of the project is its powerful admin dashboard, which allows non-technical users to manage every aspect of the site's content—from project details and production timelines to global branding and mail server settings—without touching a single line of code.
 
-### Key Features
+## Key Features
 
--   **Public-Facing Website:**
-    -   Smooth-scrolling single-page layout.
-    -   Dynamic Hero, About, Projects, and Contact sections.
-    -   Project showcase with details like posters, status, and descriptions.
-    -   Content is fetched dynamically from the Appwrite backend.
--   **Admin Dashboard (`/admin`):**
-    -   Secure login for administrators.
-    -   **Content Management:**
-        -   **About Section:** A rich text editor to update the company's story.
-        -   **Projects:** Full CRUD (Create, Read, Update, Delete) functionality for movie/series projects. Manage details like synopsis, release year, status, and cast/crew.
-    -   **Media Library:** A central hub to upload, view, and delete all media assets (posters, images, etc.).
-    -   **Site Settings:** Globally configure the website's title, theme colors, footer content, social media links, and more.
-    -   **Mail Configuration:** Set up and test SMTP settings for the contact form directly from the dashboard.
+### Public-Facing Website
+
+-   **Fully Responsive Design:** Looks great on desktops, tablets, and mobile devices.
+-   **Dynamic Content:** All sections (Hero, About, Projects, Contact) are populated with data from the Appwrite backend.
+-   **Smooth Scrolling SPA:** A seamless single-page experience with smooth navigation.
+-   **Interactive Project Showcase:** Displays projects in a grid with details available in a feature-rich modal view.
+-   **Production Progress:** Visitors can view the production status of upcoming projects, including completed phases and steps.
+-   **Themable:** Light and dark modes available for a comfortable viewing experience.
+
+### Admin Dashboard (`/admin`)
+
+A secure, feature-rich dashboard for complete site management.
+-   **Secure Authentication:** Admin access is protected by Appwrite's authentication system.
+-   **Content Management:**
+    -   **About Section:** Update the company's story and mission.
+    -   **Projects:** Full CRUD (Create, Read, Update, Delete) functionality for projects (movies, series, shorts).
+    -   **Cast & Crew:** Maintain a central database of cast and crew members, and easily assign them to projects.
+    -   **Production Phases:** Define and track custom production timelines for each project with nested steps and completion statuses.
+-   **Media Library:**
+    -   Upload, view, categorize, and delete all media assets (posters, logos, background images).
+    -   Intelligently tracks where each media file is being used to prevent accidental deletion of critical assets.
+-   **Global Site Settings:**
+    -   **Branding:** Configure the site title, logos (for light/dark themes), and theme colors.
+    -   **Hero Section:** Customize the hero's background (image or plexus animation), title, description, and button text.
+    -   **Footer:** Manage footer text, version number, social media links, and other custom links.
+-   **Mail Configuration:**
+    -   Set up, manage, and test SMTP settings for the contact form directly from the dashboard.
+    -   Enable or disable mail functionality globally with a single toggle.
 
 ## Tech Stack
 
@@ -32,11 +58,11 @@ The core of the project is its powerful admin dashboard, which allows non-techni
     -   **Routing:** React Router
     -   **Icons:** Font Awesome
 -   **Backend as a Service (BaaS):**
-    -   **[Appwrite](https://appwrite.io/):** Used for...
-        -   **Database:** Storing all site content (projects, settings, etc.).
+    -   **[Appwrite](https://appwrite.io/):**
+        -   **Database:** Storing all site content (projects, settings, cast, phases, etc.).
         -   **Auth:** Secure user authentication for the admin dashboard.
-        -   **Storage:** Hosting all media files for the library.
-        -   **Functions:** Server-side logic for securely sending emails.
+        -   **Storage:** Hosting for all media files.
+        -   **Functions:** Server-side logic for securely sending emails via SMTP.
 
 ## Installation & Setup
 
@@ -70,7 +96,7 @@ This guide will walk you through:
 
 ### 4. Configure Frontend Constants
 
-After setting up your Appwrite backend, you must update the hardcoded configuration file with the IDs from your Appwrite project.
+After setting up your Appwrite backend, you must update the configuration file with the IDs from your Appwrite project.
 
 Open `src/constants.ts` and replace the placeholder values with your actual Appwrite credentials.
 
@@ -107,10 +133,18 @@ Navigate to the root URL (`/`) to view the public-facing site. Use the navigatio
     -   **About Section:** Edit the text content for the "About Us" page.
     -   **Projects:**
         -   Click **Add New Project** to create a new entry.
-        -   Use the ✏️ (Edit), 👥 (Manage Cast), and 🗑️ (Delete) icons to manage existing projects.
+        -   Use the ✏️ (Edit), 👥 (Manage Cast/Crew), and 🗑️ (Delete) icons to manage existing projects.
+    -   **Production Phases:**
+        -   Select a project from the dropdown.
+        -   Add, edit, or delete production phases (e.g., Pre-Production, Filming).
+        -   Within each phase, add, edit, delete, and reorder individual steps (e.g., Scriptwriting, Casting).
+    -   **Cast & Crew:**
+        -   Manage separate global lists for Cast and Crew members.
+        -   Add new members with their name, role, and bio.
+        -   Edit or delete existing members. These members will then be available to assign to projects.
     -   **Media Library:**
-        -   Click **Add New** to upload files.
-        -   Hover over an image to get options to **Copy URL** or **Delete**. The copied URL can be pasted into fields like the "Poster URL" for a project.
+        -   Click **Add New** to upload files and assign a category.
+        -   Hover over an image to get options to **Edit Details**, **Copy URL**, or **Delete**. The usage tracker will warn you if you try to delete an image that is currently in use.
     -   **Site Settings:** Modify any of the global settings. Remember to click **Save Settings** at the bottom. To test mail settings, save them first, then use the "Send Test" feature.
 
 ## Contributing

@@ -87,7 +87,7 @@ export type SiteSettings = Models.Document & {
 };
 
 // New types for Media Library
-export type MediaCategory = 'Image' | 'Poster' | 'Soundtrack' | 'Document' | 'Video';
+export type MediaCategory = 'Image' | 'Poster' | 'Soundtrack' | 'Document' | 'Video' | 'Logo' | 'Behind-the-Scenes' | 'Hero Background' | 'Project Poster';
 
 export type MediaMetadata = Models.Document & {
   fileId: string;

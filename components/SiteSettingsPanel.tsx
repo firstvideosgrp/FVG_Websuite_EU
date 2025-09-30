@@ -8,7 +8,6 @@ import MediaLibraryModal from './MediaLibraryModal';
 type SocialLinkWithId = SocialLink & { id: string };
 type FooterLinkWithId = FooterLink & { id: string };
 
-// FIX: Added props interface to accept `fileUsageMap`.
 interface SiteSettingsPanelProps {
     fileUsageMap: Map<string, string[]>;
 }

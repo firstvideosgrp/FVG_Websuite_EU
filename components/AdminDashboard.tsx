@@ -79,26 +79,37 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
 
     useEffect(() => {
         if (!projects || !settings) return;
-
+    
         const newUsageMap = new Map<string, string[]>();
-
+    
+        const addUsage = (fileId: string, usageDescription: string) => {
+            const existingUsages = newUsageMap.get(fileId) || [];
+            newUsageMap.set(fileId, [...existingUsages, usageDescription]);
+        };
+    
         // Check hero background
         if (settings.heroBackgroundImageUrl) {
             const fileId = getFileIdFromUrl(settings.heroBackgroundImageUrl);
-            if (fileId) {
-                newUsageMap.set(fileId, ['Hero Background']);
-            }
+            if (fileId) addUsage(fileId, 'Hero Background');
         }
-
+        
+        // Check logos
+        if (settings.logoLightUrl) {
+            const fileId = getFileIdFromUrl(settings.logoLightUrl);
+            if (fileId) addUsage(fileId, 'Logo (Light Theme)');
+        }
+        if (settings.logoDarkUrl) {
+            const fileId = getFileIdFromUrl(settings.logoDarkUrl);
+            if (fileId) addUsage(fileId, 'Logo (Dark Theme)');
+        }
+    
         // Check project posters
         projects.forEach(project => {
             if (project.posterUrl) {
                 const fileId = getFileIdFromUrl(project.posterUrl);
                 if (fileId) {
-                    const usages = newUsageMap.get(fileId) || [];
                     const title = project.title.length > 20 ? `${project.title.substring(0, 20)}...` : project.title;
-                    usages.push(`Poster: "${title}"`);
-                    newUsageMap.set(fileId, usages);
+                    addUsage(fileId, `Poster: "${title}"`);
                 }
             }
         });
