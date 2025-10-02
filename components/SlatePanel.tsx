@@ -310,34 +310,36 @@ const SlatePanel: React.FC = () => {
     return (
         <div className="bg-[var(--bg-primary)] p-6 rounded-lg shadow-lg border border-[var(--border-color)] space-y-8">
             {/* Graphical Slate Section */}
-            <div ref={slateRef} className={`bg-black text-white rounded-lg shadow-2xl overflow-hidden border-4 border-gray-700 transition-all duration-300 ${isFullscreen ? 'p-4 sm:p-8 h-full flex flex-col' : ''}`}>
+            <div ref={slateRef} className={`bg-black text-white rounded-lg shadow-2xl overflow-hidden border-4 border-gray-700 transition-all duration-300 ${isFullscreen ? 'p-4 sm:p-8 h-full w-full flex flex-col' : ''}`}>
                 {/* Clapper */}
-                <div className={`bg-white flex items-center justify-between px-4 transition-all duration-300 ${isFullscreen ? 'h-16' : 'h-8'}`}>
+                <div className={`bg-white flex items-center justify-between px-4 transition-all duration-300 ${isFullscreen ? 'h-[8vh]' : 'h-8'}`}>
                      <div className="flex items-center h-full">
                          {[...Array(6)].map((_, i) => (
-                            <div key={i} className={`h-full bg-black -skew-x-12 ${isFullscreen ? 'ml-8 w-16' : 'ml-4 w-8 md:w-12'}`}></div>
+                            <div key={i} className={`h-full bg-black -skew-x-12 ${isFullscreen ? 'ml-[2vw] w-[4vw]' : 'ml-4 w-8 md:w-12'}`}></div>
                         ))}
                     </div>
                     <div className="flex items-center space-x-4">
-                        <div className={`flex items-center space-x-2 text-sm text-gray-400 ${isFullscreen ? 'text-lg' : 'text-xs'}`}>
+                        <div className={`flex items-center space-x-2 text-sm text-gray-400 ${isFullscreen ? 'text-[2.5vmin]' : 'text-xs'}`}>
                             <span className={mode === 'normal' ? 'text-black font-semibold' : ''}>Normal</span>
                             <button
                                 onClick={() => setMode(prev => prev === 'normal' ? 'smpte' : 'normal')}
-                                className="relative inline-flex items-center h-6 rounded-full w-11 bg-gray-600"
+                                className={`relative inline-flex items-center rounded-full bg-gray-600 ${isFullscreen ? 'h-[4vmin] w-[8vmin]' : 'h-6 w-11'}`}
                                 role="switch"
                                 aria-checked={mode === 'smpte'}
                             >
                                 <span
-                                className={`${
-                                    mode === 'smpte' ? 'translate-x-6' : 'translate-x-1'
-                                } inline-block w-4 h-4 transform bg-white rounded-full transition-transform`}
+                                className={`inline-block transform bg-white rounded-full transition-transform ${
+                                    mode === 'smpte' 
+                                        ? (isFullscreen ? 'translate-x-[4.25vmin]' : 'translate-x-6') 
+                                        : (isFullscreen ? 'translate-x-[0.5vmin]' : 'translate-x-1')
+                                } ${isFullscreen ? 'h-[3.5vmin] w-[3.5vmin]' : 'h-4 w-4'}`}
                                 />
                             </button>
                             <span className={mode === 'smpte' ? 'text-black font-semibold' : ''}>SMPTE</span>
                         </div>
                         <button
                             onClick={handleToggleFullscreen}
-                            className={`text-gray-400 hover:text-black ${isFullscreen ? 'text-4xl' : 'text-2xl'}`}
+                            className={`text-gray-400 hover:text-black ${isFullscreen ? 'text-[5vmin]' : 'text-2xl'}`}
                             aria-label="Toggle Fullscreen"
                         >
                             <i className={`fas ${isFullscreen ? 'fa-compress' : 'fa-expand'}`}></i>
@@ -349,36 +351,36 @@ const SlatePanel: React.FC = () => {
                     <div className="space-y-4">
                         <div className={`grid grid-cols-1 md:grid-cols-3 text-sm ${isFullscreen ? 'gap-x-8 gap-y-4' : 'gap-4'}`}>
                             <div className="md:col-span-2">
-                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-xl' : ''}`}>Production</label>
-                                <input type="text" name="production" value={slateData.production} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none ${isFullscreen ? 'text-3xl py-2' : 'text-lg'}`}/>
+                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-[2.5vmin]' : ''}`}>Production</label>
+                                <input type="text" name="production" value={slateData.production} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none ${isFullscreen ? 'text-[4.5vmin] py-2' : 'text-lg'}`}/>
                             </div>
                             <div>
-                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-xl' : ''}`}>Date</label>
-                                <input type="date" name="date" value={slateData.date} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none [color-scheme:dark] ${isFullscreen ? 'text-3xl py-2' : 'text-lg'}`}/>
+                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-[2.5vmin]' : ''}`}>Date</label>
+                                <input type="date" name="date" value={slateData.date} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none [color-scheme:dark] ${isFullscreen ? 'text-[4.5vmin] py-2' : 'text-lg'}`}/>
                             </div>
                         </div>
                          <div className={`grid grid-cols-3 text-sm ${isFullscreen ? 'gap-x-8 gap-y-4' : 'gap-4'}`}>
                             <div>
-                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-xl' : ''}`}>Roll</label>
-                                <input type="text" name="roll" value={slateData.roll} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none ${isFullscreen ? 'text-3xl py-2' : 'text-lg'}`}/>
+                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-[2.5vmin]' : ''}`}>Roll</label>
+                                <input type="text" name="roll" value={slateData.roll} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none ${isFullscreen ? 'text-[4.5vmin] py-2' : 'text-lg'}`}/>
                             </div>
                             <div>
-                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-xl' : ''}`}>Scene</label>
-                                <input type="text" name="scene" value={slateData.scene} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none ${isFullscreen ? 'text-3xl py-2' : 'text-lg'}`}/>
+                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-[2.5vmin]' : ''}`}>Scene</label>
+                                <input type="text" name="scene" value={slateData.scene} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none ${isFullscreen ? 'text-[4.5vmin] py-2' : 'text-lg'}`}/>
                             </div>
                             <div>
-                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-xl' : ''}`}>Take</label>
-                                <input type="number" name="take" value={slateData.take} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none ${isFullscreen ? 'text-3xl py-2' : 'text-lg'}`}/>
+                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-[2.5vmin]' : ''}`}>Take</label>
+                                <input type="number" name="take" value={slateData.take} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none ${isFullscreen ? 'text-[4.5vmin] py-2' : 'text-lg'}`}/>
                             </div>
                         </div>
                          <div className={`grid grid-cols-1 md:grid-cols-2 text-sm ${isFullscreen ? 'gap-x-8 gap-y-4' : 'gap-4'}`}>
                             <div>
-                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-xl' : ''}`}>Director</label>
-                                <input type="text" name="director" value={slateData.director} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none ${isFullscreen ? 'text-3xl py-2' : 'text-lg'}`}/>
+                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-[2.5vmin]' : ''}`}>Director</label>
+                                <input type="text" name="director" value={slateData.director} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none ${isFullscreen ? 'text-[4.5vmin] py-2' : 'text-lg'}`}/>
                             </div>
                             <div>
-                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-xl' : ''}`}>D.P.</label>
-                                <input type="text" name="dop" value={slateData.dop} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none ${isFullscreen ? 'text-3xl py-2' : 'text-lg'}`}/>
+                                <label className={`font-bold text-gray-400 uppercase tracking-widest ${isFullscreen ? 'text-[2.5vmin]' : ''}`}>D.P.</label>
+                                <input type="text" name="dop" value={slateData.dop} onChange={handleSlateDataChange} disabled={isRunning} className={`w-full bg-transparent border-b-2 border-gray-600 focus:border-white font-semibold focus:outline-none ${isFullscreen ? 'text-[4.5vmin] py-2' : 'text-lg'}`}/>
                             </div>
                         </div>
                     </div>
@@ -393,13 +395,13 @@ const SlatePanel: React.FC = () => {
                     </div>
                     {/* Action Button & Sound Controls */}
                     <div className={`space-y-4 ${isFullscreen ? 'mt-auto' : ''}`}>
-                        <button onClick={handleStartStop} className={`w-full rounded-md font-bold uppercase transition-colors ${isRunning ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} ${isFullscreen ? 'py-8 text-5xl' : 'py-4 text-2xl'}`}>
+                        <button onClick={handleStartStop} className={`w-full rounded-md font-bold uppercase transition-colors ${isRunning ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} ${isFullscreen ? 'py-[3vh] text-[6vmin]' : 'py-4 text-2xl'}`}>
                             {isRunning ? 'Stop & Log Take' : 'Start'}
                         </button>
                         <div className="flex items-center justify-center gap-x-4 pt-2">
                             <button
                                 onClick={() => setIsMuted(!isMuted)}
-                                className={`flex items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-gray-800 transition-colors ${isFullscreen ? 'w-16 h-16 text-3xl' : 'w-12 h-12 text-xl'}`}
+                                className={`flex items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-gray-800 transition-colors ${isFullscreen ? 'w-[8vmin] h-[8vmin] text-[4vmin]' : 'w-12 h-12 text-xl'}`}
                                 aria-label={isMuted ? 'Unmute' : 'Mute'}
                             >
                                 <i className={`fas ${isMuted ? 'fa-volume-mute' : 'fa-volume-up'}`}></i>
@@ -417,7 +419,7 @@ const SlatePanel: React.FC = () => {
                                         setIsMuted(false);
                                     }
                                 }}
-                                className={`w-32 accent-cyan-400 cursor-pointer ${isMuted ? 'opacity-50' : ''}`}
+                                className={`accent-cyan-400 cursor-pointer ${isMuted ? 'opacity-50' : ''} ${isFullscreen ? 'w-1/3' : 'w-32'}`}
                                 aria-label="Volume"
                             />
                         </div>
