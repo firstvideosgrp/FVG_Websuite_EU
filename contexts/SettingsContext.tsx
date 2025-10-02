@@ -36,6 +36,7 @@ const defaultSettings: Omit<SiteSettings, keyof Models.Document> = {
     heroUsePlexus: false,
     logoLightUrl: '',
     logoDarkUrl: '',
+    customBeepSoundUrl: '',
 };
 
 

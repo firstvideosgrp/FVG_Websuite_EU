@@ -1,7 +1,7 @@
 // FIX: Imported the `Models` namespace to resolve reference errors below.
 import { Client, Account, Databases, ID, Query, Models, Storage, Functions } from 'appwrite';
-import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID } from '../constants';
-import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep } from '../types';
+import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID, SLATE_ENTRIES_COLLECTION_ID } from '../constants';
+import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, SlateEntry } from '../types';
 
 const client = new Client();
 
@@ -173,6 +173,33 @@ export const updateStepOrder = (steps: { $id: string; order: number }[]) => {
         databases.updateDocument(APPWRITE_DATABASE_ID, PHASE_STEPS_COLLECTION_ID, step.$id, { order: step.order })
     );
     return Promise.all(promises);
+};
+
+// Slate Entries
+export const getSlateEntries = async (): Promise<SlateEntry[]> => {
+    try {
+        const response = await databases.listDocuments<SlateEntry>(APPWRITE_DATABASE_ID, SLATE_ENTRIES_COLLECTION_ID, [
+            Query.orderDesc('date'),
+            Query.orderDesc('$createdAt'),
+            Query.limit(100)
+        ]);
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to fetch slate entries:", error);
+        return [];
+    }
+};
+
+export const createSlateEntry = (data: Omit<SlateEntry, keyof Models.Document>) => {
+    return databases.createDocument(APPWRITE_DATABASE_ID, SLATE_ENTRIES_COLLECTION_ID, ID.unique(), data);
+};
+
+export const updateSlateEntry = (documentId: string, data: Partial<Omit<SlateEntry, keyof Models.Document>>) => {
+    return databases.updateDocument(APPWRITE_DATABASE_ID, SLATE_ENTRIES_COLLECTION_ID, documentId, data);
+};
+
+export const deleteSlateEntry = (documentId: string) => {
+    return databases.deleteDocument(APPWRITE_DATABASE_ID, SLATE_ENTRIES_COLLECTION_ID, documentId);
 };
 
 // Site Settings

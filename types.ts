@@ -84,10 +84,12 @@ export type SiteSettings = Models.Document & {
   // Logo Settings
   logoLightUrl?: string;
   logoDarkUrl?: string;
+  // Slate Settings
+  customBeepSoundUrl?: string;
 };
 
 // New types for Media Library
-export type MediaCategory = 'Image' | 'Poster' | 'Soundtrack' | 'Document' | 'Video' | 'Logo' | 'Behind-the-Scenes' | 'Hero Background' | 'Project Poster';
+export type MediaCategory = 'Image' | 'Poster' | 'Soundtrack' | 'Document' | 'Video' | 'Logo' | 'Behind-the-Scenes' | 'Hero Background' | 'Project Poster' | 'Audio Clip';
 
 export type MediaMetadata = Models.Document & {
   fileId: string;
@@ -118,4 +120,17 @@ export type ProductionPhaseStep = Models.Document & {
   description?: string;
   status: ProductionPhaseStatus;
   order: number;
+};
+
+// New type for Slate Entries
+export type SlateEntry = Models.Document & {
+  roll: string;
+  scene: string;
+  take: number;
+  production: string;
+  director: string;
+  dop: string; // Director of Photography
+  note?: string;
+  date: string; // ISO date string
+  timecode: string;
 };

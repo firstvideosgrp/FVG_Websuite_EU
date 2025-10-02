@@ -59,6 +59,8 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
             mailSmtpEncryption: settings?.mailSmtpEncryption || 'tls',
             mailSmtpUsername: settings?.mailSmtpUsername || '',
             mailSmtpPassword: settings?.mailSmtpPassword || '',
+            // Slate Settings
+            customBeepSoundUrl: settings?.customBeepSoundUrl || '',
         }
     }, [settings]);
     
@@ -67,7 +69,7 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
     const [testRecipient, setTestRecipient] = useState('');
     const [isSendingTest, setIsSendingTest] = useState(false);
     const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
-    const [fieldToSet, setFieldToSet] = useState<'hero' | 'lightLogo' | 'darkLogo' | null>(null);
+    const [fieldToSet, setFieldToSet] = useState<'hero' | 'lightLogo' | 'darkLogo' | 'beepSound' | null>(null);
 
     useEffect(() => {
         setFormState(initialFormState);
@@ -138,6 +140,8 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
             setFormState(prev => ({ ...prev, logoLightUrl: url }));
         } else if (fieldToSet === 'darkLogo') {
             setFormState(prev => ({ ...prev, logoDarkUrl: url }));
+        } else if (fieldToSet === 'beepSound') {
+            setFormState(prev => ({ ...prev, customBeepSoundUrl: url }));
         }
         setIsMediaModalOpen(false);
         setFieldToSet(null);
@@ -166,6 +170,7 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
             if (settingsToSave.heroBackgroundImageUrl === '') settingsToSave.heroBackgroundImageUrl = null;
             if (settingsToSave.logoLightUrl === '') settingsToSave.logoLightUrl = null;
             if (settingsToSave.logoDarkUrl === '') settingsToSave.logoDarkUrl = null;
+            if (settingsToSave.customBeepSoundUrl === '') settingsToSave.customBeepSoundUrl = null;
 
             await updateSettings(settingsToSave);
             alert('Site settings updated successfully!');
@@ -301,6 +306,24 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
                         </div>
                     </div>
                 </section>
+                
+                {/* Timecode Slate Settings */}
+                <section>
+                    <h3 className="text-lg font-semibold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 mb-4">Timecode Slate</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="customBeepSoundUrl" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Custom Beep Sound</label>
+                            <div className="flex items-center space-x-2">
+                                <input id="customBeepSoundUrl" type="text" name="customBeepSoundUrl" value={formState.customBeepSoundUrl} onChange={handleChange} placeholder="Optional: Select an audio file" className="flex-grow bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3 h-[50px]" />
+                                <button type="button" onClick={() => { setFieldToSet('beepSound'); setIsMediaModalOpen(true); }} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm whitespace-nowrap h-[50px]" aria-label="Select from Media Library">
+                                    <i className="fas fa-music"></i>
+                                </button>
+                            </div>
+                            <p className="text-xs text-[var(--text-secondary)] mt-1">Upload an audio file (e.g., MP3, WAV) in the Media Library under the 'Audio Clip' category.</p>
+                        </div>
+                    </div>
+                </section>
+
 
                 {/* Mail Settings */}
                 <section>

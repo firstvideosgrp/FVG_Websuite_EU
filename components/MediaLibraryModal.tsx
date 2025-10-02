@@ -55,9 +55,16 @@ const MediaLibraryModal: React.FC<MediaLibraryModalProps> = ({ onSelect, onClose
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                             {files.map(file => {
                                 const fileUsage = fileUsageMap.get(file.$id) || [];
+                                const isAudio = file.mimeType.startsWith('audio/');
                                 return (
                                 <button key={file.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg overflow-hidden group relative cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]" onClick={() => handleSelectFile(file.$id)}>
-                                    <img src={getFilePreviewUrl(file.$id, 200)} alt={file.name} className="w-full h-32 object-cover" loading="lazy" />
+                                    {isAudio ? (
+                                        <div className="w-full h-32 bg-[var(--bg-primary)] flex items-center justify-center">
+                                            <i className="fas fa-music text-4xl text-[var(--text-secondary)]"></i>
+                                        </div>
+                                    ) : (
+                                        <img src={getFilePreviewUrl(file.$id, 200)} alt={file.name} className="w-full h-32 object-cover" loading="lazy" />
+                                    )}
                                     <div className="p-2 text-center">
                                         <p className="text-xs text-[var(--text-secondary)] truncate" title={file.name}>{file.name}</p>
                                         {fileUsage.length > 0 ? (

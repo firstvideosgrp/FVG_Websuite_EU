@@ -7,6 +7,7 @@ import AdminSidebar from './AdminSidebar';
 import SiteSettingsPanel from './SiteSettingsPanel';
 import MediaPanel from './MediaPanel';
 import ProductionPhasesPanel from './ProductionPhasesPanel';
+import SlatePanel from './SlatePanel';
 import MediaLibraryModal from './MediaLibraryModal';
 import { useSettings } from '../contexts/SettingsContext';
 
@@ -469,6 +470,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                         )}
                         
                         {activeView === 'phases' && <ProductionPhasesPanel projects={projects} />}
+
+                        {activeView === 'slate' && <SlatePanel />}
 
                         {activeView === 'cast' && (
                              <div className="bg-[var(--bg-primary)] p-6 rounded-lg shadow-lg border border-[var(--border-color)]">

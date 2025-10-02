@@ -27,6 +27,7 @@ export const CAST_COLLECTION_ID = "YOUR_CAST_COLLECTION_ID";
 export const CREW_COLLECTION_ID = "YOUR_CREW_COLLECTION_ID";
 export const PRODUCTION_PHASES_COLLECTION_ID = "YOUR_PHASES_COLLECTION_ID";
 export const PHASE_STEPS_COLLECTION_ID = "YOUR_PHASE_STEPS_COLLECTION_ID";
+export const SLATE_ENTRIES_COLLECTION_ID = "YOUR_SLATE_ENTRIES_COLLECTION_ID";
 export const APPWRITE_STORAGE_BUCKET_ID = "YOUR_STORAGE_BUCKET_ID";
 export const CONTACT_FORM_FUNCTION_ID = "YOUR_CONTACT_FUNCTION_ID"; // e.g., 'sendContactMail'
 export const TEST_EMAIL_FUNCTION_ID = "YOUR_TEST_FUNCTION_ID"; // e.g., 'sendTestMail'
@@ -41,7 +42,7 @@ export const TEST_EMAIL_FUNCTION_ID = "YOUR_TEST_FUNCTION_ID"; // e.g., 'sendTes
 
 ## 4. Collection Setup
 
-We need eight collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", and "PhaseSteps".
+We need nine collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", and "SlateEntries".
 
 ### 4.1. About Collection
 
@@ -140,6 +141,7 @@ This collection stores the global settings for the website, such as title and th
 | `heroUsePlexus`      | Boolean | -    | No       | No    | Use plexus effect for hero background.|
 | `logoLightUrl`       | URL     | 2048 | No       | No    | URL for the light theme logo.       |
 | `logoDarkUrl`        | URL     | 2048 | No       | No    | URL for the dark theme logo.        |
+| `customBeepSoundUrl` | URL     | 2048 | No       | No    | URL for the custom slate beep sound.|
 
 
 #### Settings (Permissions)
@@ -290,6 +292,47 @@ Create an index to improve performance when querying steps by phase.
 5.  **Attributes**: Select `phaseId`.
 6.  Click **Create**.
 
+### 4.9. Slate Entries Collection
+
+This collection stores records for the internal Timecode Slate App.
+
+-   **Name**: `SlateEntries`
+-   **Collection ID**: Copy the generated ID and paste it into `constants.ts` for `SLATE_ENTRIES_COLLECTION_ID`.
+
+#### Attributes
+
+| Key          | Type    | Size | Required | Array | Notes                                     |
+| :----------- | :------ | :--- | :------- | :---- | :---------------------------------------- |
+| `roll`       | String  | 255  | Yes      | No    | e.g., "A001"                              |
+| `scene`      | String  | 255  | Yes      | No    | e.g., "14B"                               |
+| `take`       | Integer | -    | Yes      | No    | The take number.                          |
+| `production` | String  | 255  | Yes      | No    | Name of the production/project.           |
+| `director`   | String  | 255  | Yes      | No    | Name of the Director.                     |
+| `dop`        | String  | 255  | Yes      | No    | Name of the Director of Photography.      |
+| `note`       | String  | 1000 | No       | No    | Optional notes for the take.              |
+| `date`       | Datetime| -    | Yes      | No    | The date the take was recorded.           |
+| `timecode`   | String  | 255  | Yes      | No    | The logged timecode, e.g., "00:01:23:14". |
+
+#### Settings (Permissions)
+
+Since this is an internal-only tool, all permissions are restricted to authenticated users.
+
+-   **Permissions**:
+    -   Click **Add Role**. Select **Read Access** and choose **role:member** (Users).
+    -   Click **Add Role**. Select **Create Access** and choose **role:member** (Users).
+    -   Click **Add Role**. Select **Update Access** and choose **role:member** (Users).
+    -   Click **Add Role**. Select **Delete Access** and choose **role:member** (Users).
+
+#### Indexes
+
+Create an index to improve performance when sorting slate entries by date.
+
+1.  Go to the **Indexes** tab for the `SlateEntries` collection.
+2.  Click **Create index**.
+3.  **Key**: `date_index`
+4.  **Type**: `key`
+5.  **Attributes**: Select `date`.
+6.  Click **Create**.
 
 ## 5. Storage (Media Bucket) Setup
 

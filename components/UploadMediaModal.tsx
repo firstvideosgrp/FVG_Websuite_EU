@@ -8,7 +8,7 @@ interface UploadModalProps {
   onUploadSuccess: () => void;
 }
 
-const categories: MediaCategory[] = ['Image', 'Poster', 'Soundtrack', 'Document', 'Video', 'Logo', 'Behind-the-Scenes', 'Hero Background', 'Project Poster'];
+const categories: MediaCategory[] = ['Image', 'Poster', 'Soundtrack', 'Document', 'Video', 'Logo', 'Behind-the-Scenes', 'Hero Background', 'Project Poster', 'Audio Clip'];
 
 const UploadMediaModal: React.FC<UploadModalProps> = ({ onClose, onUploadSuccess }) => {
     const [file, setFile] = useState<File | null>(null);
