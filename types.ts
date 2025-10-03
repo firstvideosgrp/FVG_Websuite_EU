@@ -38,6 +38,7 @@ export type Project = Models.Document & {
   producers?: string[]; // Array of CrewMember document IDs
   rating?: string;
   genres?: string[];
+  departments?: string[]; // Array of Department document IDs
 };
 
 export type AboutContent = Models.Document & {
@@ -147,4 +148,30 @@ export type ProductionTask = Models.Document & {
   projectId: string;
   phaseId?: string;
   status: TaskStatus;
+};
+
+// New types for Department Management
+export type Department = Models.Document & {
+  name: string;
+  description?: string;
+  managerId?: string; // Crew member ID
+};
+
+export type DepartmentRole = Models.Document & {
+  departmentId: string;
+  roleName: string;
+  description?: string;
+};
+
+export type DepartmentCrew = Models.Document & {
+  departmentId: string;
+  roleId: string;
+  crewId: string; // Crew member ID
+};
+
+// New type for Project-specific crew assignments
+export type ProjectDepartmentCrew = Models.Document & {
+  projectId: string;
+  roleId: string; // The DepartmentRole ID
+  crewId: string;
 };

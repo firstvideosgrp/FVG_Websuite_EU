@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import type { Project, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep } from '../types';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import type { Project, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, DepartmentRole, DepartmentCrew } from '../types';
 import { getProductionPhasesForProject, getPhaseStepsForPhase } from '../services/appwrite';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -7,6 +7,8 @@ interface ProjectModalProps {
     project: Project;
     cast: CastMember[];
     crew: CrewMember[];
+    allRoles: DepartmentRole[];
+    allAssignments: DepartmentCrew[];
     onClose: () => void;
 }
 
@@ -43,7 +45,7 @@ const MemberList: React.FC<{ title: string; members: (CastMember | CrewMember)[]
     );
 };
 
-const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClose }) => {
+const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, allRoles, allAssignments, onClose }) => {
     const [isPosterEnlarged, setIsPosterEnlarged] = useState(false);
     const [phases, setPhases] = useState<ProductionPhase[]>([]);
     const [isLoadingPhases, setIsLoadingPhases] = useState(true);
@@ -86,6 +88,17 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClos
             document.body.style.overflow = 'auto';
         };
     }, [onClose, isPosterEnlarged, project.$id]);
+
+    const rolesMap = useMemo(() => new Map(allRoles.map(r => [r.$id, r.roleName])), [allRoles]);
+
+    const getCrewRoles = useCallback((crewMember: CrewMember): string => {
+        const assignedRoles = allAssignments
+            .filter(a => a.crewId === crewMember.$id)
+            .map(a => rolesMap.get(a.roleId))
+            .filter(Boolean);
+        
+        return assignedRoles.length > 0 ? assignedRoles.join(', ') : crewMember.role;
+    }, [allAssignments, rolesMap]);
 
     const projectCast = useMemo(() => {
         if (!project.cast) return [];
@@ -207,9 +220,9 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, onClos
                         <div>
                             <h3 className="text-xl font-bold border-b border-[var(--border-color)] pb-2 mb-3">Crew</h3>
                             <div className="space-y-4">
-                                <MemberList title="Director(s)" members={projectDirectors} getRole={() => 'Director'}/>
-                                <MemberList title="Producer(s)" members={projectProducers} getRole={() => 'Producer'}/>
-                                <MemberList title="Additional Crew" members={otherCrew} />
+                                <MemberList title="Director(s)" members={projectDirectors} getRole={getCrewRoles} />
+                                <MemberList title="Producer(s)" members={projectProducers} getRole={getCrewRoles} />
+                                <MemberList title="Additional Crew" members={otherCrew} getRole={getCrewRoles} />
                             </div>
                         </div>
                     </div>

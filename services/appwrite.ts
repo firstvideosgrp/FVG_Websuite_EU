@@ -1,7 +1,7 @@
 // FIX: Imported the `Models` namespace to resolve reference errors below.
 import { Client, Account, Databases, ID, Query, Models, Storage, Functions } from 'appwrite';
-import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID, SLATE_ENTRIES_COLLECTION_ID, TASKS_COLLECTION_ID } from '../constants';
-import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, SlateEntry, ProductionTask } from '../types';
+import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID, SLATE_ENTRIES_COLLECTION_ID, TASKS_COLLECTION_ID, DEPARTMENTS_COLLECTION_ID, DEPARTMENT_ROLES_COLLECTION_ID, DEPARTMENT_CREW_COLLECTION_ID, PROJECT_DEPARTMENT_CREW_COLLECTION_ID } from '../constants';
+import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, SlateEntry, ProductionTask, Department, DepartmentRole, DepartmentCrew, ProjectDepartmentCrew } from '../types';
 
 const client = new Client();
 
@@ -269,6 +269,138 @@ export const sendTestEmail = (payload: { recipientEmail: string }) => {
     return functions.createExecution(TEST_EMAIL_FUNCTION_ID, JSON.stringify(payload));
 };
 
+// --- Department Management ---
+
+// Departments
+export const getDepartments = async (): Promise<Department[]> => {
+    try {
+        const response = await databases.listDocuments<Department>(APPWRITE_DATABASE_ID, DEPARTMENTS_COLLECTION_ID, [Query.orderAsc('name')]);
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to fetch departments:", error);
+        return [];
+    }
+};
+
+export const createDepartment = (data: Omit<Department, keyof Models.Document>) => {
+    return databases.createDocument(APPWRITE_DATABASE_ID, DEPARTMENTS_COLLECTION_ID, ID.unique(), data);
+};
+
+export const updateDepartment = (documentId: string, data: Partial<Omit<Department, keyof Models.Document>>) => {
+    return databases.updateDocument(APPWRITE_DATABASE_ID, DEPARTMENTS_COLLECTION_ID, documentId, data);
+};
+
+export const deleteDepartment = (documentId: string) => {
+    return databases.deleteDocument(APPWRITE_DATABASE_ID, DEPARTMENTS_COLLECTION_ID, documentId);
+};
+
+// Department Roles
+export const getDepartmentRoles = async (departmentId: string): Promise<DepartmentRole[]> => {
+    try {
+        const response = await databases.listDocuments<DepartmentRole>(APPWRITE_DATABASE_ID, DEPARTMENT_ROLES_COLLECTION_ID, [
+            Query.equal('departmentId', departmentId),
+            Query.orderAsc('roleName')
+        ]);
+        return response.documents;
+    } catch (error) {
+        console.error(`Failed to fetch roles for department ${departmentId}:`, error);
+        return [];
+    }
+};
+
+export const getAllDepartmentRoles = async (): Promise<DepartmentRole[]> => {
+    try {
+        const response = await databases.listDocuments<DepartmentRole>(APPWRITE_DATABASE_ID, DEPARTMENT_ROLES_COLLECTION_ID, [
+            Query.limit(2000)
+        ]);
+        return response.documents;
+    } catch (error) {
+        console.error(`Failed to fetch all department roles:`, error);
+        return [];
+    }
+};
+
+export const createDepartmentRole = (data: Omit<DepartmentRole, keyof Models.Document>) => {
+    return databases.createDocument(APPWRITE_DATABASE_ID, DEPARTMENT_ROLES_COLLECTION_ID, ID.unique(), data);
+};
+
+export const updateDepartmentRole = (documentId: string, data: Partial<Omit<DepartmentRole, keyof Models.Document>>) => {
+    return databases.updateDocument(APPWRITE_DATABASE_ID, DEPARTMENT_ROLES_COLLECTION_ID, documentId, data);
+};
+
+export const deleteDepartmentRole = (documentId: string) => {
+    return databases.deleteDocument(APPWRITE_DATABASE_ID, DEPARTMENT_ROLES_COLLECTION_ID, documentId);
+};
+
+// Department Crew Assignments
+export const getDepartmentCrew = async (departmentId: string): Promise<DepartmentCrew[]> => {
+    try {
+        const response = await databases.listDocuments<DepartmentCrew>(APPWRITE_DATABASE_ID, DEPARTMENT_CREW_COLLECTION_ID, [
+            Query.equal('departmentId', departmentId),
+            Query.limit(2000) // Assuming a department won't have more than 2000 assignments
+        ]);
+        return response.documents;
+    } catch (error) {
+        console.error(`Failed to fetch crew for department ${departmentId}:`, error);
+        return [];
+    }
+};
+
+export const getAllDepartmentCrew = async (): Promise<DepartmentCrew[]> => {
+    try {
+        const response = await databases.listDocuments<DepartmentCrew>(APPWRITE_DATABASE_ID, DEPARTMENT_CREW_COLLECTION_ID, [
+            Query.limit(5000) // High limit to get all assignments
+        ]);
+        return response.documents;
+    } catch (error) {
+        console.error(`Failed to fetch all department crew assignments:`, error);
+        return [];
+    }
+};
+
+export const getAssignmentsForRole = async(roleId: string): Promise<DepartmentCrew[]> => {
+    try {
+        const response = await databases.listDocuments<DepartmentCrew>(APPWRITE_DATABASE_ID, DEPARTMENT_CREW_COLLECTION_ID, [
+            Query.equal('roleId', roleId),
+            Query.limit(500)
+        ]);
+        return response.documents;
+    } catch (error) {
+        console.error(`Failed to fetch assignments for role ${roleId}:`, error);
+        return [];
+    }
+}
+
+export const assignCrewToDepartment = (data: Omit<DepartmentCrew, keyof Models.Document>) => {
+    return databases.createDocument(APPWRITE_DATABASE_ID, DEPARTMENT_CREW_COLLECTION_ID, ID.unique(), data);
+};
+
+export const unassignCrewFromDepartment = (assignmentId: string) => {
+    return databases.deleteDocument(APPWRITE_DATABASE_ID, DEPARTMENT_CREW_COLLECTION_ID, assignmentId);
+};
+
+// --- New Project Department Crew Assignments ---
+
+export const getProjectDepartmentCrew = async (projectId: string): Promise<ProjectDepartmentCrew[]> => {
+    try {
+        const response = await databases.listDocuments<ProjectDepartmentCrew>(APPWRITE_DATABASE_ID, PROJECT_DEPARTMENT_CREW_COLLECTION_ID, [
+            Query.equal('projectId', projectId),
+            Query.limit(2000)
+        ]);
+        return response.documents;
+    } catch (error) {
+        console.error(`Failed to fetch project crew assignments for project ${projectId}:`, error);
+        return [];
+    }
+};
+
+export const assignCrewToProjectDepartment = (data: Omit<ProjectDepartmentCrew, keyof Models.Document>) => {
+    return databases.createDocument(APPWRITE_DATABASE_ID, PROJECT_DEPARTMENT_CREW_COLLECTION_ID, ID.unique(), data);
+};
+
+export const unassignCrewFromProjectDepartment = (assignmentId: string) => {
+    return databases.deleteDocument(APPWRITE_DATABASE_ID, PROJECT_DEPARTMENT_CREW_COLLECTION_ID, assignmentId);
+};
 
 // Storage / Media
 export const listFiles = async (): Promise<MediaFile[]> => {

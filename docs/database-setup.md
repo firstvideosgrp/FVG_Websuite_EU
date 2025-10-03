@@ -29,6 +29,10 @@ export const PRODUCTION_PHASES_COLLECTION_ID = "YOUR_PHASES_COLLECTION_ID";
 export const PHASE_STEPS_COLLECTION_ID = "YOUR_PHASE_STEPS_COLLECTION_ID";
 export const SLATE_ENTRIES_COLLECTION_ID = "YOUR_SLATE_ENTRIES_COLLECTION_ID";
 export const TASKS_COLLECTION_ID = "YOUR_TASKS_COLLECTION_ID";
+export const DEPARTMENTS_COLLECTION_ID = "YOUR_DEPARTMENTS_COLLECTION_ID";
+export const DEPARTMENT_ROLES_COLLECTION_ID = "YOUR_DEPT_ROLES_COLLECTION_ID";
+export const DEPARTMENT_CREW_COLLECTION_ID = "YOUR_DEPT_CREW_COLLECTION_ID";
+export const PROJECT_DEPARTMENT_CREW_COLLECTION_ID = "YOUR_PROJ_DEPT_CREW_COLLECTION_ID";
 export const APPWRITE_STORAGE_BUCKET_ID = "YOUR_STORAGE_BUCKET_ID";
 export const CONTACT_FORM_FUNCTION_ID = "YOUR_CONTACT_FUNCTION_ID"; // e.g., 'sendContactMail'
 export const TEST_EMAIL_FUNCTION_ID = "YOUR_TEST_FUNCTION_ID"; // e.g., 'sendTestMail'
@@ -43,7 +47,7 @@ export const TEST_EMAIL_FUNCTION_ID = "YOUR_TEST_FUNCTION_ID"; // e.g., 'sendTes
 
 ## 4. Collection Setup
 
-We need ten collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", "SlateEntries", and "ProductionTasks".
+We need fourteen collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", "SlateEntries", "ProductionTasks", "Departments", "DepartmentRoles", "DepartmentCrew", and "ProjectDepartmentCrew".
 
 ### 4.1. About Collection
 
@@ -100,6 +104,8 @@ Create the following attributes for the `Projects` collection:
 | `producers`          | String  | -    | No       | Yes   | Array of Crew document IDs for producers.           |
 | `rating`             | String  | 50   | No       | No    | e.g., "PG-13", "7.8/10".                            |
 | `genres`             | String  | 50   | No       | Yes   | Array of genres, e.g., ["Action", "Sci-Fi"].        |
+| `departments`        | String  | -    | No       | Yes   | Array of Department document IDs.                   |
+
 
 #### Settings (Permissions)
 
@@ -376,6 +382,89 @@ Create indexes to improve query performance.
     -   **Key**: `dueDate_index`
     -   **Type**: `key`
     -   **Attributes**: Select `dueDate`.
+
+### 4.11. Departments Collection
+
+This collection stores a list of all departments within the company.
+
+-   **Name**: `Departments`
+-   **Collection ID**: Copy the generated ID and paste it into `constants.ts` for `DEPARTMENTS_COLLECTION_ID`.
+
+#### Attributes
+
+| Key         | Type   | Size | Required | Array | Notes                                     |
+| :---------- | :----- | :--- | :------- | :---- | :---------------------------------------- |
+| `name`      | String | 255  | Yes      | No    | The name of the department (e.g., "Art"). |
+| `description`| String | 1000 | No       | No    | A brief description of the department.    |
+| `managerId` | String | 255  | No       | No    | The ID of a Crew member who is the manager.|
+
+#### Settings (Permissions)
+-   **Permissions**: Set Read, Create, Update, and Delete access to **role:member** (Users).
+
+### 4.12. Department Roles Collection
+
+This collection stores all possible roles within each department.
+
+-   **Name**: `DepartmentRoles`
+-   **Collection ID**: Copy the generated ID and paste it into `constants.ts` for `DEPARTMENT_ROLES_COLLECTION_ID`.
+
+#### Attributes
+
+| Key         | Type   | Size | Required | Array | Notes                                     |
+| :---------- | :----- | :--- | :------- | :---- | :---------------------------------------- |
+| `departmentId`| String | 255 | Yes      | No    | The ID of the linked department.          |
+| `roleName`  | String | 255  | Yes      | No    | The name of the role (e.g., "Lead Artist").|
+| `description`| String | 1000 | No       | No    | A brief description of the role.          |
+
+#### Settings (Permissions)
+-   **Permissions**: Set Read, Create, Update, and Delete access to **role:member** (Users).
+
+#### Indexes
+-   Create a `key` index on the `departmentId` attribute to speed up queries for roles within a specific department.
+
+### 4.13. Department Crew Collection
+
+This collection acts as a link table, assigning specific crew members to roles within departments.
+
+-   **Name**: `DepartmentCrew`
+-   **Collection ID**: Copy the generated ID and paste it into `constants.ts` for `DEPARTMENT_CREW_COLLECTION_ID`.
+
+#### Attributes
+
+| Key         | Type   | Size | Required | Array | Notes                                     |
+| :---------- | :----- | :--- | :------- | :---- | :---------------------------------------- |
+| `departmentId`| String | 255 | Yes      | No    | The ID of the linked department.          |
+| `roleId`    | String | 255  | Yes      | No    | The ID of the linked department role.     |
+| `crewId`    | String | 255  | Yes      | No    | The ID of the assigned crew member.       |
+
+#### Settings (Permissions)
+-   **Permissions**: Set Read, Create, Update, and Delete access to **role:member** (Users).
+
+#### Indexes
+-   Create a `key` index on the `departmentId` attribute.
+-   Create a `key` index on the `roleId` attribute.
+
+### 4.14. Project Department Crew Collection
+
+This collection links crew members to specific roles within a department for a single project. It enables project-specific team compositions.
+
+-   **Name**: `ProjectDepartmentCrew`
+-   **Collection ID**: Copy the generated ID and paste it into `constants.ts` for `PROJECT_DEPARTMENT_CREW_COLLECTION_ID`.
+
+#### Attributes
+
+| Key         | Type   | Size | Required | Array | Notes                                     |
+| :---------- | :----- | :--- | :------- | :---- | :---------------------------------------- |
+| `projectId` | String | 255  | Yes      | No    | The ID of the linked project.             |
+| `roleId`    | String | 255  | Yes      | No    | The ID of the linked department role.     |
+| `crewId`    | String | 255  | Yes      | No    | The ID of the assigned crew member.       |
+
+#### Settings (Permissions)
+-   **Permissions**: Set Read, Create, Update, and Delete access to **role:member** (Users).
+
+#### Indexes
+-   Create a `key` index on the `projectId` attribute.
+-   Create a `key` index on the `roleId` attribute.
 
 ## 5. Storage (Media Bucket) Setup
 

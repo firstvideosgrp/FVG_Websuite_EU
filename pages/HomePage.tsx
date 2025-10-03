@@ -7,8 +7,8 @@ import ContactSection from '../components/ContactSection';
 import Footer from '../components/Footer';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProjectModal from '../components/ProjectModal';
-import { getAboutContent, getProjects, getCast, getCrew } from '../services/appwrite';
-import type { AboutContent, Project, CastMember, CrewMember } from '../types';
+import { getAboutContent, getProjects, getCast, getCrew, getAllDepartmentRoles, getAllDepartmentCrew } from '../services/appwrite';
+import type { AboutContent, Project, CastMember, CrewMember, DepartmentRole, DepartmentCrew } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 
 const HomePage: React.FC = () => {
@@ -17,22 +17,28 @@ const HomePage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [cast, setCast] = useState<CastMember[]>([]);
   const [crew, setCrew] = useState<CrewMember[]>([]);
+  const [allRoles, setAllRoles] = useState<DepartmentRole[]>([]);
+  const [allAssignments, setAllAssignments] = useState<DepartmentCrew[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [aboutData, projectsData, castData, crewData] = await Promise.all([
+        const [aboutData, projectsData, castData, crewData, rolesData, assignmentsData] = await Promise.all([
           getAboutContent(),
           getProjects(),
           getCast(),
-          getCrew()
+          getCrew(),
+          getAllDepartmentRoles(),
+          getAllDepartmentCrew()
         ]);
         setAboutContent(aboutData);
         setProjects(projectsData);
         setCast(castData);
         setCrew(crewData);
+        setAllRoles(rolesData);
+        setAllAssignments(assignmentsData);
       } catch (error) {
         console.error("Failed to load page data:", error);
       } finally {
@@ -68,7 +74,7 @@ const HomePage: React.FC = () => {
             </main>
             <Footer />
           </div>
-          {selectedProject && <ProjectModal project={selectedProject} cast={cast} crew={crew} onClose={handleCloseModal} />}
+          {selectedProject && <ProjectModal project={selectedProject} cast={cast} crew={crew} allRoles={allRoles} allAssignments={allAssignments} onClose={handleCloseModal} />}
         </>
       )}
     </div>

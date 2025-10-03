@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { logout, getAboutContent, updateAboutContent, getProjects, createProject, updateProject, deleteProject, getCast, createCastMember, updateCastMember, deleteCastMember, getCrew, createCrewMember, updateCrewMember, deleteCrewMember, getTasks, getProductionPhasesForProject } from '../services/appwrite';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { logout, getAboutContent, updateAboutContent, getProjects, createProject, updateProject, deleteProject, getCast, createCastMember, updateCastMember, deleteCastMember, getCrew, createCrewMember, updateCrewMember, deleteCrewMember, getTasks, getProductionPhasesForProject, getDepartments, getDepartmentRoles, getProjectDepartmentCrew, assignCrewToProjectDepartment, unassignCrewFromProjectDepartment } from '../services/appwrite';
 import type { Models } from 'appwrite';
-import type { AboutContent, Project, ProjectStatus, ProjectType, CastMember, CrewMember, ProductionTask, ProductionPhase } from '../types';
+import type { AboutContent, Project, ProjectStatus, ProjectType, CastMember, CrewMember, ProductionTask, ProductionPhase, Department, ProjectDepartmentCrew, DepartmentRole } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 import AdminSidebar from './AdminSidebar';
 import SiteSettingsPanel from './SiteSettingsPanel';
@@ -9,6 +9,7 @@ import MediaPanel from './MediaPanel';
 import ProductionPhasesPanel from './ProductionPhasesPanel';
 import SlatePanel from './SlatePanel';
 import TasksPanel from './TasksPanel';
+import DepartmentsPanel from './DepartmentsPanel';
 import MediaLibraryModal from './MediaLibraryModal';
 import { useSettings } from '../contexts/SettingsContext';
 import AdminHome from './AdminHome';
@@ -43,6 +44,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     const [allCrew, setAllCrew] = useState<CrewMember[]>([]);
     const [tasks, setTasks] = useState<ProductionTask[]>([]);
     const [allPhases, setAllPhases] = useState<ProductionPhase[]>([]);
+    const [allDepartments, setAllDepartments] = useState<Department[]>([]);
     // Loading & Modal State
     const [isLoading, setIsLoading] = useState(true);
     const [isEditingProject, setIsEditingProject] = useState<Project | null>(null);
@@ -53,14 +55,23 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
 
     // Member (Cast/Crew) CRUD Modal State
     const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
-    const [editingMember, setEditingMember] = useState<CastMember | CrewMember | null>(null);
-    const [memberType, setMemberType] = useState<'cast' | 'crew' | null>(null);
+    const [editingMember, setEditingMember] = useState<CastMember | null>(null);
     const [memberForm, setMemberForm] = useState({ name: '', role: '', bio: '' });
 
     // Project Cast/Crew Assignment Modal State
     const [projectToAssign, setProjectToAssign] = useState<Project | null>(null);
     const [selectedCastIds, setSelectedCastIds] = useState<Set<string>>(new Set());
     const [selectedCrewIds, setSelectedCrewIds] = useState<Set<string>>(new Set());
+
+    // Production Crew Assignment Modal State
+    const [isProdCrewModalOpen, setIsProdCrewModalOpen] = useState(false);
+    const [projectForProdCrew, setProjectForProdCrew] = useState<Project | null>(null);
+    const [modalData, setModalData] = useState<{
+        roles: DepartmentRole[];
+        assignments: ProjectDepartmentCrew[];
+        selectedDeptIds: string[];
+        isLoading: boolean;
+    }>({ roles: [], assignments: [], selectedDeptIds: [], isLoading: true });
     
     const [projectForm, setProjectForm] = useState({
         title: '',
@@ -80,6 +91,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         producers: [] as string[],
         rating: '',
         genres: [] as string[],
+        departments: [] as string[],
     });
 
     useEffect(() => {
@@ -134,12 +146,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const [aboutData, projectsData, castData, crewData, tasksData] = await Promise.all([
+            const [aboutData, projectsData, castData, crewData, tasksData, departmentsData] = await Promise.all([
                 getAboutContent(), 
                 getProjects(),
                 getCast(),
                 getCrew(),
-                getTasks()
+                getTasks(),
+                getDepartments()
             ]);
             const phasesData = await Promise.all(projectsData.map(p => getProductionPhasesForProject(p.$id))).then(res => res.flat());
             setAbout(aboutData);
@@ -149,6 +162,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             setAllCrew(crewData);
             setTasks(tasksData);
             setAllPhases(phasesData);
+            setAllDepartments(departmentsData);
         } catch (error) {
             console.error("Failed to fetch dashboard data", error);
         } finally {
@@ -256,6 +270,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             producers: project.producers || [],
             rating: project.rating || '',
             genres: project.genres || [],
+            departments: project.departments || [],
         });
     };
     
@@ -279,6 +294,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             producers: [],
             rating: '',
             genres: [],
+            departments: [],
         });
     };
 
@@ -298,8 +314,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         setMemberForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    const openMemberModal = (member: CastMember | CrewMember | null, type: 'cast' | 'crew') => {
-        setMemberType(type);
+    const openMemberModal = (member: CastMember | null) => {
         setEditingMember(member);
         setMemberForm({
             name: member?.name || '',
@@ -312,17 +327,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     const closeMemberModal = () => {
         setIsMemberModalOpen(false);
         setEditingMember(null);
-        setMemberType(null);
     };
 
     const handleMemberSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!memberType) return;
-
-        const api = {
-            create: { cast: createCastMember, crew: createCrewMember },
-            update: { cast: updateCastMember, crew: updateCrewMember },
-        };
         
         // FIX: Convert empty strings for optional fields to null to prevent Appwrite validation errors.
         // Appwrite's URL attribute type requires a valid URL or null, not an empty string.
@@ -333,29 +341,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
 
         try {
             if (editingMember) {
-                await api.update[memberType](editingMember.$id, payload);
+                await updateCastMember(editingMember.$id, payload);
             } else {
-                await api.create[memberType](payload);
+                await createCastMember(payload);
             }
-            alert(`${memberType.charAt(0).toUpperCase() + memberType.slice(1)} member saved!`);
+            alert(`Cast member saved!`);
             closeMemberModal();
             fetchData();
         } catch (error) {
-            console.error(`Failed to save ${memberType} member`, error);
-            alert(`Failed to save ${memberType} member.`);
+            console.error(`Failed to save cast member`, error);
+            alert(`Failed to save cast member.`);
         }
     };
 
-    const handleMemberDelete = async (memberId: string, type: 'cast' | 'crew') => {
-        if (window.confirm(`Are you sure you want to delete this ${type} member? This will not remove them from existing projects.`)) {
+    const handleMemberDelete = async (memberId: string) => {
+        if (window.confirm(`Are you sure you want to delete this cast member? This will not remove them from existing projects.`)) {
             try {
-                if (type === 'cast') await deleteCastMember(memberId);
-                else await deleteCrewMember(memberId);
-                alert(`${type.charAt(0).toUpperCase() + type.slice(1)} member deleted.`);
+                await deleteCastMember(memberId);
+                alert(`Cast member deleted.`);
                 fetchData();
             } catch (error) {
-                console.error(`Failed to delete ${type} member`, error);
-                alert(`Failed to delete ${type} member.`);
+                console.error(`Failed to delete cast member`, error);
+                alert(`Failed to delete cast member.`);
             }
         }
     };
@@ -402,6 +409,72 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         }
     };
 
+    // --- New Production Crew Modal Handlers ---
+
+    const openProdCrewModal = async (project: Project) => {
+        setProjectForProdCrew(project);
+        setIsProdCrewModalOpen(true);
+        setModalData({ roles: [], assignments: [], selectedDeptIds: project.departments || [], isLoading: true });
+
+        const assignmentsData = await getProjectDepartmentCrew(project.$id);
+        const rolesData = await Promise.all((project.departments || []).map(deptId => getDepartmentRoles(deptId))).then(res => res.flat());
+
+        setModalData({
+            assignments: assignmentsData,
+            roles: rolesData,
+            selectedDeptIds: project.departments || [],
+            isLoading: false
+        });
+    };
+
+    const closeProdCrewModal = () => setIsProdCrewModalOpen(false);
+
+    const handleDeptSelectionChangeInModal = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedIds = Array.from(e.target.selectedOptions, option => option.value);
+        setModalData(prev => ({ ...prev, selectedDeptIds: selectedIds, isLoading: true }));
+        const rolesData = await Promise.all(selectedIds.map(deptId => getDepartmentRoles(deptId))).then(res => res.flat());
+        setModalData(prev => ({ ...prev, roles: rolesData, isLoading: false }));
+    };
+
+    const handleSaveProjectDepartments = async () => {
+        if (!projectForProdCrew) return;
+        try {
+            await updateProject(projectForProdCrew.$id, { departments: modalData.selectedDeptIds });
+            const updatedProject = { ...projectForProdCrew, departments: modalData.selectedDeptIds };
+            setProjectForProdCrew(updatedProject);
+            setProjects(prev => prev.map(p => p.$id === updatedProject.$id ? updatedProject : p));
+            alert('Project departments updated!');
+        } catch (error) {
+            alert('Failed to update departments.');
+            console.error(error);
+        }
+    };
+    
+    const handleAssignCrew = async (roleId: string, crewId: string) => {
+        if (!projectForProdCrew || !crewId) return;
+        const isAlreadyAssigned = modalData.assignments.some(a => a.roleId === roleId && a.crewId === crewId);
+        if (isAlreadyAssigned) {
+            alert("This member is already assigned to this role for this project.");
+            return;
+        }
+        try {
+            const newAssignment = await assignCrewToProjectDepartment({ projectId: projectForProdCrew.$id, roleId, crewId });
+            setModalData(prev => ({ ...prev, assignments: [...prev.assignments, newAssignment] }));
+        } catch (error) {
+            alert('Failed to assign crew member.');
+            console.error(error);
+        }
+    };
+
+    const handleUnassignCrew = async (assignmentId: string) => {
+        try {
+            await unassignCrewFromProjectDepartment(assignmentId);
+            setModalData(prev => ({ ...prev, assignments: prev.assignments.filter(a => a.$id !== assignmentId) }));
+        } catch (error) {
+            alert('Failed to unassign crew member.');
+            console.error(error);
+        }
+    };
 
     if (isLoading) {
         return <div className="flex items-center justify-center min-h-screen bg-[var(--bg-secondary)]"><LoadingSpinner /></div>;
@@ -478,6 +551,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                             </div>
                                             <div className="flex space-x-2">
                                                 <button onClick={() => openAssignmentModal(project)} aria-label="Manage Cast & Crew" className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-users"></i></button>
+                                                <button onClick={() => openProdCrewModal(project)} aria-label="Manage Production Crew" className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-sitemap"></i></button>
                                                 <button onClick={() => openEditModal(project)} aria-label="Edit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-pencil-alt"></i></button>
                                                 <button onClick={() => handleProjectDelete(project.$id)} aria-label="Delete" className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-trash"></i></button>
                                             </div>
@@ -495,11 +569,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
 
                         {activeView === 'slate' && <SlatePanel />}
 
+                        {activeView === 'departments' && <DepartmentsPanel allCrew={allCrew} onCrewUpdate={fetchData} />}
+
                         {activeView === 'cast' && (
                              <div className="bg-[var(--bg-primary)] p-6 rounded-lg shadow-lg border border-[var(--border-color)]">
                                 <div className="flex justify-between items-center mb-4">
                                      <h2 className="text-2xl font-bold text-[var(--primary-color)] flex items-center"><i className="fas fa-user-friends mr-3"></i>Cast Members</h2>
-                                     <button onClick={() => openMemberModal(null, 'cast')} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors flex items-center space-x-2">
+                                     <button onClick={() => openMemberModal(null)} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors flex items-center space-x-2">
                                          <i className="fas fa-plus"></i><span>Add New Member</span>
                                      </button>
                                 </div>
@@ -510,29 +586,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                                 <h3 className="font-bold text-lg">{member.name}</h3>
                                                 <p className="text-sm text-[var(--text-secondary)]">{member.role}</p>
                                             </div>
-                                            <div className="flex space-x-2"><button onClick={() => openMemberModal(member, 'cast')} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-pencil-alt"></i></button><button onClick={() => handleMemberDelete(member.$id, 'cast')} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-trash"></i></button></div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {activeView === 'crew' && (
-                             <div className="bg-[var(--bg-primary)] p-6 rounded-lg shadow-lg border border-[var(--border-color)]">
-                                <div className="flex justify-between items-center mb-4">
-                                     <h2 className="text-2xl font-bold text-[var(--primary-color)] flex items-center"><i className="fas fa-users-cog mr-3"></i>Crew Members</h2>
-                                     <button onClick={() => openMemberModal(null, 'crew')} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors flex items-center space-x-2">
-                                         <i className="fas fa-plus"></i><span>Add New Member</span>
-                                     </button>
-                                </div>
-                                <div className="space-y-4">
-                                    {allCrew.map(member => (
-                                        <div key={member.$id} className="bg-[var(--bg-secondary)] p-4 rounded-md flex justify-between items-center border border-[var(--border-color)]">
-                                            <div>
-                                                <h3 className="font-bold text-lg">{member.name}</h3>
-                                                <p className="text-sm text-[var(--text-secondary)]">{member.role}</p>
-                                            </div>
-                                            <div className="flex space-x-2"><button onClick={() => openMemberModal(member, 'crew')} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-pencil-alt"></i></button><button onClick={() => handleMemberDelete(member.$id, 'crew')} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-trash"></i></button></div>
+                                            <div className="flex space-x-2"><button onClick={() => openMemberModal(member)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-pencil-alt"></i></button><button onClick={() => handleMemberDelete(member.$id)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-trash"></i></button></div>
                                         </div>
                                     ))}
                                 </div>
@@ -611,6 +665,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                             {GENRE_OPTIONS.map(genre => <option key={genre} value={genre}>{genre}</option>)}
                                         </select>
                                     </div>
+                                     <div>
+                                        <label htmlFor="departments" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Departments</label>
+                                        <select multiple id="departments" name="departments" value={projectForm.departments} onChange={handleProjectFormChange} className="w-full h-32 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2 text-[var(--text-primary)]">
+                                            {allDepartments.map(dept => <option key={dept.$id} value={dept.$id}>{dept.name}</option>)}
+                                        </select>
+                                    </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label htmlFor="projectType" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Project Type</label>
@@ -658,10 +718,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
                             <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 rounded-lg shadow-2xl w-full max-w-lg relative text-[var(--text-primary)] max-h-[90vh] overflow-y-auto">
                                 <button onClick={closeMemberModal} aria-label="Close modal" className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-2xl">&times;</button>
-                                <h2 className="text-2xl font-bold mb-6">{editingMember ? 'Edit' : 'Create'} {memberType} Member</h2>
+                                <h2 className="text-2xl font-bold mb-6">{editingMember ? 'Edit' : 'Create'} Cast Member</h2>
                                 <form onSubmit={handleMemberSubmit} className="space-y-4">
                                     <input type="text" name="name" value={memberForm.name} onChange={handleMemberFormChange} placeholder="Name" required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
-                                    <input type="text" name="role" value={memberForm.role} onChange={handleMemberFormChange} placeholder="Role (e.g., Director, Actor)" required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
+                                    <input type="text" name="role" value={memberForm.role} onChange={handleMemberFormChange} placeholder="Role (e.g., Actor)" required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
                                     <textarea name="bio" value={memberForm.bio} onChange={handleMemberFormChange} placeholder="Biography" rows={4} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
                                     <div className="flex justify-end space-x-4 pt-4"><button type="button" onClick={closeMemberModal} className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Cancel</button><button type="submit" className="bg-[var(--primary-color)] hover:brightness-110 text-gray-900 font-bold py-2 px-4 rounded">Save</button></div>
                                 </form>
@@ -702,6 +762,68 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                 <div className="pt-6 mt-6 border-t border-[var(--border-color)] flex justify-end space-x-4">
                                     <button type="button" onClick={closeAssignmentModal} className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Cancel</button>
                                     <button type="button" onClick={handleAssignmentSave} className="bg-[var(--primary-color)] hover:brightness-110 text-gray-900 font-bold py-2 px-4 rounded">Save Assignments</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {isProdCrewModalOpen && projectForProdCrew && (
+                        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+                            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 rounded-lg shadow-2xl w-full max-w-6xl relative text-[var(--text-primary)] h-[90vh] flex flex-col">
+                                <button onClick={closeProdCrewModal} aria-label="Close modal" className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-2xl">&times;</button>
+                                <h2 className="text-2xl font-bold mb-1">Production Crew Management</h2>
+                                <p className="text-[var(--text-secondary)] mb-4">For: <span className="font-semibold text-[var(--text-primary)]">{projectForProdCrew.title}</span></p>
+                                
+                                <div className="flex flex-col md:flex-row gap-4 items-start border-b border-[var(--border-color)] pb-4 mb-4">
+                                    <div className="flex-grow">
+                                        <label htmlFor="prodCrewDepts" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Assigned Departments</label>
+                                        <select multiple id="prodCrewDepts" value={modalData.selectedDeptIds} onChange={handleDeptSelectionChangeInModal} className="w-full h-24 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2">
+                                            {allDepartments.map(dept => <option key={dept.$id} value={dept.$id}>{dept.name}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="self-end">
+                                        <button onClick={handleSaveProjectDepartments} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded h-10">Save Departments</button>
+                                    </div>
+                                </div>
+
+                                <div className="flex-grow overflow-y-auto">
+                                    {modalData.isLoading ? <div className="flex justify-center items-center h-full"><LoadingSpinner /></div> : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {allDepartments.filter(d => modalData.selectedDeptIds.includes(d.$id)).map(dept => {
+                                                const deptRoles = modalData.roles.filter(r => r.departmentId === dept.$id);
+                                                return (
+                                                    <div key={dept.$id} className="bg-[var(--bg-secondary)] p-4 rounded-lg border border-[var(--border-color)]">
+                                                        <h4 className="font-bold text-lg mb-3">{dept.name}</h4>
+                                                        <div className="space-y-4">
+                                                            {deptRoles.map(role => {
+                                                                const assignmentsForRole = modalData.assignments.filter(a => a.roleId === role.$id);
+                                                                return (
+                                                                    <div key={role.$id}>
+                                                                        <h5 className="font-semibold text-sm text-[var(--primary-color)] mb-2">{role.roleName}</h5>
+                                                                        <div className="space-y-2 mb-2">
+                                                                            {assignmentsForRole.map(asg => (
+                                                                                <div key={asg.$id} className="flex items-center justify-between bg-[var(--bg-primary)] p-2 rounded text-sm">
+                                                                                    <span>{allCrew.find(c => c.$id === asg.crewId)?.name || 'Unknown Crew'}</span>
+                                                                                    <button onClick={() => handleUnassignCrew(asg.$id)} className="text-red-400 hover:text-red-300 w-6 h-6 rounded flex items-center justify-center"><i className="fas fa-times"></i></button>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                        <form onSubmit={(e) => { e.preventDefault(); handleAssignCrew(role.$id, (e.target as any).elements.crewId.value); (e.target as any).reset(); }} className="flex gap-2">
+                                                                            <select name="crewId" defaultValue="" required className="flex-grow bg-[var(--input-bg)] border border-[var(--border-color)] rounded p-1 text-sm">
+                                                                                <option value="" disabled>Select Crew...</option>
+                                                                                {allCrew.map(c => <option key={c.$id} value={c.$id}>{c.name}</option>)}
+                                                                            </select>
+                                                                            <button type="submit" className="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-2 rounded">Assign</button>
+                                                                        </form>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
