@@ -12,6 +12,7 @@ export const CREW_COLLECTION_ID = "fvg_crew_members"; // Replace with your actua
 export const PRODUCTION_PHASES_COLLECTION_ID = "fvg_production_phases"; // Replace with your actual production phases collection ID
 export const PHASE_STEPS_COLLECTION_ID = "fvg_production_phase_steps"; // Replace with your actual phase steps collection ID
 export const SLATE_ENTRIES_COLLECTION_ID = "fvg_slate_panel"; // Replace with your actual slate entries collection ID
+export const TASKS_COLLECTION_ID = "fvg_production_tasks"; // Replace with your actual tasks collection ID
 export const APPWRITE_STORAGE_BUCKET_ID = "fvg_media"; // Replace with your actual storage bucket ID
 export const CONTACT_FORM_FUNCTION_ID = "sendContactMail"; // Replace with your actual Appwrite Function ID
 export const TEST_EMAIL_FUNCTION_ID = "sendTestMail"; // Replace with your actual Appwrite Function ID for testing emails

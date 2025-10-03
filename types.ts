@@ -134,3 +134,17 @@ export type SlateEntry = Models.Document & {
   date: string; // ISO date string
   timecode: string;
 };
+
+// New types for Production Tasks
+export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Critical';
+export type TaskStatus = 'Pending' | 'In Progress' | 'Completed';
+
+export type ProductionTask = Models.Document & {
+  taskName: string;
+  priority: TaskPriority;
+  dueDate: string; // ISO date string
+  assigneeId: string; // Cast or Crew member ID
+  projectId: string;
+  phaseId?: string;
+  status: TaskStatus;
+};

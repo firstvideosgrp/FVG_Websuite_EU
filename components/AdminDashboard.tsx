@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { logout, getAboutContent, updateAboutContent, getProjects, createProject, updateProject, deleteProject, getCast, createCastMember, updateCastMember, deleteCastMember, getCrew, createCrewMember, updateCrewMember, deleteCrewMember } from '../services/appwrite';
+import { logout, getAboutContent, updateAboutContent, getProjects, createProject, updateProject, deleteProject, getCast, createCastMember, updateCastMember, deleteCastMember, getCrew, createCrewMember, updateCrewMember, deleteCrewMember, getTasks, getProductionPhasesForProject } from '../services/appwrite';
 import type { Models } from 'appwrite';
-import type { AboutContent, Project, ProjectStatus, ProjectType, CastMember, CrewMember } from '../types';
+import type { AboutContent, Project, ProjectStatus, ProjectType, CastMember, CrewMember, ProductionTask, ProductionPhase } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 import AdminSidebar from './AdminSidebar';
 import SiteSettingsPanel from './SiteSettingsPanel';
 import MediaPanel from './MediaPanel';
 import ProductionPhasesPanel from './ProductionPhasesPanel';
 import SlatePanel from './SlatePanel';
+import TasksPanel from './TasksPanel';
 import MediaLibraryModal from './MediaLibraryModal';
 import { useSettings } from '../contexts/SettingsContext';
+import AdminHome from './AdminHome';
 
 interface AdminDashboardProps {
     user: Models.User<Models.Preferences>;
@@ -32,13 +34,15 @@ const getFileIdFromUrl = (url: string): string | null => {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     const { settings } = useSettings();
-    const [activeView, setActiveView] = useState('projects');
+    const [activeView, setActiveView] = useState('home');
     // Page Content State
     const [about, setAbout] = useState<AboutContent | null>(null);
     const [aboutText, setAboutText] = useState('');
     const [projects, setProjects] = useState<Project[]>([]);
     const [allCast, setAllCast] = useState<CastMember[]>([]);
     const [allCrew, setAllCrew] = useState<CrewMember[]>([]);
+    const [tasks, setTasks] = useState<ProductionTask[]>([]);
+    const [allPhases, setAllPhases] = useState<ProductionPhase[]>([]);
     // Loading & Modal State
     const [isLoading, setIsLoading] = useState(true);
     const [isEditingProject, setIsEditingProject] = useState<Project | null>(null);
@@ -130,17 +134,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const [aboutData, projectsData, castData, crewData] = await Promise.all([
+            const [aboutData, projectsData, castData, crewData, tasksData] = await Promise.all([
                 getAboutContent(), 
                 getProjects(),
                 getCast(),
-                getCrew()
+                getCrew(),
+                getTasks()
             ]);
+            const phasesData = await Promise.all(projectsData.map(p => getProductionPhasesForProject(p.$id))).then(res => res.flat());
             setAbout(aboutData);
             setAboutText(aboutData?.content || '');
             setProjects(projectsData);
             setAllCast(castData);
             setAllCrew(crewData);
+            setTasks(tasksData);
+            setAllPhases(phasesData);
         } catch (error) {
             console.error("Failed to fetch dashboard data", error);
         } finally {
@@ -193,11 +201,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         try {
             const dataToSubmit = {
                 ...projectForm,
-                posterUrl: projectForm.posterUrl || null,
-                dueDate: ['Upcoming', 'In Production'].includes(projectForm.status) ? projectForm.dueDate : null,
+                posterUrl: projectForm.posterUrl || undefined,
+                dueDate: ['Upcoming', 'In Production'].includes(projectForm.status) ? projectForm.dueDate : undefined,
                 releaseYear: Number(projectForm.releaseYear),
-                runtime: projectForm.runtime ? Number(projectForm.runtime) : null,
-                mainSubtitleLanguage: projectForm.hasSubtitles ? projectForm.mainSubtitleLanguage : null,
+                runtime: projectForm.runtime ? Number(projectForm.runtime) : undefined,
+                mainSubtitleLanguage: projectForm.hasSubtitles ? projectForm.mainSubtitleLanguage : undefined,
             };
 
             if (isEditingProject) {
@@ -320,7 +328,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         // Appwrite's URL attribute type requires a valid URL or null, not an empty string.
         const payload = {
             ...memberForm,
-            bio: memberForm.bio || null,
+            bio: memberForm.bio || undefined,
         };
 
         try {
@@ -406,12 +414,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                 <div className="p-4 md:p-8">
                      <header className="mb-8">
                         <div>
-                            <h1 className="text-3xl font-bold capitalize">{activeView} Management</h1>
-                            <p className="text-[var(--text-secondary)]">Manage your website content efficiently.</p>
+                            <h1 className="text-3xl font-bold capitalize">{activeView === 'home' ? 'Dashboard' : `${activeView} Management`}</h1>
+                            <p className="text-[var(--text-secondary)]">{activeView === 'home' ? 'An overview of your active productions and site status.' : 'Manage your website content efficiently.'}</p>
                         </div>
                     </header>
 
                     <main className="space-y-12">
+                        {activeView === 'home' && (
+                            <AdminHome 
+                                user={user} 
+                                projects={projects} 
+                                tasks={tasks}
+                                allPhases={allPhases}
+                                allCast={allCast}
+                                allCrew={allCrew}
+                                onTaskUpdate={fetchData}
+                            />
+                        )}
+
                         {activeView === 'about' && (
                             <div className="bg-[var(--bg-primary)] p-6 rounded-lg shadow-lg border border-[var(--border-color)]">
                                 <h2 className="text-2xl font-bold mb-4 text-[var(--primary-color)] flex items-center"><i className="fas fa-info-circle mr-3"></i>About Section</h2>
@@ -470,6 +490,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                         )}
                         
                         {activeView === 'phases' && <ProductionPhasesPanel projects={projects} />}
+
+                        {activeView === 'tasks' && <TasksPanel projects={projects} allCast={allCast} allCrew={allCrew} tasks={tasks} allPhases={allPhases} onTaskUpdate={fetchData} />}
 
                         {activeView === 'slate' && <SlatePanel />}
 

@@ -28,6 +28,7 @@ export const CREW_COLLECTION_ID = "YOUR_CREW_COLLECTION_ID";
 export const PRODUCTION_PHASES_COLLECTION_ID = "YOUR_PHASES_COLLECTION_ID";
 export const PHASE_STEPS_COLLECTION_ID = "YOUR_PHASE_STEPS_COLLECTION_ID";
 export const SLATE_ENTRIES_COLLECTION_ID = "YOUR_SLATE_ENTRIES_COLLECTION_ID";
+export const TASKS_COLLECTION_ID = "YOUR_TASKS_COLLECTION_ID";
 export const APPWRITE_STORAGE_BUCKET_ID = "YOUR_STORAGE_BUCKET_ID";
 export const CONTACT_FORM_FUNCTION_ID = "YOUR_CONTACT_FUNCTION_ID"; // e.g., 'sendContactMail'
 export const TEST_EMAIL_FUNCTION_ID = "YOUR_TEST_FUNCTION_ID"; // e.g., 'sendTestMail'
@@ -42,7 +43,7 @@ export const TEST_EMAIL_FUNCTION_ID = "YOUR_TEST_FUNCTION_ID"; // e.g., 'sendTes
 
 ## 4. Collection Setup
 
-We need nine collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", and "SlateEntries".
+We need ten collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", "SlateEntries", and "ProductionTasks".
 
 ### 4.1. About Collection
 
@@ -333,6 +334,48 @@ Create an index to improve performance when sorting slate entries by date.
 4.  **Type**: `key`
 5.  **Attributes**: Select `date`.
 6.  Click **Create**.
+
+### 4.10. Production Tasks Collection
+
+This collection stores individual tasks related to productions.
+
+-   **Name**: `ProductionTasks`
+-   **Collection ID**: Copy the generated ID and paste it into `constants.ts` for `TASKS_COLLECTION_ID`.
+
+#### Attributes
+
+| Key         | Type     | Size | Required | Array | Notes                                     |
+| :---------- | :------- | :--- | :------- | :---- | :---------------------------------------- |
+| `taskName`  | String   | 255  | Yes      | No    | The name or title of the task.            |
+| `priority`  | String   | 50   | Yes      | No    | 'Low', 'Medium', 'High', or 'Critical'.   |
+| `dueDate`   | Datetime | -    | Yes      | No    | When the task is due.                     |
+| `assigneeId`| String   | 255  | Yes      | No    | The ID of a Cast or Crew member.          |
+| `projectId` | String   | 255  | Yes      | No    | The ID of the linked project.             |
+| `phaseId`   | String   | 255  | No       | No    | The ID of the linked production phase.    |
+| `status`    | String   | 50   | Yes      | No    | 'Pending', 'In Progress', or 'Completed'.   |
+
+#### Settings (Permissions)
+
+Since this is an internal-only tool, all permissions are restricted to authenticated users.
+
+-   **Permissions**:
+    -   Click **Add Role**. Select **Read Access** and choose **role:member** (Users).
+    -   Click **Add Role**. Select **Create Access** and choose **role:member** (Users).
+    -   Click **Add Role**. Select **Update Access** and choose **role:member** (Users).
+    -   Click **Add Role**. Select **Delete Access** and choose **role:member** (Users).
+
+#### Indexes
+
+Create indexes to improve query performance.
+
+1.  **Index 1**:
+    -   **Key**: `projectId_index`
+    -   **Type**: `key`
+    -   **Attributes**: Select `projectId`.
+2.  **Index 2**:
+    -   **Key**: `dueDate_index`
+    -   **Type**: `key`
+    -   **Attributes**: Select `dueDate`.
 
 ## 5. Storage (Media Bucket) Setup
 

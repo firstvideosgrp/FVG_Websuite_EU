@@ -1,7 +1,7 @@
 // FIX: Imported the `Models` namespace to resolve reference errors below.
 import { Client, Account, Databases, ID, Query, Models, Storage, Functions } from 'appwrite';
-import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID, SLATE_ENTRIES_COLLECTION_ID } from '../constants';
-import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, SlateEntry } from '../types';
+import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID, SLATE_ENTRIES_COLLECTION_ID, TASKS_COLLECTION_ID } from '../constants';
+import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, SlateEntry, ProductionTask } from '../types';
 
 const client = new Client();
 
@@ -200,6 +200,35 @@ export const updateSlateEntry = (documentId: string, data: Partial<Omit<SlateEnt
 
 export const deleteSlateEntry = (documentId: string) => {
     return databases.deleteDocument(APPWRITE_DATABASE_ID, SLATE_ENTRIES_COLLECTION_ID, documentId);
+};
+
+// Production Tasks
+export const getTasks = async (queries: string[] = []): Promise<ProductionTask[]> => {
+    try {
+        // Using a high limit to fetch all tasks; consider pagination for very large datasets.
+        const allQueries = [...queries, Query.limit(2000)];
+        const response = await databases.listDocuments<ProductionTask>(
+            APPWRITE_DATABASE_ID,
+            TASKS_COLLECTION_ID,
+            allQueries
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to fetch tasks:", error);
+        return [];
+    }
+};
+
+export const createTask = (data: Omit<ProductionTask, keyof Models.Document>) => {
+    return databases.createDocument(APPWRITE_DATABASE_ID, TASKS_COLLECTION_ID, ID.unique(), data);
+};
+
+export const updateTask = (documentId: string, data: Partial<Omit<ProductionTask, keyof Models.Document>>) => {
+    return databases.updateDocument(APPWRITE_DATABASE_ID, TASKS_COLLECTION_ID, documentId, data);
+};
+
+export const deleteTask = (documentId: string) => {
+    return databases.deleteDocument(APPWRITE_DATABASE_ID, TASKS_COLLECTION_ID, documentId);
 };
 
 // Site Settings
