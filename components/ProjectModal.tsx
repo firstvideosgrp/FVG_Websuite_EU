@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import type { Project, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, DepartmentRole, DepartmentCrew } from '../types';
-import { getProductionPhasesForProject, getPhaseStepsForPhase } from '../services/appwrite';
+import type { Project, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, DepartmentRole, DepartmentCrew, Department, ProjectDepartmentCrew } from '../types';
+import { getProductionPhasesForProject, getPhaseStepsForPhase, getProjectDepartmentCrew } from '../services/appwrite';
 import LoadingSpinner from './LoadingSpinner';
 
 interface ProjectModalProps {
@@ -9,6 +9,7 @@ interface ProjectModalProps {
     crew: CrewMember[];
     allRoles: DepartmentRole[];
     allAssignments: DepartmentCrew[];
+    departments: Department[];
     onClose: () => void;
 }
 
@@ -45,10 +46,11 @@ const MemberList: React.FC<{ title: string; members: (CastMember | CrewMember)[]
     );
 };
 
-const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, allRoles, allAssignments, onClose }) => {
+const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, allRoles, allAssignments, departments, onClose }) => {
     const [isPosterEnlarged, setIsPosterEnlarged] = useState(false);
     const [phases, setPhases] = useState<ProductionPhase[]>([]);
-    const [isLoadingPhases, setIsLoadingPhases] = useState(true);
+    const [projectAssignments, setProjectAssignments] = useState<ProjectDepartmentCrew[]>([]);
+    const [isLoadingProductionData, setIsLoadingProductionData] = useState(true);
 
     useEffect(() => {
         const handleEsc = (event: KeyboardEvent) => {
@@ -64,9 +66,13 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, allRol
         document.body.style.overflow = 'hidden';
 
         const fetchProductionData = async () => {
-            setIsLoadingPhases(true);
+            setIsLoadingProductionData(true);
             try {
-                const fetchedPhases = await getProductionPhasesForProject(project.$id);
+                const [fetchedPhases, fetchedAssignments] = await Promise.all([
+                    getProductionPhasesForProject(project.$id),
+                    getProjectDepartmentCrew(project.$id)
+                ]);
+
                 const phasesWithSteps = await Promise.all(
                     fetchedPhases.map(async (phase) => {
                         const steps = await getPhaseStepsForPhase(phase.$id);
@@ -74,10 +80,11 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, allRol
                     })
                 );
                 setPhases(phasesWithSteps);
+                setProjectAssignments(fetchedAssignments);
             } catch (error) {
-                console.error("Failed to fetch production phases for modal", error);
+                console.error("Failed to fetch production data for modal", error);
             } finally {
-                setIsLoadingPhases(false);
+                setIsLoadingProductionData(false);
             }
         };
         
@@ -89,12 +96,13 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, allRol
         };
     }, [onClose, isPosterEnlarged, project.$id]);
 
-    const rolesMap = useMemo(() => new Map(allRoles.map(r => [r.$id, r.roleName])), [allRoles]);
+    const rolesMap = useMemo(() => new Map(allRoles.map(r => [r.$id, r])), [allRoles]);
+    const departmentsMap = useMemo(() => new Map(departments.map(d => [d.$id, d.name])), [departments]);
 
     const getCrewRoles = useCallback((crewMember: CrewMember): string => {
         const assignedRoles = allAssignments
             .filter(a => a.crewId === crewMember.$id)
-            .map(a => rolesMap.get(a.roleId))
+            .map(a => rolesMap.get(a.roleId)?.roleName)
             .filter(Boolean);
         
         return assignedRoles.length > 0 ? assignedRoles.join(', ') : crewMember.role;
@@ -106,28 +114,36 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, allRol
         return project.cast.map(id => castMap.get(id)).filter(Boolean) as CastMember[];
     }, [project.cast, cast]);
 
+    const crewMap = useMemo(() => new Map(crew.map(c => [c.$id, c])), [crew]);
+
     const projectDirectors = useMemo(() => {
         if (!project.directors) return [];
-        const crewMap = new Map(crew.map(c => [c.$id, c]));
         return project.directors.map(id => crewMap.get(id)).filter(Boolean) as CrewMember[];
-    }, [project.directors, crew]);
+    }, [project.directors, crewMap]);
     
     const projectProducers = useMemo(() => {
         if (!project.producers) return [];
-        const crewMap = new Map(crew.map(c => [c.$id, c]));
         return project.producers.map(id => crewMap.get(id)).filter(Boolean) as CrewMember[];
-    }, [project.producers, crew]);
+    }, [project.producers, crewMap]);
 
-    const otherCrew = useMemo(() => {
-        if (!project.crew) return [];
-        const directorIds = new Set(project.directors || []);
-        const producerIds = new Set(project.producers || []);
-        const crewMap = new Map(crew.map(c => [c.$id, c]));
-        return project.crew
-            .filter(id => !directorIds.has(id) && !producerIds.has(id))
-            .map(id => crewMap.get(id))
-            .filter(Boolean) as CrewMember[];
-    }, [project.crew, project.directors, project.producers, crew]);
+    const directorAndProducerIds = useMemo(() => new Set([...(project.directors || []), ...(project.producers || [])]), [project.directors, project.producers]);
+
+    const additionalCrewAssignments = useMemo(() => {
+        return projectAssignments
+            .filter(asg => !directorAndProducerIds.has(asg.crewId))
+            .map(asg => {
+                const crewMember = crewMap.get(asg.crewId);
+                const role = rolesMap.get(asg.roleId);
+                const departmentName = role ? departmentsMap.get(role.departmentId) : undefined;
+                return {
+                    id: asg.$id,
+                    crewMember,
+                    roleName: role?.roleName,
+                    departmentName: departmentName
+                };
+            })
+            .filter(item => item.crewMember && item.roleName && item.departmentName);
+    }, [projectAssignments, directorAndProducerIds, crewMap, rolesMap, departmentsMap]);
 
 
     return (
@@ -222,7 +238,21 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, allRol
                             <div className="space-y-4">
                                 <MemberList title="Director(s)" members={projectDirectors} getRole={getCrewRoles} />
                                 <MemberList title="Producer(s)" members={projectProducers} getRole={getCrewRoles} />
-                                <MemberList title="Additional Crew" members={otherCrew} getRole={getCrewRoles} />
+                                {additionalCrewAssignments.length > 0 && (
+                                    <div>
+                                        <h4 className="text-lg font-bold text-[var(--primary-color)] mb-2">Additional Crew</h4>
+                                        <ul className="space-y-1">
+                                            {additionalCrewAssignments.map(item => (
+                                                <li key={item.id} className="text-[var(--text-secondary)]">
+                                                    {item.crewMember!.name}
+                                                    <span className="text-xs opacity-75">
+                                                        {' – '}{item.roleName} ({item.departmentName})
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -231,7 +261,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ project, cast, crew, allRol
                     {(project.status === 'In Production' || project.status === 'Upcoming' || phases.length > 0) && (
                         <div className="pt-4 border-t border-[var(--border-color)]">
                             <h3 className="text-xl font-bold mb-4">Production Progress</h3>
-                             {isLoadingPhases ? (
+                             {isLoadingProductionData ? (
                                 <div className="flex justify-center py-4"><LoadingSpinner/></div>
                              ) : phases.length > 0 ? (
                                 <div className="space-y-4">

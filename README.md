@@ -94,21 +94,27 @@ This guide will walk you through:
 4.  Deploying server-side Functions for sending emails.
 5.  Creating an admin user account for the dashboard.
 
-### 4. Configure Frontend Constants
+### 4. Configure Environment Variables
 
-After setting up your Appwrite backend, you must update the configuration file with the IDs from your Appwrite project.
+This project uses environment variables to manage Appwrite configuration. This keeps your secret keys and project identifiers secure and separate from the source code.
 
-Open `src/constants.ts` and replace the placeholder values with your actual Appwrite credentials.
+#### Local Development
 
-```typescript
-// src/constants.ts
+1.  Find the `.env.example` file in the root of the project.
+2.  Create a copy of this file and name it `.env`.
+3.  Open the new `.env` file and fill in the values for each variable using the credentials and IDs from your Appwrite project.
 
-export const APPWRITE_ENDPOINT = "https://[YOUR_REGION].cloud.appwrite.io/v1";
-export const APPWRITE_PROJECT_ID = "YOUR_PROJECT_ID";
-export const APPWRITE_DATABASE_ID = "YOUR_DATABASE_ID";
-export const PROJECTS_COLLECTION_ID = "YOUR_PROJECTS_COLLECTION_ID";
-// ... and so on for all other constants.
-```
+Your local development server will automatically load these variables.
+
+#### Vercel Deployment
+
+When deploying to a hosting provider like Vercel, you must configure the environment variables in the project settings:
+
+1.  Go to your project's dashboard on Vercel.
+2.  Navigate to **Settings** > **Environment Variables**.
+3.  Add each variable from the `.env.example` file with its corresponding value from your Appwrite project.
+
+For a detailed list of all required variables and more in-depth setup instructions, please refer to the backend setup guide.
 
 ### 5. Run the Application
 

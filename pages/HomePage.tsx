@@ -7,8 +7,8 @@ import ContactSection from '../components/ContactSection';
 import Footer from '../components/Footer';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProjectModal from '../components/ProjectModal';
-import { getAboutContent, getProjects, getCast, getCrew, getAllDepartmentRoles, getAllDepartmentCrew } from '../services/appwrite';
-import type { AboutContent, Project, CastMember, CrewMember, DepartmentRole, DepartmentCrew } from '../types';
+import { getAboutContent, getProjects, getCast, getCrew, getAllDepartmentRoles, getAllDepartmentCrew, getDepartments } from '../services/appwrite';
+import type { AboutContent, Project, CastMember, CrewMember, DepartmentRole, DepartmentCrew, Department } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 
 const HomePage: React.FC = () => {
@@ -19,19 +19,21 @@ const HomePage: React.FC = () => {
   const [crew, setCrew] = useState<CrewMember[]>([]);
   const [allRoles, setAllRoles] = useState<DepartmentRole[]>([]);
   const [allAssignments, setAllAssignments] = useState<DepartmentCrew[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [aboutData, projectsData, castData, crewData, rolesData, assignmentsData] = await Promise.all([
+        const [aboutData, projectsData, castData, crewData, rolesData, assignmentsData, departmentsData] = await Promise.all([
           getAboutContent(),
           getProjects(),
           getCast(),
           getCrew(),
           getAllDepartmentRoles(),
-          getAllDepartmentCrew()
+          getAllDepartmentCrew(),
+          getDepartments()
         ]);
         setAboutContent(aboutData);
         setProjects(projectsData);
@@ -39,6 +41,7 @@ const HomePage: React.FC = () => {
         setCrew(crewData);
         setAllRoles(rolesData);
         setAllAssignments(assignmentsData);
+        setDepartments(departmentsData);
       } catch (error) {
         console.error("Failed to load page data:", error);
       } finally {
@@ -74,7 +77,7 @@ const HomePage: React.FC = () => {
             </main>
             <Footer />
           </div>
-          {selectedProject && <ProjectModal project={selectedProject} cast={cast} crew={crew} allRoles={allRoles} allAssignments={allAssignments} onClose={handleCloseModal} />}
+          {selectedProject && <ProjectModal project={selectedProject} cast={cast} crew={crew} allRoles={allRoles} allAssignments={allAssignments} departments={departments} onClose={handleCloseModal} />}
         </>
       )}
     </div>

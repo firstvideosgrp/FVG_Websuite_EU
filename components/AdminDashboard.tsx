@@ -808,7 +808,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                                                                 </div>
                                                                             ))}
                                                                         </div>
-                                                                        <form onSubmit={(e) => { e.preventDefault(); handleAssignCrew(role.$id, (e.target as any).elements.crewId.value); (e.target as any).reset(); }} className="flex gap-2">
+                                                                        {/* FIX: Replaced unsafe direct DOM access with a more robust, type-safe approach for handling form submissions to prevent potential errors. */}
+                                                                        <form
+                                                                            onSubmit={(e) => {
+                                                                                e.preventDefault();
+                                                                                const form = e.currentTarget;
+                                                                                const crewIdEl = form.elements.namedItem('crewId');
+                                                                                if (crewIdEl instanceof HTMLSelectElement && crewIdEl.value) {
+                                                                                    handleAssignCrew(role.$id, crewIdEl.value);
+                                                                                    form.reset();
+                                                                                }
+                                                                            }}
+                                                                            className="flex gap-2"
+                                                                        >
                                                                             <select name="crewId" defaultValue="" required className="flex-grow bg-[var(--input-bg)] border border-[var(--border-color)] rounded p-1 text-sm">
                                                                                 <option value="" disabled>Select Crew...</option>
                                                                                 {allCrew.map(c => <option key={c.$id} value={c.$id}>{c.name}</option>)}
