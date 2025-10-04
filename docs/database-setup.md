@@ -9,55 +9,28 @@ This document outlines the necessary steps to configure the Appwrite backend for
 
 Once you have your project, you will need its **Project ID** and the **API Endpoint**.
 
-## 2. Configure Environment Variables
+## 2. Configure Application Settings
 
-This project uses environment variables to handle configuration, ensuring that sensitive details like project IDs are not hardcoded in the source code. You will need to provide these variables both for local development and for your deployment environment (e.g., Vercel).
+This project uses a central configuration file (`src/constants.ts`) to manage all Appwrite-related IDs and endpoints. You must edit this file directly with the values from your Appwrite project.
 
-**Important:** To ensure variables are accessible in the browser when deployed on Vercel, they **must** be prefixed with `NEXT_PUBLIC_`. You must use this prefix for all variables in your `.env` file and in your Vercel project settings.
+### How to Set Up Configuration
 
-The following is a complete list of all environment variables required by the application. You will get the values for these as you proceed through the setup steps below. A template for this file, named `.env.example`, is included in the project root.
+1.  Open the file `src/constants.ts` in your code editor.
+2.  You will see a list of constants with placeholder values (e.g., `'YOUR_PROJECT_ID'`).
+3.  As you create your database, collections, and storage bucket in the following steps, replace the placeholder strings with the actual IDs provided by Appwrite.
 
-```
-NEXT_PUBLIC_APPWRITE_ENDPOINT="https://cloud.appwrite.io/v1"
-NEXT_PUBLIC_APPWRITE_PROJECT_ID="YOUR_PROJECT_ID"
-NEXT_PUBLIC_APPWRITE_DATABASE_ID="YOUR_DATABASE_ID"
-NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID="YOUR_STORAGE_BUCKET_ID"
-NEXT_PUBLIC_PROJECTS_COLLECTION_ID="YOUR_PROJECTS_COLLECTION_ID"
-NEXT_PUBLIC_ABOUT_COLLECTION_ID="YOUR_ABOUT_COLLECTION_ID"
-NEXT_PUBLIC_SITE_SETTINGS_COLLECTION_ID="YOUR_SETTINGS_COLLECTION_ID"
-NEXT_PUBLIC_MEDIA_METADATA_COLLECTION_ID="YOUR_MEDIA_METADATA_COLLECTION_ID"
-NEXT_PUBLIC_CAST_COLLECTION_ID="YOUR_CAST_COLLECTION_ID"
-NEXT_PUBLIC_CREW_COLLECTION_ID="YOUR_CREW_COLLECTION_ID"
-NEXT_PUBLIC_PRODUCTION_PHASES_COLLECTION_ID="YOUR_PHASES_COLLECTION_ID"
-NEXT_PUBLIC_PHASE_STEPS_COLLECTION_ID="YOUR_PHASE_STEPS_COLLECTION_ID"
-NEXT_PUBLIC_SLATE_ENTRIES_COLLECTION_ID="YOUR_SLATE_ENTRIES_COLLECTION_ID"
-NEXT_PUBLIC_TASKS_COLLECTION_ID="YOUR_TASKS_COLLECTION_ID"
-NEXT_PUBLIC_DEPARTMENTS_COLLECTION_ID="YOUR_DEPARTMENTS_COLLECTION_ID"
-NEXT_PUBLIC_DEPARTMENT_ROLES_COLLECTION_ID="YOUR_DEPT_ROLES_COLLECTION_ID"
-NEXT_PUBLIC_DEPARTMENT_CREW_COLLECTION_ID="YOUR_DEPT_CREW_COLLECTION_ID"
-NEXT_PUBLIC_PROJECT_DEPARTMENT_CREW_COLLECTION_ID="YOUR_PROJ_DEPT_CREW_COLLECTION_ID"
-NEXT_PUBLIC_CONTACT_FORM_FUNCTION_ID="YOUR_CONTACT_FUNCTION_ID"
-NEXT_PUBLIC_TEST_EMAIL_FUNCTION_ID="YOUR_TEST_FUNCTION_ID"
+**Example `src/constants.ts`:**
+```typescript
+// Appwrite Configuration
+// IMPORTANT: Replace these placeholder values with your actual Appwrite project details.
+// You can find these details in your Appwrite project's settings dashboard.
+
+export const APPWRITE_ENDPOINT = 'https://cloud.appwrite.io/v1'; // Your Appwrite endpoint
+export const APPWRITE_PROJECT_ID = 'YOUR_PROJECT_ID'; // Replace with your actual project ID
+// ... and so on for all other constants.
 ```
 
-### How to Set Up Environment Variables
-
-#### For Local Development
-
-1.  In the root directory of the project, create a new file named `.env`.
-2.  Copy the contents of the `.env.example` file into your new `.env` file.
-3.  As you create your database, collections, and storage bucket in the following steps, replace the `YOUR_..._ID` placeholders with the actual IDs provided by Appwrite.
-
-#### For Vercel Deployment
-
-When you are ready to deploy your site, you must also add these variables to your Vercel project settings.
-
-1.  In your Vercel project dashboard, go to the **Settings** tab.
-2.  Click on **Environment Variables** in the left-hand menu.
-3.  For each variable listed above, add a new entry.
-    -   Copy the variable name (e.g., `NEXT_PUBLIC_APPWRITE_PROJECT_ID`).
-    -   Paste the corresponding value from your Appwrite setup.
-4.  Ensure you have added all the variables. The application will not function correctly without them.
+Make sure to fill in all the required values before running the application. The application will show an error on startup if the main configuration values haven't been changed.
 
 ---
 
@@ -66,7 +39,7 @@ When you are ready to deploy your site, you must also add these variables to you
 1.  From your Appwrite project dashboard, navigate to the **Databases** section in the left-hand menu.
 2.  Click **Create database**.
 3.  Name your database (e.g., `fvgwebdata`).
-4.  Copy the generated **Database ID** and add it to your `.env` file for `NEXT_PUBLIC_APPWRITE_DATABASE_ID`.
+4.  Copy the generated **Database ID** and add it to `src/constants.ts` for `APPWRITE_DATABASE_ID`.
 
 ## 4. Collection Setup
 
@@ -77,7 +50,7 @@ We need fourteen collections: "About", "Projects", "Settings", "MediaMetadata", 
 This collection will store the content for the "About Us" section of the website. It's designed to hold a single document.
 
 -   **Name**: `About`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_ABOUT_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `ABOUT_COLLECTION_ID`.
 
 #### Attributes
 
@@ -100,7 +73,7 @@ Go to the **Settings** tab for the `About` collection to set permissions.
 This collection stores the individual projects showcased on the website.
 
 -   **Name**: `Projects`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_PROJECTS_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `PROJECTS_COLLECTION_ID`.
 
 #### Attributes
 
@@ -141,7 +114,7 @@ Create the following attributes for the `Projects` collection:
 This collection stores the global settings for the website, such as title and theme colors. It should only contain a single document.
 
 -   **Name**: `Settings`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_SITE_SETTINGS_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `SITE_SETTINGS_COLLECTION_ID`.
 
 #### Attributes
 
@@ -185,7 +158,7 @@ This collection stores the global settings for the website, such as title and th
 This collection stores metadata for each file uploaded to the Storage bucket, most importantly its category.
 
 -   **Name**: `MediaMetadata`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_MEDIA_METADATA_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `MEDIA_METADATA_COLLECTION_ID`.
 
 #### Attributes
 
@@ -217,7 +190,7 @@ It's recommended to create an index to improve query performance when deleting f
 This collection stores a global list of all cast members.
 
 -   **Name**: `Cast`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_CAST_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `CAST_COLLECTION_ID`.
 
 #### Attributes
 
@@ -238,7 +211,7 @@ This collection stores a global list of all cast members.
 This collection stores a global list of all crew members.
 
 -   **Name**: `Crew`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_CREW_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `CREW_COLLECTION_ID`.
 
 #### Attributes
 
@@ -259,7 +232,7 @@ This collection stores a global list of all crew members.
 This collection stores the production phases for each project.
 
 -   **Name**: `ProductionPhases`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_PRODUCTION_PHASES_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `PRODUCTION_PHASES_COLLECTION_ID`.
 
 #### Attributes
 
@@ -293,7 +266,7 @@ Create an index to improve performance when querying phases by project.
 This collection stores the individual steps within a production phase.
 
 -   **Name**: `PhaseSteps`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_PHASE_STEPS_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `PHASE_STEPS_COLLECTION_ID`.
 
 #### Attributes
 
@@ -327,7 +300,7 @@ Create an index to improve performance when querying steps by phase.
 This collection stores records for the internal Timecode Slate App.
 
 -   **Name**: `SlateEntries`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_SLATE_ENTRIES_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `SLATE_ENTRIES_COLLECTION_ID`.
 
 #### Attributes
 
@@ -369,7 +342,7 @@ Create an index to improve performance when sorting slate entries by date.
 This collection stores individual tasks related to productions.
 
 -   **Name**: `ProductionTasks`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_TASKS_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `TASKS_COLLECTION_ID`.
 
 #### Attributes
 
@@ -411,7 +384,7 @@ Create indexes to improve query performance.
 This collection stores a list of all departments within the company.
 
 -   **Name**: `Departments`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_DEPARTMENTS_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `DEPARTMENTS_COLLECTION_ID`.
 
 #### Attributes
 
@@ -429,7 +402,7 @@ This collection stores a list of all departments within the company.
 This collection stores all possible roles within each department.
 
 -   **Name**: `DepartmentRoles`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_DEPARTMENT_ROLES_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `DEPARTMENT_ROLES_COLLECTION_ID`.
 
 #### Attributes
 
@@ -450,7 +423,7 @@ This collection stores all possible roles within each department.
 This collection acts as a link table, assigning specific crew members to roles within departments.
 
 -   **Name**: `DepartmentCrew`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_DEPARTMENT_CREW_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `DEPARTMENT_CREW_COLLECTION_ID`.
 
 #### Attributes
 
@@ -472,7 +445,7 @@ This collection acts as a link table, assigning specific crew members to roles w
 This collection links crew members to specific roles within a department for a single project. It enables project-specific team compositions.
 
 -   **Name**: `ProjectDepartmentCrew`
--   **Collection ID**: Copy the generated ID and add it to your `.env` file for `NEXT_PUBLIC_PROJECT_DEPARTMENT_CREW_COLLECTION_ID`.
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `PROJECT_DEPARTMENT_CREW_COLLECTION_ID`.
 
 #### Attributes
 
@@ -496,7 +469,7 @@ The media library requires a storage bucket to store uploaded image files.
 1.  From your Appwrite project dashboard, navigate to the **Storage** section in the left-hand menu.
 2.  Click **Create bucket**.
 3.  Name your bucket (e.g., `fvg_media`).
-4.  Copy the generated **Bucket ID** and add it to your `.env` file for `NEXT_PUBLIC_APPWRITE_STORAGE_BUCKET_ID`.
+4.  Copy the generated **Bucket ID** and add it to `src/constants.ts` for `APPWRITE_STORAGE_BUCKET_ID`.
 5.  Go to the **Settings** tab for your new bucket.
 6.  Under **Permissions**, set the following:
     -   Click **Add Role**. Select **Read Access** and choose **role:all** (Any). This allows anyone to view the images on your public website.
@@ -542,7 +515,7 @@ This function receives data from the public contact form, fetches mail settings 
 4.  Name the function `sendContactMail`.
 5.  Choose a Node.js runtime (e.g., `Node.js 18.0`).
 6.  Click **Create**.
-7.  Once created, copy the **Function ID** and add it to your `.env` file for `NEXT_PUBLIC_CONTACT_FORM_FUNCTION_ID`.
+7.  Once created, copy the **Function ID** and add it to `src/constants.ts` for `CONTACT_FORM_FUNCTION_ID`.
 
 #### Step 2: Configure Settings
 
@@ -692,7 +665,7 @@ This function is similar but is triggered by a logged-in admin to test the SMTP 
 Follow the same steps as for `sendContactMail`, but with these differences:
 
 1.  **Name**: `sendTestMail`
-2.  **Function ID**: Paste the new ID into your `.env` file for `NEXT_PUBLIC_TEST_EMAIL_FUNCTION_ID`.
+2.  **Function ID**: Paste the new ID into `src/constants.ts` for `TEST_EMAIL_FUNCTION_ID`.
 3.  **Permissions**: Under **Execute Access**, add the role **Users** (`role:member`). This ensures only logged-in admin users can trigger it.
 4.  **Variables**: Use the exact same environment variables as the `sendContactMail` function.
 
