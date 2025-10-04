@@ -3,6 +3,37 @@ import { Client, Account, Databases, ID, Query, Models, Storage, Functions } fro
 import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID, SLATE_ENTRIES_COLLECTION_ID, TASKS_COLLECTION_ID, DEPARTMENTS_COLLECTION_ID, DEPARTMENT_ROLES_COLLECTION_ID, DEPARTMENT_CREW_COLLECTION_ID, PROJECT_DEPARTMENT_CREW_COLLECTION_ID } from '../constants';
 import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, SlateEntry, ProductionTask, Department, DepartmentRole, DepartmentCrew, ProjectDepartmentCrew } from '../types';
 
+// FIX: Add validation to ensure all required environment variables are loaded.
+// This provides a clear error message to the user if their environment is not configured correctly.
+const requiredConfig = {
+    APPWRITE_ENDPOINT,
+    APPWRITE_PROJECT_ID,
+    APPWRITE_DATABASE_ID,
+    PROJECTS_COLLECTION_ID,
+    ABOUT_COLLECTION_ID,
+    SITE_SETTINGS_COLLECTION_ID,
+    MEDIA_METADATA_COLLECTION_ID,
+    CAST_COLLECTION_ID,
+    CREW_COLLECTION_ID,
+    PRODUCTION_PHASES_COLLECTION_ID,
+    PHASE_STEPS_COLLECTION_ID,
+    SLATE_ENTRIES_COLLECTION_ID,
+    TASKS_COLLECTION_ID,
+    DEPARTMENTS_COLLECTION_ID,
+    DEPARTMENT_ROLES_COLLECTION_ID,
+    DEPARTMENT_CREW_COLLECTION_ID,
+    PROJECT_DEPARTMENT_CREW_COLLECTION_ID,
+    APPWRITE_STORAGE_BUCKET_ID,
+    CONTACT_FORM_FUNCTION_ID,
+    TEST_EMAIL_FUNCTION_ID
+};
+
+for (const [key, value] of Object.entries(requiredConfig)) {
+  if (!value) {
+    throw new Error(`Appwrite environment variable is not configured: ${key}. Please check your .env file or deployment settings.`);
+  }
+}
+
 const client = new Client();
 
 client
