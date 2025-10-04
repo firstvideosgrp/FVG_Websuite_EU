@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import type { Models } from 'appwrite';
+import type { MediaFile } from '../types';
 import { listFiles, getFilePreviewUrl } from '../services/appwrite';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -10,7 +10,7 @@ interface MediaLibraryModalProps {
 }
 
 const MediaLibraryModal: React.FC<MediaLibraryModalProps> = ({ onSelect, onClose, fileUsageMap }) => {
-    const [files, setFiles] = useState<Models.File[]>([]);
+    const [files, setFiles] = useState<MediaFile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +55,7 @@ const MediaLibraryModal: React.FC<MediaLibraryModalProps> = ({ onSelect, onClose
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                             {files.map(file => {
                                 const fileUsage = fileUsageMap.get(file.$id) || [];
-                                const isAudio = file.mimeType.startsWith('audio/');
+                                const isAudio = (typeof file.mimeType === 'string' && file.mimeType.startsWith('audio/')) || file.category === 'Audio Clip';
                                 return (
                                 <button key={file.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg overflow-hidden group relative cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]" onClick={() => handleSelectFile(file.$id)}>
                                     {isAudio ? (

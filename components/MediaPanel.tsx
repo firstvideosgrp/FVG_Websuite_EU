@@ -122,7 +122,7 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {files.map(file => {
                         const fileUsage = fileUsageMap.get(file.$id) || [];
-                        const isAudio = file.mimeType.startsWith('audio/') || file.category === 'Audio Clip';
+                        const isAudio = (typeof file.mimeType === 'string' && file.mimeType.startsWith('audio/')) || file.category === 'Audio Clip';
                         return (
                         <div key={file.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg overflow-hidden group relative">
                             <div className="absolute top-2 left-2 z-10">
