@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { uploadFile } from '../services/appwrite';
 import type { MediaCategory } from '../types';
 import LoadingSpinner from './LoadingSpinner';
+import { useNotification } from '../contexts/NotificationContext';
 
 interface UploadModalProps {
   onClose: () => void;
@@ -15,6 +16,7 @@ const UploadMediaModal: React.FC<UploadModalProps> = ({ onClose, onUploadSuccess
     const [category, setCategory] = useState<MediaCategory>('Image');
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
+    const { addNotification } = useNotification();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -32,7 +34,7 @@ const UploadMediaModal: React.FC<UploadModalProps> = ({ onClose, onUploadSuccess
         setError('');
         try {
             await uploadFile(file, category);
-            alert('File uploaded successfully!');
+            addNotification('success', 'Upload Successful', `File "${file.name}" uploaded successfully!`);
             onUploadSuccess();
         } catch (err) {
             setError('Upload failed. Please try again.');

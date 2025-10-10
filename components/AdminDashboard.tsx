@@ -10,9 +10,12 @@ import ProductionPhasesPanel from './ProductionPhasesPanel';
 import SlatePanel from './SlatePanel';
 import TasksPanel from './TasksPanel';
 import DepartmentsPanel from './DepartmentsPanel';
+import ProductionElementsPanel from './ProductionElementsPanel';
 import MediaLibraryModal from './MediaLibraryModal';
 import { useSettings } from '../contexts/SettingsContext';
 import AdminHome from './AdminHome';
+import { useNotification } from '../contexts/NotificationContext';
+import { useConfirmation } from '../contexts/ConfirmationDialogContext';
 
 interface AdminDashboardProps {
     user: Models.User<Models.Preferences>;
@@ -35,6 +38,8 @@ const getFileIdFromUrl = (url: string): string | null => {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     const { settings } = useSettings();
+    const { addNotification } = useNotification();
+    const { confirm } = useConfirmation();
     const [activeView, setActiveView] = useState('home');
     // Page Content State
     const [about, setAbout] = useState<AboutContent | null>(null);
@@ -178,10 +183,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         if (about) {
             try {
                 await updateAboutContent(about.$id, aboutText);
-                alert('About section updated!');
+                addNotification('success', 'Success', 'About section updated!');
                 fetchData();
             } catch(e) {
-                alert('Failed to update about section.');
+                addNotification('error', 'Update Failed', 'Failed to update about section.');
                 console.error(e);
             }
         }
@@ -208,7 +213,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     const handleProjectSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (['Upcoming', 'In Production'].includes(projectForm.status) && !projectForm.dueDate) {
-            alert('Due Date is required for projects that are "Upcoming" or "In Production".');
+            addNotification('warning', 'Missing Field', 'Due Date is required for projects that are "Upcoming" or "In Production".');
             return;
         }
 
@@ -224,28 +229,34 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
 
             if (isEditingProject) {
                 await updateProject(isEditingProject.$id, dataToSubmit);
-                alert('Project updated!');
+                addNotification('success', 'Project Updated', `Successfully updated "${projectForm.title}".`);
             } else {
                 await createProject({ ...dataToSubmit, cast: [], crew: [] });
-                alert('Project created!');
+                addNotification('success', 'Project Created', `Successfully created "${projectForm.title}".`);
             }
             closeModal();
             fetchData();
         } catch (error) {
             console.error("Failed to save project", error);
-            alert("Failed to save project.");
+            addNotification('error', 'Save Failed', 'Failed to save project.');
         }
     };
     
-    const handleProjectDelete = async (projectId: string) => {
-        if(window.confirm('Are you sure you want to delete this project?')) {
+    const handleProjectDelete = async (projectId: string, projectTitle: string) => {
+        const isConfirmed = await confirm({
+            title: 'Confirm Deletion',
+            message: `Are you sure you want to delete the project "${projectTitle}"? This action cannot be undone.`,
+            confirmText: 'Delete Project',
+            confirmStyle: 'destructive',
+        });
+        if(isConfirmed) {
             try {
                 await deleteProject(projectId);
-                alert('Project deleted.');
+                addNotification('info', 'Project Deleted', `"${projectTitle}" has been deleted.`);
                 fetchData();
             } catch (error) {
                 console.error('Failed to delete project', error);
-                alert('Failed to delete project.');
+                addNotification('error', 'Delete Failed', 'Failed to delete project.');
             }
         }
     };
@@ -332,8 +343,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     const handleMemberSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        // FIX: Convert empty strings for optional fields to null to prevent Appwrite validation errors.
-        // Appwrite's URL attribute type requires a valid URL or null, not an empty string.
         const payload = {
             ...memberForm,
             bio: memberForm.bio || undefined,
@@ -345,24 +354,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             } else {
                 await createCastMember(payload);
             }
-            alert(`Cast member saved!`);
+            addNotification('success', 'Member Saved', `Cast member "${payload.name}" saved successfully.`);
             closeMemberModal();
             fetchData();
         } catch (error) {
             console.error(`Failed to save cast member`, error);
-            alert(`Failed to save cast member.`);
+            addNotification('error', 'Save Failed', 'Failed to save cast member.');
         }
     };
 
-    const handleMemberDelete = async (memberId: string) => {
-        if (window.confirm(`Are you sure you want to delete this cast member? This will not remove them from existing projects.`)) {
+    const handleMemberDelete = async (member: CastMember) => {
+        const isConfirmed = await confirm({
+            title: 'Confirm Deletion',
+            message: `Are you sure you want to delete "${member.name}"? This action won't remove them from projects they are already assigned to.`,
+            confirmStyle: 'destructive',
+            confirmText: 'Delete Member',
+        });
+
+        if (isConfirmed) {
             try {
-                await deleteCastMember(memberId);
-                alert(`Cast member deleted.`);
+                await deleteCastMember(member.$id);
+                addNotification('info', 'Member Deleted', `Cast member "${member.name}" deleted.`);
                 fetchData();
             } catch (error) {
                 console.error(`Failed to delete cast member`, error);
-                alert(`Failed to delete cast member.`);
+                addNotification('error', 'Delete Failed', 'Failed to delete cast member.');
             }
         }
     };
@@ -400,12 +416,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                 cast: Array.from(selectedCastIds),
                 crew: Array.from(selectedCrewIds),
             });
-            alert("Project members updated!");
+            addNotification('success', 'Assignments Saved', `Member assignments for "${projectToAssign.title}" have been updated.`);
             closeAssignmentModal();
             fetchData();
         } catch (error) {
             console.error("Failed to update project members", error);
-            alert("Failed to update project members.");
+            addNotification('error', 'Save Failed', 'Could not update project members.');
         }
     };
 
@@ -416,15 +432,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         setIsProdCrewModalOpen(true);
         setModalData({ roles: [], assignments: [], selectedDeptIds: project.departments || [], isLoading: true });
 
-        const assignmentsData = await getProjectDepartmentCrew(project.$id);
-        const rolesData = await Promise.all((project.departments || []).map(deptId => getDepartmentRoles(deptId))).then(res => res.flat());
+        try {
+            const assignmentsData = await getProjectDepartmentCrew(project.$id);
+            const rolesData = await Promise.all((project.departments || []).map(deptId => getDepartmentRoles(deptId))).then(res => res.flat());
 
-        setModalData({
-            assignments: assignmentsData,
-            roles: rolesData,
-            selectedDeptIds: project.departments || [],
-            isLoading: false
-        });
+            setModalData({
+                assignments: assignmentsData,
+                roles: rolesData,
+                selectedDeptIds: project.departments || [],
+                isLoading: false
+            });
+        } catch (error) {
+            addNotification('error', 'Load Failed', 'Could not load production crew data.');
+            setModalData(prev => ({ ...prev, isLoading: false }));
+        }
     };
 
     const closeProdCrewModal = () => setIsProdCrewModalOpen(false);
@@ -432,8 +453,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     const handleDeptSelectionChangeInModal = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedIds = Array.from(e.target.selectedOptions, option => option.value);
         setModalData(prev => ({ ...prev, selectedDeptIds: selectedIds, isLoading: true }));
-        const rolesData = await Promise.all(selectedIds.map(deptId => getDepartmentRoles(deptId))).then(res => res.flat());
-        setModalData(prev => ({ ...prev, roles: rolesData, isLoading: false }));
+        try {
+            const rolesData = await Promise.all(selectedIds.map(deptId => getDepartmentRoles(deptId))).then(res => res.flat());
+            setModalData(prev => ({ ...prev, roles: rolesData, isLoading: false }));
+        } catch (error) {
+            addNotification('error', 'Load Failed', 'Could not load roles for selected departments.');
+            setModalData(prev => ({ ...prev, isLoading: false }));
+        }
     };
 
     const handleSaveProjectDepartments = async () => {
@@ -443,9 +469,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             const updatedProject = { ...projectForProdCrew, departments: modalData.selectedDeptIds };
             setProjectForProdCrew(updatedProject);
             setProjects(prev => prev.map(p => p.$id === updatedProject.$id ? updatedProject : p));
-            alert('Project departments updated!');
+            addNotification('success', 'Departments Updated', 'Project departments saved successfully.');
         } catch (error) {
-            alert('Failed to update departments.');
+            addNotification('error', 'Update Failed', 'Failed to update departments.');
             console.error(error);
         }
     };
@@ -454,14 +480,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         if (!projectForProdCrew || !crewId) return;
         const isAlreadyAssigned = modalData.assignments.some(a => a.roleId === roleId && a.crewId === crewId);
         if (isAlreadyAssigned) {
-            alert("This member is already assigned to this role for this project.");
+            addNotification('warning', 'Already Assigned', 'This member is already assigned to this role for this project.');
             return;
         }
         try {
             const newAssignment = await assignCrewToProjectDepartment({ projectId: projectForProdCrew.$id, roleId, crewId });
             setModalData(prev => ({ ...prev, assignments: [...prev.assignments, newAssignment] }));
         } catch (error) {
-            alert('Failed to assign crew member.');
+            addNotification('error', 'Assignment Failed', 'Could not assign crew member.');
             console.error(error);
         }
     };
@@ -471,7 +497,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             await unassignCrewFromProjectDepartment(assignmentId);
             setModalData(prev => ({ ...prev, assignments: prev.assignments.filter(a => a.$id !== assignmentId) }));
         } catch (error) {
-            alert('Failed to unassign crew member.');
+            addNotification('error', 'Unassignment Failed', 'Could not unassign crew member.');
             console.error(error);
         }
     };
@@ -553,7 +579,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                                 <button onClick={() => openAssignmentModal(project)} aria-label="Manage Cast & Crew" className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-users"></i></button>
                                                 <button onClick={() => openProdCrewModal(project)} aria-label="Manage Production Crew" className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-sitemap"></i></button>
                                                 <button onClick={() => openEditModal(project)} aria-label="Edit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-pencil-alt"></i></button>
-                                                <button onClick={() => handleProjectDelete(project.$id)} aria-label="Delete" className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-trash"></i></button>
+                                                <button onClick={() => handleProjectDelete(project.$id, project.title)} aria-label="Delete" className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-trash"></i></button>
                                             </div>
                                         </div>
                                     )) : (
@@ -586,7 +612,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                                 <h3 className="font-bold text-lg">{member.name}</h3>
                                                 <p className="text-sm text-[var(--text-secondary)]">{member.role}</p>
                                             </div>
-                                            <div className="flex space-x-2"><button onClick={() => openMemberModal(member)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-pencil-alt"></i></button><button onClick={() => handleMemberDelete(member.$id)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-trash"></i></button></div>
+                                            <div className="flex space-x-2"><button onClick={() => openMemberModal(member)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-pencil-alt"></i></button><button onClick={() => handleMemberDelete(member)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-trash"></i></button></div>
                                         </div>
                                     ))}
                                 </div>
@@ -594,6 +620,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                         )}
 
                         {activeView === 'media' && <MediaPanel fileUsageMap={fileUsageMap} />}
+                        {activeView === 'elements' && <ProductionElementsPanel projects={projects} />}
                         {activeView === 'settings' && <SiteSettingsPanel fileUsageMap={fileUsageMap} />}
                     </main>
                     
@@ -752,7 +779,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                         <div className="flex-grow overflow-y-auto pr-4 space-y-2">
                                              {allCrew.map(member => (
                                                 <label key={member.$id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-[var(--bg-secondary)] cursor-pointer">
-                                                    <input type="checkbox" checked={selectedCrewIds.has(member.$id)} onChange={() => handleAssignmentToggle(member.$id, 'crew')} className="h-5 w-5 rounded bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
+                                                    <input type="checkbox" checked={selectedCrewIds.has(member.$id)} onChange={() => handleAssignmentToggle(member.$id, 'crew')} className="h-5 w-5 rounded bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
                                                     <span>{member.name} <span className="text-sm text-[var(--text-secondary)]">({member.role})</span></span>
                                                 </label>
                                             ))}
@@ -808,15 +835,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                                                                 </div>
                                                                             ))}
                                                                         </div>
-                                                                        {/* FIX: Replaced unsafe direct DOM access with a more robust, type-safe approach for handling form submissions to prevent potential errors. */}
+                                                                        {/* FIX: The form submission handler has been refactored to safely access field values using the FormData API. This prevents a TypeScript error where `e.currentTarget.elements` is not strongly typed, and provides a more robust way to handle form submissions. */}
                                                                         <form
-                                                                            onSubmit={(e) => {
+                                                                            onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
                                                                                 e.preventDefault();
-                                                                                const form = e.currentTarget;
-                                                                                const crewIdEl = form.elements.namedItem('crewId');
-                                                                                if (crewIdEl instanceof HTMLSelectElement && crewIdEl.value) {
-                                                                                    handleAssignCrew(role.$id, crewIdEl.value);
-                                                                                    form.reset();
+                                                                                const formData = new FormData(e.currentTarget);
+                                                                                const crewId = formData.get('crewId');
+                                                                                if (typeof crewId === 'string' && crewId) {
+                                                                                    handleAssignCrew(role.$id, crewId);
+                                                                                    e.currentTarget.reset();
                                                                                 }
                                                                             }}
                                                                             className="flex gap-2"

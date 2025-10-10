@@ -100,6 +100,7 @@ export type MediaMetadata = Models.Document & {
 
 export type MediaFile = Models.File & {
   category: MediaCategory;
+  name: string;
 };
 
 // New types for Production Phases
@@ -174,4 +175,47 @@ export type ProjectDepartmentCrew = Models.Document & {
   projectId: string;
   roleId: string; // The DepartmentRole ID
   crewId: string;
+};
+
+// New types for Production Elements Library
+export type ProductionElementType = 'Production Image' | 'Soundtrack' | 'Logo' | 'Document' | 'Behind-the-Scenes';
+
+export type ProductionElement = Models.Document & {
+  elementName: string;
+  elementType: ProductionElementType;
+  projectId?: string;
+  fileId: string;
+};
+
+export type ProductionElementFile = Models.File & {
+  elementName: string;
+  elementType: ProductionElementType;
+  projectId?: string;
+};
+
+// New type for unified media view
+export type UnifiedMediaFile = Models.File & {
+    displayName: string;
+    category: MediaCategory | ProductionElementType;
+    projectId?: string;
+    library: 'media' | 'elements';
+    fileId: string;
+};
+
+// New types for Notification System
+export type NotificationType = 'success' | 'error' | 'warning' | 'info';
+
+export type Notification = {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+};
+
+// New type for Static Contact Info
+export type StaticContactInfo = Models.Document & {
+  label: string; // e.g., "General Inquiries"
+  value: string; // e.g., "contact@firstvideos.com"
+  icon: string; // e.g., "fas fa-envelope"
+  url?: string; // e.g., "mailto:contact@firstvideos.com"
 };

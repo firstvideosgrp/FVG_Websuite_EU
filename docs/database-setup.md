@@ -43,7 +43,7 @@ Make sure to fill in all the required values before running the application. The
 
 ## 4. Collection Setup
 
-We need fourteen collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", "SlateEntries", "ProductionTasks", "Departments", "DepartmentRoles", "DepartmentCrew", and "ProjectDepartmentCrew".
+We need sixteen collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", "SlateEntries", "ProductionTasks", "Departments", "DepartmentRoles", "DepartmentCrew", "ProjectDepartmentCrew", "ProductionElements", and "StaticContactInfo".
 
 ### 4.1. About Collection
 
@@ -462,9 +462,56 @@ This collection links crew members to specific roles within a department for a s
 -   Create a `key` index on the `projectId` attribute.
 -   Create a `key` index on the `roleId` attribute.
 
+### 4.15. Production Elements Collection
+
+This collection stores metadata for the Production Elements Library, which manages assets like soundtracks, logos, and documents separate from the public-facing Media Library.
+
+-   **Name**: `ProductionElements`
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `PRODUCTION_ELEMENTS_COLLECTION_ID`.
+
+#### Attributes
+
+| Key           | Type   | Size | Required | Array | Notes                                                        |
+| :------------ | :----- | :--- | :------- | :---- | :----------------------------------------------------------- |
+| `elementName` | String | 255  | Yes      | No    | The display name of the element.                             |
+| `elementType` | String | 50   | Yes      | No    | e.g., 'Soundtrack', 'Logo', 'Document'.                      |
+| `projectId`   | String | 255  | No       | No    | Optional ID of a linked project.                             |
+| `fileId`      | String | 255  | Yes      | No    | Corresponds to the file's `$id` in the `fvg_prod_elements` storage bucket. |
+
+#### Settings (Permissions)
+-   **Permissions**: Set Read, Create, Update, and Delete access to **role:member** (Users).
+
+#### Indexes
+-   Create a `key` index on the `fileId` attribute.
+
+### 4.16. Static Contact Info Collection
+
+This collection stores the contact details that are displayed on the public site when the contact form is disabled.
+
+-   **Name**: `StaticContactInfo`
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `STATIC_CONTACT_INFO_COLLECTION_ID`.
+
+#### Attributes
+
+| Key     | Type   | Size | Required | Array | Notes                                     |
+| :------ | :----- | :--- | :------- | :---- | :---------------------------------------- |
+| `label` | String | 255  | Yes      | No    | e.g., "General Inquiries".                |
+| `value` | String | 255  | Yes      | No    | e.g., "contact@firstvideos.com".          |
+| `icon`  | String | 100  | Yes      | No    | Font Awesome class, e.g., "fas fa-envelope".|
+| `url`   | URL    | 2048 | No       | No    | Clickable link, e.g., "mailto:..." or "tel:...".|
+
+#### Settings (Permissions)
+-   **Permissions**:
+    -   Select **Read Access** and choose **role:all** (Any).
+    -   Select **Write Access** and choose **role:member** (Users).
+
 ## 5. Storage (Media Bucket) Setup
 
-The media library requires a storage bucket to store uploaded image files.
+The application requires two separate storage buckets.
+
+### 5.1. Main Media Bucket
+
+The media library requires a storage bucket to store uploaded image files for the public website.
 
 1.  From your Appwrite project dashboard, navigate to the **Storage** section in the left-hand menu.
 2.  Click **Create bucket**.
@@ -477,6 +524,19 @@ The media library requires a storage bucket to store uploaded image files.
     -   Click **Add Role**. Select **Update Access** and choose **role:member** (Users).
     -   Click **Add Role**. Select **Delete Access** and choose **role:member** (Users). This allows logged-in admins to delete files.
 7.  You can also configure file size limits and allowed extensions in the settings if desired.
+
+### 5.2. Production Elements Bucket
+
+This bucket stores files for the internal Production Elements Library.
+
+1.  Navigate to the **Storage** section.
+2.  Click **Create bucket**.
+3.  Name your bucket (e.g., `fvg_prod_elements`).
+4.  Copy the generated **Bucket ID** and add it to `src/constants.ts` for `PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID`.
+5.  Go to the **Settings** tab for this new bucket.
+6.  Under **Permissions**, set the following:
+    -   Read Access: **role:all** (Any).
+    -   Create, Update, and Delete Access: **role:member** (Users).
 
 ## 6. Server-Side Functions for Email (Crucial)
 

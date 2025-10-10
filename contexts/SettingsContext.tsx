@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { getSiteSettings, updateSiteSettings as apiUpdateSettings } from '../services/appwrite';
 import type { SiteSettings } from '../types';
 import type { Models } from 'appwrite';
+import { useNotification } from './NotificationContext';
 
 interface SettingsContextType {
   settings: SiteSettings | null;
@@ -44,6 +45,8 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [settings, setSettings] = useState<SiteSettings | null>(null);
     const [loading, setLoading] = useState(true);
     const [isUpdating, setIsUpdating] = useState(false);
+    // Cannot use useNotification here as it's not a child of NotificationProvider
+    // Errors will be handled where the updateSettings function is called.
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -77,8 +80,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const updateSettings = async (newSettingsData: Partial<Omit<SiteSettings, keyof Models.Document>>) => {
         if (!settings || !settings.$id) {
-             alert("Cannot update settings. Initial settings document not found in database.");
-             throw new Error("Settings not loaded yet or missing document ID.");
+             throw new Error("Settings not loaded yet or missing document ID. Cannot update settings. Initial settings document not found in database.");
         }
         
         setIsUpdating(true);

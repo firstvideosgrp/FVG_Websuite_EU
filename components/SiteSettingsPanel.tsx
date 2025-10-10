@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { sendTestEmail } from '../services/appwrite';
-import type { SocialLink, FooterLink, SiteSettings } from '../types';
+import type { SocialLink, FooterLink, SiteSettings, StaticContactInfo } from '../types';
 import MediaLibraryModal from './MediaLibraryModal';
+import { useNotification } from '../contexts/NotificationContext';
+import { useConfirmation } from '../contexts/ConfirmationDialogContext';
+import * as api from '../services/appwrite';
+import LoadingSpinner from './LoadingSpinner';
 
 // Add a temporary ID for list rendering
 type SocialLinkWithId = SocialLink & { id: string };
@@ -14,6 +18,8 @@ interface SiteSettingsPanelProps {
 
 const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) => {
     const { settings, updateSettings, isUpdating } = useSettings();
+    const { addNotification } = useNotification();
+    const { confirm } = useConfirmation();
     
     const initialFormState = useMemo(() => {
         let socialLinks: SocialLinkWithId[] = [];
@@ -71,10 +77,33 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
     const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
     const [fieldToSet, setFieldToSet] = useState<'hero' | 'lightLogo' | 'darkLogo' | 'beepSound' | null>(null);
 
+    // New state for Static Contact Info
+    const [contactInfo, setContactInfo] = useState<StaticContactInfo[]>([]);
+    const [isContactInfoLoading, setIsContactInfoLoading] = useState(true);
+    const [isContactInfoModalOpen, setIsContactInfoModalOpen] = useState(false);
+    const [editingContactInfo, setEditingContactInfo] = useState<StaticContactInfo | null>(null);
+    const [contactInfoForm, setContactInfoForm] = useState({ label: '', value: '', icon: '', url: '' });
+
     useEffect(() => {
         setFormState(initialFormState);
         setIsDirty(false);
     }, [initialFormState]);
+
+    useEffect(() => {
+        const fetchContactInfo = async () => {
+            setIsContactInfoLoading(true);
+            try {
+                const data = await api.getStaticContactInfo();
+                setContactInfo(data);
+            } catch (e) {
+                addNotification('error', 'Load Failed', 'Could not load static contact info.');
+            } finally {
+                setIsContactInfoLoading(false);
+            }
+        };
+        fetchContactInfo();
+    }, [addNotification]);
+
 
     useEffect(() => {
         const hasChanged = Object.keys(initialFormState).some(key => {
@@ -173,26 +202,75 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
             if (settingsToSave.customBeepSoundUrl === '') settingsToSave.customBeepSoundUrl = null;
 
             await updateSettings(settingsToSave);
-            alert('Site settings updated successfully!');
+            addNotification('success', 'Settings Saved', 'Site settings updated successfully!');
         } catch (error) {
-            alert('Failed to update settings. Please try again.');
+            addNotification('error', 'Update Failed', 'Failed to update settings. Please try again.');
         }
     };
     
     const handleSendTest = async () => {
         if (!testRecipient) {
-            alert('Please enter a recipient email address for the test.');
+            addNotification('warning', 'Missing Field', 'Please enter a recipient email address for the test.');
             return;
         }
         setIsSendingTest(true);
         try {
             await sendTestEmail({ recipientEmail: testRecipient });
-            alert(`Test email sent successfully to ${testRecipient}!`);
+            addNotification('success', 'Email Sent', `Test email sent successfully to ${testRecipient}!`);
         } catch (error) {
             console.error("Failed to send test email:", error);
-            alert('Failed to send test email. Please check the console for details and verify your mail settings.');
+            addNotification('error', 'Send Failed', 'Failed to send test email. Please check the console and your mail settings.');
         } finally {
             setIsSendingTest(false);
+        }
+    };
+
+    // Handlers for static contact info
+    const openContactInfoModal = (info: StaticContactInfo | null) => {
+        setEditingContactInfo(info);
+        setContactInfoForm({
+            label: info?.label || '',
+            value: info?.value || '',
+            icon: info?.icon || 'fas fa-info-circle',
+            url: info?.url || ''
+        });
+        setIsContactInfoModalOpen(true);
+    };
+
+    const closeContactInfoModal = () => setIsContactInfoModalOpen(false);
+
+    const handleContactInfoSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const dataToSubmit = { ...contactInfoForm, url: contactInfoForm.url || undefined };
+            if (editingContactInfo) {
+                await api.updateStaticContactInfo(editingContactInfo.$id, dataToSubmit);
+            } else {
+                await api.createStaticContactInfo(dataToSubmit);
+            }
+            addNotification('success', 'Saved', 'Contact detail saved successfully.');
+            closeContactInfoModal();
+            const data = await api.getStaticContactInfo();
+            setContactInfo(data);
+        } catch (error) {
+            addNotification('error', 'Save Failed', 'Could not save contact detail.');
+        }
+    };
+
+    const handleDeleteContactInfo = async (info: StaticContactInfo) => {
+        const isConfirmed = await confirm({
+            title: 'Confirm Deletion',
+            message: `Are you sure you want to delete the contact detail "${info.label}"?`,
+            confirmStyle: 'destructive'
+        });
+        if (isConfirmed) {
+            try {
+                await api.deleteStaticContactInfo(info.$id);
+                addNotification('info', 'Deleted', 'Contact detail has been deleted.');
+                setContactInfo(prev => prev.filter(item => item.$id !== info.$id));
+            } catch (error) {
+                addNotification('error', 'Delete Failed', 'Could not delete contact detail.');
+            }
         }
     };
 
@@ -423,7 +501,32 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
                         {!formState.mailEnabled && <p className="text-xs text-yellow-400 mt-2">Mail sending is disabled. Enable and save settings to send a test.</p>}
                     </div>
                 </section>
-
+                
+                {/* Static Contact Information */}
+                <section>
+                    <h3 className="text-lg font-semibold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 mb-4">Static Contact Information</h3>
+                     <p className="text-sm text-[var(--text-secondary)] mb-4">
+                        This information will be displayed on the public "Contact" page when mail sending is disabled.
+                    </p>
+                     <div className="space-y-3">
+                        {isContactInfoLoading ? (
+                            <div className="flex justify-center"><LoadingSpinner /></div>
+                        ) : (
+                            contactInfo.map((info) => (
+                                <div key={info.$id} className="flex items-center space-x-2 p-3 bg-[var(--bg-secondary)] rounded-md border border-[var(--border-color)]">
+                                    <i className={`${info.icon} text-[var(--primary-color)] text-xl w-8 text-center`}></i>
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-[var(--text-primary)]">{info.label}</p>
+                                        <p className="text-sm text-[var(--text-secondary)]">{info.value}</p>
+                                    </div>
+                                    <button type="button" onClick={() => openContactInfoModal(info)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-2 rounded w-10 h-10 flex items-center justify-center"><i className="fas fa-pencil-alt"></i></button>
+                                    <button type="button" onClick={() => handleDeleteContactInfo(info)} className="bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded w-10 h-10 flex items-center justify-center"><i className="fas fa-trash"></i></button>
+                                </div>
+                            ))
+                        )}
+                     </div>
+                     <button type="button" onClick={() => openContactInfoModal(null)} className="mt-3 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm flex items-center space-x-2"><i className="fas fa-plus"></i><span>Add Contact Detail</span></button>
+                </section>
 
                 {/* Social Links */}
                 <section>
@@ -469,6 +572,39 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
                 </div>
             </form>
             {isMediaModalOpen && <MediaLibraryModal onSelect={handleImageSelect} onClose={() => setIsMediaModalOpen(false)} fileUsageMap={fileUsageMap} />}
+            
+            {isContactInfoModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4">
+                    <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 rounded-lg shadow-2xl w-full max-w-lg relative text-[var(--text-primary)]">
+                        <button onClick={closeContactInfoModal} aria-label="Close modal" className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-2xl">&times;</button>
+                        <h2 className="text-2xl font-bold mb-6">{editingContactInfo ? 'Edit' : 'Add'} Contact Detail</h2>
+                        <form onSubmit={handleContactInfoSubmit} className="space-y-4">
+                            <div>
+                                <label htmlFor="ci-label" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Label</label>
+                                <input id="ci-label" type="text" value={contactInfoForm.label} onChange={e => setContactInfoForm(p => ({...p, label: e.target.value}))} placeholder="e.g., General Inquiries" required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2"/>
+                            </div>
+                             <div>
+                                <label htmlFor="ci-value" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Value</label>
+                                <input id="ci-value" type="text" value={contactInfoForm.value} onChange={e => setContactInfoForm(p => ({...p, value: e.target.value}))} placeholder="e.g., contact@firstvideos.com" required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2"/>
+                            </div>
+                            <div>
+                                <label htmlFor="ci-icon" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Icon</label>
+                                <input id="ci-icon" type="text" value={contactInfoForm.icon} onChange={e => setContactInfoForm(p => ({...p, icon: e.target.value}))} placeholder="e.g., fas fa-envelope" required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2"/>
+                                <p className="text-xs text-[var(--text-secondary)] mt-1">Use Font Awesome class names (e.g., `fas fa-phone`).</p>
+                            </div>
+                             <div>
+                                <label htmlFor="ci-url" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">URL (Optional)</label>
+                                <input id="ci-url" type="text" value={contactInfoForm.url} onChange={e => setContactInfoForm(p => ({...p, url: e.target.value}))} placeholder="e.g., mailto:contact@firstvideos.com" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2"/>
+                                <p className="text-xs text-[var(--text-secondary)] mt-1">Makes the item clickable. Use `mailto:`, `tel:`, or a web URL.</p>
+                            </div>
+                            <div className="flex justify-end space-x-4 pt-4">
+                                <button type="button" onClick={closeContactInfoModal} className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Cancel</button>
+                                <button type="submit" className="bg-[var(--primary-color)] hover:brightness-110 text-gray-900 font-bold py-2 px-4 rounded">Save Detail</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

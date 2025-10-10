@@ -3,6 +3,8 @@ import type { MediaFile, MediaCategory } from '../types';
 import { listFiles, deleteFile, getFilePreviewUrl, updateMediaMetadata } from '../services/appwrite';
 import LoadingSpinner from './LoadingSpinner';
 import UploadMediaModal from './UploadMediaModal';
+import { useNotification } from '../contexts/NotificationContext';
+import { useConfirmation } from '../contexts/ConfirmationDialogContext';
 
 interface MediaPanelProps {
     fileUsageMap: Map<string, string[]>;
@@ -15,6 +17,8 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { addNotification } = useNotification();
+    const { confirm } = useConfirmation();
 
     // State for the new edit modal
     const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
@@ -46,21 +50,27 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
         }
     }, [editingFile]);
 
-    const handleDeleteFile = async (fileId: string) => {
-        const usage = fileUsageMap.get(fileId);
+    const handleDeleteFile = async (file: MediaFile) => {
+        const usage = fileUsageMap.get(file.$id);
         const confirmMessage = usage && usage.length > 0
-            ? `This file appears to be in use:\n- ${usage.join('\n- ')}\n\nDeleting it may cause broken images on your site. Are you sure you want to delete it?`
-            : 'Are you sure you want to delete this file? This action cannot be undone.';
+            ? `This file appears to be in use:\n- ${usage.join('\n- ')}\n\nDeleting it may cause broken images or assets on your site. Are you sure you want to proceed?`
+            : `Are you sure you want to permanently delete the file "${file.name}"? This action cannot be undone.`;
 
-        if (!window.confirm(confirmMessage)) {
-            return;
-        }
+        const isConfirmed = await confirm({
+            title: 'Confirm Deletion',
+            message: confirmMessage,
+            confirmText: 'Delete File',
+            confirmStyle: 'destructive',
+        });
+        
+        if (!isConfirmed) return;
 
         try {
-            await deleteFile(fileId);
-            setFiles(prevFiles => prevFiles.filter(f => f.$id !== fileId));
+            await deleteFile(file.$id);
+            setFiles(prevFiles => prevFiles.filter(f => f.$id !== file.$id));
+            addNotification('info', 'File Deleted', `The file "${file.name}" has been deleted.`);
         } catch (err) {
-            setError('Failed to delete file.');
+            addNotification('error', 'Delete Failed', 'Failed to delete file.');
             console.error(err);
         }
     };
@@ -68,9 +78,9 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
     const copyToClipboard = (fileId: string) => {
         const url = getFilePreviewUrl(fileId);
         navigator.clipboard.writeText(url).then(() => {
-            alert('URL copied to clipboard!');
+            addNotification('success', 'Copied!', 'URL copied to clipboard.');
         }, () => {
-            alert('Failed to copy URL.');
+            addNotification('error', 'Copy Failed', 'Could not copy URL to clipboard.');
         });
     };
     
@@ -87,7 +97,7 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
         setError(null);
         try {
             await updateMediaMetadata(editingFile.$id, editForm);
-            alert('Media updated successfully!');
+            addNotification('success', 'Media Updated', `Details for "${editForm.name}" updated successfully.`);
             setEditingFile(null);
             await fetchFiles(); // Refresh list
         } catch (err) {
@@ -156,7 +166,7 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ fileUsageMap }) => {
                                 <div className="w-full space-y-1 mt-auto pt-2">
                                     <button onClick={() => openEditModal(file)} className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-2 rounded text-xs">Edit Details</button>
                                     <button onClick={() => copyToClipboard(file.$id)} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs">Copy URL</button>
-                                    <button onClick={() => handleDeleteFile(file.$id)} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs">Delete</button>
+                                    <button onClick={() => handleDeleteFile(file)} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs">Delete</button>
                                 </div>
                             </div>
                         </div>

@@ -1,14 +1,9 @@
 // FIX: Imported the `Models` namespace to resolve reference errors below.
 import { Client, Account, Databases, ID, Query, Models, Storage, Functions } from 'appwrite';
-import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID, SLATE_ENTRIES_COLLECTION_ID, TASKS_COLLECTION_ID, DEPARTMENTS_COLLECTION_ID, DEPARTMENT_ROLES_COLLECTION_ID, DEPARTMENT_CREW_COLLECTION_ID, PROJECT_DEPARTMENT_CREW_COLLECTION_ID } from '../constants';
-import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, SlateEntry, ProductionTask, Department, DepartmentRole, DepartmentCrew, ProjectDepartmentCrew } from '../types';
+import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID, SLATE_ENTRIES_COLLECTION_ID, TASKS_COLLECTION_ID, DEPARTMENTS_COLLECTION_ID, DEPARTMENT_ROLES_COLLECTION_ID, DEPARTMENT_CREW_COLLECTION_ID, PROJECT_DEPARTMENT_CREW_COLLECTION_ID, PRODUCTION_ELEMENTS_COLLECTION_ID, PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID, STATIC_CONTACT_INFO_COLLECTION_ID } from '../constants';
+import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, SlateEntry, ProductionTask, Department, DepartmentRole, DepartmentCrew, ProjectDepartmentCrew, ProductionElement, ProductionElementType, ProductionElementFile, UnifiedMediaFile, StaticContactInfo } from '../types';
 
-// Check if the constants have been configured.
-// This provides a clear error message to the user if they haven't edited the constants.ts file.
-if (APPWRITE_PROJECT_ID === 'YOUR_PROJECT_ID' || APPWRITE_DATABASE_ID === 'YOUR_DATABASE_ID') {
-    throw new Error('Appwrite configuration is not set. Please edit `src/constants.ts` with your project details.');
-}
-
+// FIX: Removed the check for placeholder credentials. The constants are hardcoded, making this check unnecessary and causing a TypeScript error due to non-overlapping literal types.
 const client = new Client();
 
 client
@@ -275,6 +270,34 @@ export const sendTestEmail = (payload: { recipientEmail: string }) => {
     return functions.createExecution(TEST_EMAIL_FUNCTION_ID, JSON.stringify(payload));
 };
 
+// --- New Static Contact Info ---
+
+export const getStaticContactInfo = async (): Promise<StaticContactInfo[]> => {
+    try {
+        const response = await databases.listDocuments<StaticContactInfo>(
+            APPWRITE_DATABASE_ID,
+            STATIC_CONTACT_INFO_COLLECTION_ID,
+            [Query.orderAsc('$createdAt')]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to fetch static contact info:", error);
+        return [];
+    }
+};
+
+export const createStaticContactInfo = (data: Omit<StaticContactInfo, keyof Models.Document>) => {
+    return databases.createDocument(APPWRITE_DATABASE_ID, STATIC_CONTACT_INFO_COLLECTION_ID, ID.unique(), data);
+};
+
+export const updateStaticContactInfo = (documentId: string, data: Partial<Omit<StaticContactInfo, keyof Models.Document>>) => {
+    return databases.updateDocument(APPWRITE_DATABASE_ID, STATIC_CONTACT_INFO_COLLECTION_ID, documentId, data);
+};
+
+export const deleteStaticContactInfo = (documentId: string) => {
+    return databases.deleteDocument(APPWRITE_DATABASE_ID, STATIC_CONTACT_INFO_COLLECTION_ID, documentId);
+};
+
 // --- Department Management ---
 
 // Departments
@@ -408,6 +431,90 @@ export const unassignCrewFromProjectDepartment = (assignmentId: string) => {
     return databases.deleteDocument(APPWRITE_DATABASE_ID, PROJECT_DEPARTMENT_CREW_COLLECTION_ID, assignmentId);
 };
 
+// --- Production Elements Library ---
+
+export const listProductionElementFiles = async (): Promise<ProductionElementFile[]> => {
+    try {
+        const [storageFilesResponse, metadataDocsResponse] = await Promise.all([
+            storage.listFiles(PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID),
+            databases.listDocuments<ProductionElement>(APPWRITE_DATABASE_ID, PRODUCTION_ELEMENTS_COLLECTION_ID, [Query.limit(5000)])
+        ]);
+        
+        const metadataMap = new Map<string, ProductionElement>();
+        for (const doc of metadataDocsResponse.documents) {
+            metadataMap.set(doc.fileId, doc);
+        }
+
+        const mergedFiles: ProductionElementFile[] = storageFilesResponse.files.map(file => {
+            const metadata = metadataMap.get(file.$id);
+            return {
+                ...file,
+                elementName: metadata?.elementName || file.name,
+                elementType: metadata?.elementType || 'Document', // Fallback
+                projectId: metadata?.projectId,
+            };
+        });
+
+        return mergedFiles.sort((a, b) => new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime());
+    } catch (error) {
+        console.error("Failed to list production element files:", error);
+        return [];
+    }
+};
+
+export const uploadProductionElementFile = async (file: File, data: Omit<ProductionElement, 'fileId' | keyof Models.Document>) => {
+    const storageFile = await storage.createFile(PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID, ID.unique(), file);
+    try {
+        await databases.createDocument(APPWRITE_DATABASE_ID, PRODUCTION_ELEMENTS_COLLECTION_ID, ID.unique(), {
+            ...data,
+            fileId: storageFile.$id,
+        });
+    } catch (dbError) {
+        console.error("Failed to create production element metadata, cleaning up storage file.", dbError);
+        await storage.deleteFile(PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID, storageFile.$id);
+        throw dbError;
+    }
+    return storageFile;
+};
+
+export const updateProductionElement = async (fileId: string, data: Partial<Omit<ProductionElement, 'fileId' | keyof Models.Document>>) => {
+    try {
+        const metadataDocs = await databases.listDocuments<ProductionElement>(APPWRITE_DATABASE_ID, PRODUCTION_ELEMENTS_COLLECTION_ID, [
+            Query.equal('fileId', fileId),
+            Query.limit(1)
+        ]);
+
+        if (metadataDocs.documents.length > 0) {
+            const documentId = metadataDocs.documents[0].$id;
+            return await databases.updateDocument(APPWRITE_DATABASE_ID, PRODUCTION_ELEMENTS_COLLECTION_ID, documentId, data);
+        } else {
+            throw new Error(`No metadata found for fileId: ${fileId}. Cannot update.`);
+        }
+    } catch (error) {
+        console.error("Failed to update production element metadata:", error);
+        throw error;
+    }
+};
+
+export const getProductionElementFilePreviewUrl = (fileId: string): string => {
+    return storage.getFileView(PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID, fileId).toString();
+};
+
+export const deleteProductionElementFile = async (fileId: string) => {
+    await storage.deleteFile(PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID, fileId);
+    try {
+        const metadataDocs = await databases.listDocuments(APPWRITE_DATABASE_ID, PRODUCTION_ELEMENTS_COLLECTION_ID, [
+            Query.equal('fileId', fileId),
+            Query.limit(1)
+        ]);
+        if (metadataDocs.documents.length > 0) {
+            await databases.deleteDocument(APPWRITE_DATABASE_ID, PRODUCTION_ELEMENTS_COLLECTION_ID, metadataDocs.documents[0].$id);
+        }
+    } catch (dbError) {
+        console.warn(`File ${fileId} was deleted from storage, but its metadata could not be removed.`, dbError);
+    }
+};
+
 // Storage / Media
 export const listFiles = async (): Promise<MediaFile[]> => {
     try {
@@ -510,4 +617,47 @@ export const deleteFile = async (fileId: string) => {
         // allow the UI to reflect that. The metadata document is now orphaned but can be cleaned up manually if needed.
         console.warn(`File ${fileId} was successfully deleted from storage, but its metadata document could not be removed.`, dbError);
     }
+};
+
+// --- New Unified Media Functions ---
+
+export const listAllMediaFiles = async (): Promise<UnifiedMediaFile[]> => {
+    try {
+        const [mediaFiles, elementFiles] = await Promise.all([
+            listFiles(),
+            listProductionElementFiles()
+        ]);
+
+        const unifiedMedia: UnifiedMediaFile[] = mediaFiles.map(file => ({
+            ...file,
+            displayName: file.name,
+            category: file.category,
+            library: 'media',
+            fileId: file.$id,
+        }));
+
+        const unifiedElements: UnifiedMediaFile[] = elementFiles.map(file => ({
+            ...file,
+            displayName: file.elementName,
+            category: file.elementType,
+            projectId: file.projectId,
+            library: 'elements',
+            fileId: file.$id,
+        }));
+
+        const allFiles = [...unifiedMedia, ...unifiedElements];
+        
+        return allFiles.sort((a, b) => new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime());
+
+    } catch (error) {
+        console.error("Failed to list all media files:", error);
+        return [];
+    }
+};
+
+export const getUnifiedFilePreviewUrl = (file: UnifiedMediaFile): string => {
+    if (file.library === 'elements') {
+        return getProductionElementFilePreviewUrl(file.fileId);
+    }
+    return getFilePreviewUrl(file.fileId);
 };

@@ -30,6 +30,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ user, onLogout, activeView,
         { id: 'departments', label: 'Departments & Crew', icon: 'fas fa-building' },
         { id: 'cast', label: 'Cast Members', icon: 'fas fa-user-friends' },
         { id: 'media', label: 'Media Library', icon: 'fas fa-photo-video' },
+        { id: 'elements', label: 'Elements Library', icon: 'fas fa-archive' },
         { id: 'settings', label: 'Site Settings', icon: 'fas fa-cogs' },
     ];
 

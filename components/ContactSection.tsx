@@ -1,16 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { sendContactEmail } from '../services/appwrite';
 import { useSettings } from '../contexts/SettingsContext';
+import { SocialLink, StaticContactInfo } from '../types';
 
 type FormStatus = 'idle' | 'sending' | 'success' | 'error';
 
-const ContactSection: React.FC = () => {
+interface ContactSectionProps {
+  staticContactInfo: StaticContactInfo[];
+}
+
+const ContactSection: React.FC<ContactSectionProps> = ({ staticContactInfo }) => {
   const { settings } = useSettings();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState<FormStatus>('idle');
   const [responseMessage, setResponseMessage] = useState('');
+
+  const socialLinks: SocialLink[] = useMemo(() => {
+    try {
+      return settings?.socialLinks ? JSON.parse(settings.socialLinks) : [];
+    } catch {
+      return [];
+    }
+  }, [settings?.socialLinks]);
 
   const mailEnabled = settings?.mailEnabled ?? false;
 
@@ -51,56 +64,88 @@ const ContactSection: React.FC = () => {
           <div className="w-24 h-1 bg-[var(--primary-color)] mx-auto mt-4"></div>
         </div>
         <div className="max-w-2xl mx-auto">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-             <fieldset disabled={!mailEnabled} className="space-y-6 relative">
-                {!mailEnabled && (
-                    <div className="absolute inset-0 bg-[var(--bg-secondary)] bg-opacity-95 flex flex-col items-center justify-center rounded-md z-10 p-4 text-center border border-[var(--border-color)]">
-                        <i className="fas fa-tools text-4xl text-yellow-400 mb-4"></i>
-                        <h3 className="text-xl font-bold text-[var(--text-primary)]">Function In Development</h3>
-                        <p className="text-[var(--text-secondary)] mt-2">This function is currently in development.</p>
-                    </div>
-                )}
-                <div className="relative">
-                  <label htmlFor="contact-name" className="sr-only">Your Name</label>
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-[var(--text-secondary)]">
-                    <i className="fas fa-user"></i>
-                  </span>
-                  <input id="contact-name" type="text" placeholder="Your Name" value={name} onChange={e => setName(e.target.value)} required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md py-3 px-4 pl-12 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
-                </div>
-                <div className="relative">
-                  <label htmlFor="contact-email" className="sr-only">Your Email</label>
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-[var(--text-secondary)]">
-                    <i className="fas fa-envelope"></i>
-                  </span>
-                  <input id="contact-email" type="email" placeholder="Your Email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md py-3 px-4 pl-12 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
-                </div>
-                 <div className="relative">
-                  <label htmlFor="contact-message" className="sr-only">Your Message</label>
-                  <span className="absolute top-4 left-0 flex items-center pl-4 text-[var(--text-secondary)]">
-                    <i className="fas fa-pen"></i>
-                  </span>
-                  <textarea id="contact-message" placeholder="Your Message" rows={5} value={message} onChange={e => setMessage(e.target.value)} required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md py-3 px-4 pl-12 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all"></textarea>
-                </div>
-                {responseMessage && (
-                  <div role="alert" className={`p-4 rounded-md text-center text-sm font-medium ${getStatusColor()}`} aria-live="polite">
-                    {responseMessage}
-                  </div>
-                )}
-                <button type="submit" disabled={status === 'sending' || !mailEnabled} className="w-full bg-[var(--primary-color)] text-gray-900 font-bold py-3 px-8 rounded-full uppercase tracking-wider hover:brightness-110 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed">
-                  {status === 'sending' ? (
-                    <>
-                      <i className="fas fa-spinner animate-spin"></i>
-                      <span>Sending...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Send Message</span>
-                      <i className="fas fa-paper-plane"></i>
-                    </>
+          {mailEnabled ? (
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <fieldset disabled={!mailEnabled} className="space-y-6 relative">
+                  {!mailEnabled && (
+                      <div className="absolute inset-0 bg-[var(--bg-secondary)] bg-opacity-95 flex flex-col items-center justify-center rounded-md z-10 p-4 text-center border border-[var(--border-color)]">
+                          <i className="fas fa-tools text-4xl text-yellow-400 mb-4"></i>
+                          <h3 className="text-xl font-bold text-[var(--text-primary)]">Function In Development</h3>
+                          <p className="text-[var(--text-secondary)] mt-2">This function is currently in development.</p>
+                      </div>
                   )}
-                </button>
-             </fieldset>
-          </form>
+                  <div className="relative">
+                    <label htmlFor="contact-name" className="sr-only">Your Name</label>
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-[var(--text-secondary)]">
+                      <i className="fas fa-user"></i>
+                    </span>
+                    <input id="contact-name" type="text" placeholder="Your Name" value={name} onChange={e => setName(e.target.value)} required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md py-3 px-4 pl-12 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
+                  </div>
+                  <div className="relative">
+                    <label htmlFor="contact-email" className="sr-only">Your Email</label>
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-[var(--text-secondary)]">
+                      <i className="fas fa-envelope"></i>
+                    </span>
+                    <input id="contact-email" type="email" placeholder="Your Email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md py-3 px-4 pl-12 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" />
+                  </div>
+                  <div className="relative">
+                    <label htmlFor="contact-message" className="sr-only">Your Message</label>
+                    <span className="absolute top-4 left-0 flex items-center pl-4 text-[var(--text-secondary)]">
+                      <i className="fas fa-pen"></i>
+                    </span>
+                    <textarea id="contact-message" placeholder="Your Message" rows={5} value={message} onChange={e => setMessage(e.target.value)} required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md py-3 px-4 pl-12 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all"></textarea>
+                  </div>
+                  {responseMessage && (
+                    <div role="alert" className={`p-4 rounded-md text-center text-sm font-medium ${getStatusColor()}`} aria-live="polite">
+                      {responseMessage}
+                    </div>
+                  )}
+                  <button type="submit" disabled={status === 'sending' || !mailEnabled} className="w-full bg-[var(--primary-color)] text-gray-900 font-bold py-3 px-8 rounded-full uppercase tracking-wider hover:brightness-110 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                    {status === 'sending' ? (
+                      <>
+                        <i className="fas fa-spinner animate-spin"></i>
+                        <span>Sending...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Send Message</span>
+                        <i className="fas fa-paper-plane"></i>
+                      </>
+                    )}
+                  </button>
+              </fieldset>
+            </form>
+          ) : (
+            <div className="bg-[var(--bg-secondary)] p-8 rounded-lg shadow-lg border border-[var(--border-color)] text-center">
+              <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4">Contact Information</h3>
+              <p className="text-[var(--text-secondary)] mb-8">
+                  The contact form is currently unavailable. Please reach out to us through one of the following channels.
+              </p>
+              <div className="space-y-4">
+                  {staticContactInfo.map(info => (
+                      <a key={info.$id} href={info.url || '#'} className="flex items-center p-4 bg-[var(--bg-primary)] rounded-md hover:bg-[var(--bg-card)] transition-colors group" target="_blank" rel="noopener noreferrer">
+                          <i className={`${info.icon} text-[var(--primary-color)] text-2xl w-8 group-hover:scale-110 transition-transform`}></i>
+                          <div className="ml-4 text-left">
+                              <p className="font-semibold text-[var(--text-primary)]">{info.label}</p>
+                              <p className="text-[var(--text-secondary)]">{info.value}</p>
+                          </div>
+                      </a>
+                  ))}
+              </div>
+              {socialLinks.length > 0 && (
+                  <div className="mt-8 pt-6 border-t border-[var(--border-color)]">
+                      <h4 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Follow Us</h4>
+                      <div className="flex justify-center space-x-6">
+                          {socialLinks.map((link, index) => (
+                              <a key={index} href={link.url} aria-label={link.icon.split('fa-')[1]?.replace('-', ' ')} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-[var(--primary-color)] transition-colors">
+                                  <i className={`${link.icon} fa-2x`}></i>
+                              </a>
+                          ))}
+                      </div>
+                  </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </section>

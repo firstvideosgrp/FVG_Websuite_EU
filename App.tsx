@@ -6,12 +6,20 @@ import AdminPage from './pages/AdminPage';
 import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import LoadingSpinner from './components/LoadingSpinner';
+import { NotificationProvider } from './contexts/NotificationContext';
+import { ConfirmationDialogProvider } from './contexts/ConfirmationDialogContext';
+import NotificationContainer from './components/NotificationContainer';
+import ConfirmationDialog from './components/ConfirmationDialog';
 
 function App() {
   return (
     <ThemeProvider>
       <SettingsProvider>
-        <AppContent />
+        <NotificationProvider>
+          <ConfirmationDialogProvider>
+            <AppContent />
+          </ConfirmationDialogProvider>
+        </NotificationProvider>
       </SettingsProvider>
     </ThemeProvider>
   );
@@ -29,12 +37,16 @@ function AppContent() {
   }
 
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/admin" element={<AdminPage />} />
-      </Routes>
-    </HashRouter>
+    <>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/admin" element={<AdminPage />} />
+        </Routes>
+      </HashRouter>
+      <NotificationContainer />
+      <ConfirmationDialog />
+    </>
   );
 }
 
