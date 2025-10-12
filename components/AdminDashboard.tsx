@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { logout, getAboutContent, updateAboutContent, getProjects, createProject, updateProject, deleteProject, getCast, createCastMember, updateCastMember, deleteCastMember, getCrew, createCrewMember, updateCrewMember, deleteCrewMember, getTasks, getProductionPhasesForProject, getDepartments, getDepartmentRoles, getProjectDepartmentCrew, assignCrewToProjectDepartment, unassignCrewFromProjectDepartment } from '../services/appwrite';
+import { logout, getProjects, createProject, updateProject, deleteProject, getCast, createCastMember, updateCastMember, deleteCastMember, getCrew, createCrewMember, updateCrewMember, deleteCrewMember, getTasks, getProductionPhasesForProject, getDepartments, getDepartmentRoles, getProjectDepartmentCrew, assignCrewToProjectDepartment, unassignCrewFromProjectDepartment } from '../services/appwrite';
 import type { Models } from 'appwrite';
-import type { AboutContent, Project, ProjectStatus, ProjectType, CastMember, CrewMember, ProductionTask, ProductionPhase, Department, ProjectDepartmentCrew, DepartmentRole } from '../types';
+import type { Project, ProjectStatus, ProjectType, CastMember, CrewMember, ProductionTask, ProductionPhase, Department, ProjectDepartmentCrew, DepartmentRole } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 import AdminSidebar from './AdminSidebar';
 import SiteSettingsPanel from './SiteSettingsPanel';
@@ -16,7 +16,6 @@ import { useSettings } from '../contexts/SettingsContext';
 import AdminHome from './AdminHome';
 import { useNotification } from '../contexts/NotificationContext';
 import { useConfirmation } from '../contexts/ConfirmationDialogContext';
-import PricingPanel from './PricingPanel';
 
 interface AdminDashboardProps {
     user: Models.User<Models.Preferences>;
@@ -37,14 +36,26 @@ const getFileIdFromUrl = (url: string): string | null => {
     return match ? match[1] : null;
 };
 
+const viewTitles: { [key: string]: string } = {
+    home: 'Dashboard',
+    projects: 'Projects Overview',
+    phases: 'Production Phases',
+    tasks: 'Task Manager',
+    slate: 'Timecode Slate',
+    departments: 'Departments & Crew',
+    cast: 'Cast Members',
+    media: 'Media Library',
+    elements: 'Elements Library',
+    settings: 'Site Settings',
+};
+
+
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     const { settings } = useSettings();
     const { addNotification } = useNotification();
     const { confirm } = useConfirmation();
     const [activeView, setActiveView] = useState('home');
     // Page Content State
-    const [about, setAbout] = useState<AboutContent | null>(null);
-    const [aboutText, setAboutText] = useState('');
     const [projects, setProjects] = useState<Project[]>([]);
     const [allCast, setAllCast] = useState<CastMember[]>([]);
     const [allCrew, setAllCrew] = useState<CrewMember[]>([]);
@@ -152,8 +163,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const [aboutData, projectsData, castData, crewData, tasksData, departmentsData] = await Promise.all([
-                getAboutContent(), 
+            const [projectsData, castData, crewData, tasksData, departmentsData] = await Promise.all([
                 getProjects(),
                 getCast(),
                 getCrew(),
@@ -161,8 +171,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                 getDepartments()
             ]);
             const phasesData = await Promise.all(projectsData.map(p => getProductionPhasesForProject(p.$id))).then(res => res.flat());
-            setAbout(aboutData);
-            setAboutText(aboutData?.content || '');
             setProjects(projectsData);
             setAllCast(castData);
             setAllCrew(crewData);
@@ -179,19 +187,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
-
-    const handleAboutSave = async () => {
-        if (about) {
-            try {
-                await updateAboutContent(about.$id, aboutText);
-                addNotification('success', 'Success', 'About section updated!');
-                fetchData();
-            } catch(e) {
-                addNotification('error', 'Update Failed', 'Failed to update about section.');
-                console.error(e);
-            }
-        }
-    };
 
     const handleProjectFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -507,6 +502,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         return <div className="flex items-center justify-center min-h-screen bg-[var(--bg-secondary)]"><LoadingSpinner /></div>;
     }
 
+    const currentTitle = viewTitles[activeView] || `${activeView.charAt(0).toUpperCase() + activeView.slice(1)} Management`;
+
     return (
         <div className="flex min-h-screen bg-[var(--bg-secondary)] text-[var(--text-primary)]">
             <AdminSidebar user={user} onLogout={handleLogout} activeView={activeView} setActiveView={setActiveView} />
@@ -514,7 +511,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                 <div className="p-4 md:p-8">
                      <header className="mb-8">
                         <div>
-                            <h1 className="text-3xl font-bold capitalize">{activeView === 'home' ? 'Dashboard' : `${activeView} Management`}</h1>
+                            <h1 className="text-3xl font-bold">{currentTitle}</h1>
                             <p className="text-[var(--text-secondary)]">{activeView === 'home' ? 'An overview of your active productions and site status.' : 'Manage your website content efficiently.'}</p>
                         </div>
                     </header>
@@ -530,23 +527,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                 allCrew={allCrew}
                                 onTaskUpdate={fetchData}
                             />
-                        )}
-
-                        {activeView === 'about' && (
-                            <div className="bg-[var(--bg-primary)] p-6 rounded-lg shadow-lg border border-[var(--border-color)]">
-                                <h2 className="text-2xl font-bold mb-4 text-[var(--primary-color)] flex items-center"><i className="fas fa-info-circle mr-3"></i>About Section</h2>
-                                <textarea 
-                                    value={aboutText} 
-                                    onChange={e => setAboutText(e.target.value)}
-                                    rows={10}
-                                    className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all"
-                                    placeholder="Enter the content for the 'About Us' section..."
-                                />
-                                <button onClick={handleAboutSave} className="mt-4 bg-[var(--primary-color)] hover:brightness-110 text-gray-900 font-bold py-2 px-6 rounded transition-colors flex items-center space-x-2">
-                                    <i className="fas fa-save"></i>
-                                    <span>Save About Content</span>
-                                </button>
-                            </div>
                         )}
 
                         {activeView === 'projects' && (
@@ -589,8 +569,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                 </div>
                             </div>
                         )}
-                        
-                        {activeView === 'pricing' && <PricingPanel />}
 
                         {activeView === 'phases' && <ProductionPhasesPanel projects={projects} />}
 

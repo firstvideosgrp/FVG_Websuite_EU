@@ -125,12 +125,10 @@ const PricingPanel: React.FC = () => {
     };
 
     return (
-        <div className="bg-[var(--bg-primary)] p-6 rounded-lg shadow-lg border border-[var(--border-color)]">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-[var(--primary-color)] flex items-center">
-                    <i className="fas fa-tags mr-3"></i>Pricing Tiers
-                </h2>
-                <button onClick={() => openModal(null)} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors flex items-center space-x-2">
+        <>
+            <div className="flex justify-between items-center mb-4">
+                <p className="text-sm text-[var(--text-secondary)]">Manage the plans that appear on your public website.</p>
+                <button onClick={() => openModal(null)} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors flex items-center space-x-2 text-sm">
                     <i className="fas fa-plus"></i><span>Add New Tier</span>
                 </button>
             </div>
@@ -163,7 +161,7 @@ const PricingPanel: React.FC = () => {
             )}
 
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4">
                     <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 rounded-lg shadow-2xl w-full max-w-2xl relative text-[var(--text-primary)] max-h-[90vh] overflow-y-auto">
                         <button onClick={closeModal} className="absolute top-4 right-4 text-[var(--text-secondary)] text-2xl">&times;</button>
                         <h2 className="text-2xl font-bold mb-6">{editingTier ? 'Edit' : 'Create'} Pricing Tier</h2>
@@ -222,7 +220,7 @@ const PricingPanel: React.FC = () => {
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 };
 
