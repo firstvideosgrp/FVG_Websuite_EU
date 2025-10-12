@@ -19,6 +19,7 @@ export const DEPARTMENT_CREW_COLLECTION_ID = "fvg_department_crew"; // Replace w
 export const PROJECT_DEPARTMENT_CREW_COLLECTION_ID = "fvg_project_department_crew"; // Replace with your actual project department crew collection ID
 export const PRODUCTION_ELEMENTS_COLLECTION_ID = "fvg_production_elements"; // Replace with your actual production elements collection ID
 export const STATIC_CONTACT_INFO_COLLECTION_ID = "fvg_static_contact_info"; // Replace with your actual static contact info collection ID
+export const PRICING_TIERS_COLLECTION_ID = "fvg_pricing_tiers"; // Replace with your actual pricing tiers collection ID
 export const APPWRITE_STORAGE_BUCKET_ID = "fvg_media"; // Replace with your actual storage bucket ID
 export const PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID = "fvg_media"; // Replace with your actual production elements storage bucket ID
 export const CONTACT_FORM_FUNCTION_ID = "sendContactMail"; // Replace with your actual Appwrite Function ID

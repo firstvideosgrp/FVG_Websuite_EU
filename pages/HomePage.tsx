@@ -7,9 +7,10 @@ import ContactSection from '../components/ContactSection';
 import Footer from '../components/Footer';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProjectModal from '../components/ProjectModal';
-import { getAboutContent, getProjects, getCast, getCrew, getAllDepartmentRoles, getAllDepartmentCrew, getDepartments, getStaticContactInfo } from '../services/appwrite';
-import type { AboutContent, Project, CastMember, CrewMember, DepartmentRole, DepartmentCrew, Department, StaticContactInfo } from '../types';
+import { getAboutContent, getProjects, getCast, getCrew, getAllDepartmentRoles, getAllDepartmentCrew, getDepartments, getStaticContactInfo, getPricingTiers } from '../services/appwrite';
+import type { AboutContent, Project, CastMember, CrewMember, DepartmentRole, DepartmentCrew, Department, StaticContactInfo, PricingTier } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+import PricingSection from '../components/PricingSection';
 
 const HomePage: React.FC = () => {
   const { siteTheme } = useTheme();
@@ -21,13 +22,14 @@ const HomePage: React.FC = () => {
   const [allAssignments, setAllAssignments] = useState<DepartmentCrew[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [staticContactInfo, setStaticContactInfo] = useState<StaticContactInfo[]>([]);
+  const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [aboutData, projectsData, castData, crewData, rolesData, assignmentsData, departmentsData, contactInfoData] = await Promise.all([
+        const [aboutData, projectsData, castData, crewData, rolesData, assignmentsData, departmentsData, contactInfoData, pricingTiersData] = await Promise.all([
           getAboutContent(),
           getProjects(),
           getCast(),
@@ -36,6 +38,7 @@ const HomePage: React.FC = () => {
           getAllDepartmentCrew(),
           getDepartments(),
           getStaticContactInfo(),
+          getPricingTiers(),
         ]);
         setAboutContent(aboutData);
         setProjects(projectsData);
@@ -45,6 +48,7 @@ const HomePage: React.FC = () => {
         setAllAssignments(assignmentsData);
         setDepartments(departmentsData);
         setStaticContactInfo(contactInfoData);
+        setPricingTiers(pricingTiersData);
       } catch (error) {
         console.error("Failed to load page data:", error);
       } finally {
@@ -76,6 +80,7 @@ const HomePage: React.FC = () => {
               <HeroSection />
               <AboutSection content={aboutContent?.content} />
               <ProjectsSection projects={projects} cast={cast} crew={crew} onOpenModal={handleOpenModal} />
+              <PricingSection tiers={pricingTiers} />
               <ContactSection staticContactInfo={staticContactInfo} />
             </main>
             <Footer />

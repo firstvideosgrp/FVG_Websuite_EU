@@ -43,7 +43,7 @@ Make sure to fill in all the required values before running the application. The
 
 ## 4. Collection Setup
 
-We need sixteen collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", "SlateEntries", "ProductionTasks", "Departments", "DepartmentRoles", "DepartmentCrew", "ProjectDepartmentCrew", "ProductionElements", and "StaticContactInfo".
+We need seventeen collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", "SlateEntries", "ProductionTasks", "Departments", "DepartmentRoles", "DepartmentCrew", "ProjectDepartmentCrew", "ProductionElements", "StaticContactInfo", and "PricingTiers".
 
 ### 4.1. About Collection
 
@@ -504,6 +504,35 @@ This collection stores the contact details that are displayed on the public site
 -   **Permissions**:
     -   Select **Read Access** and choose **role:all** (Any).
     -   Select **Write Access** and choose **role:member** (Users).
+
+### 4.17. Pricing Tiers Collection
+
+This collection stores the pricing plans displayed on the public website.
+
+-   **Name**: `PricingTiers`
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `PRICING_TIERS_COLLECTION_ID`.
+
+#### Attributes
+
+| Key          | Type    | Size | Required | Array | Notes                                      |
+| :----------- | :------ | :--- | :------- | :---- | :----------------------------------------- |
+| `title`      | String  | 255  | Yes      | No    | e.g., "Basic", "Pro".                      |
+| `description`| String  | 1000 | Yes      | No    | A short description of the plan.           |
+| `price`      | Float   | -    | Yes      | No    | The numerical price.                       |
+| `currency`   | String  | 10   | Yes      | No    | e.g., "USD", "EUR", "HUF".                 |
+| `features`   | String  | 255  | Yes      | Yes   | List of features included in the plan.     |
+| `order`      | Integer | -    | Yes      | No    | The display order on the page (0, 1, 2...).|
+| `isFeatured` | Boolean | -    | No       | No    | If true, the plan will be highlighted.     |
+| `buttonText` | String  | 50   | Yes      | No    | The text for the call-to-action button.    |
+| `buttonUrl`  | URL     | 2048 | No       | No    | The link for the call-to-action button.    |
+
+#### Settings (Permissions)
+-   **Permissions**:
+    -   Select **Read Access** and choose **role:all** (Any).
+    -   Select **Write Access** and choose **role:member** (Users).
+
+#### Indexes
+-   Create a `key` index on the `order` attribute to ensure correct sorting on the public page.
 
 ## 5. Storage (Media Bucket) Setup
 

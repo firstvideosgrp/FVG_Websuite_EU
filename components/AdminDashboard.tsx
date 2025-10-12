@@ -16,6 +16,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import AdminHome from './AdminHome';
 import { useNotification } from '../contexts/NotificationContext';
 import { useConfirmation } from '../contexts/ConfirmationDialogContext';
+import PricingPanel from './PricingPanel';
 
 interface AdminDashboardProps {
     user: Models.User<Models.Preferences>;
@@ -589,6 +590,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                             </div>
                         )}
                         
+                        {activeView === 'pricing' && <PricingPanel />}
+
                         {activeView === 'phases' && <ProductionPhasesPanel projects={projects} />}
 
                         {activeView === 'tasks' && <TasksPanel projects={projects} allCast={allCast} allCrew={allCrew} tasks={tasks} allPhases={allPhases} onTaskUpdate={fetchData} />}
@@ -779,7 +782,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                         <div className="flex-grow overflow-y-auto pr-4 space-y-2">
                                              {allCrew.map(member => (
                                                 <label key={member.$id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-[var(--bg-secondary)] cursor-pointer">
-                                                    <input type="checkbox" checked={selectedCrewIds.has(member.$id)} onChange={() => handleAssignmentToggle(member.$id, 'crew')} className="h-5 w-5 rounded bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
+                                                    <input type="checkbox" checked={selectedCrewIds.has(member.$id)} onChange={() => handleAssignmentToggle(member.$id, 'crew')} className="h-5 w-5 rounded bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
                                                     <span>{member.name} <span className="text-sm text-[var(--text-secondary)]">({member.role})</span></span>
                                                 </label>
                                             ))}

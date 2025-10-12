@@ -16,6 +16,7 @@ const Header: React.FC = () => {
     { href: '#home', label: 'Home', icon: 'fas fa-home' },
     { href: '#about', label: 'About', icon: 'fas fa-info-circle' },
     { href: '#projects', label: 'Projects', icon: 'fas fa-film' },
+    { href: '#pricing', label: 'Pricing', icon: 'fas fa-tags' },
     { href: '#contact', label: 'Contact', icon: 'fas fa-envelope' },
   ];
 

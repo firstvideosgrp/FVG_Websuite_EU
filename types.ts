@@ -219,3 +219,16 @@ export type StaticContactInfo = Models.Document & {
   icon: string; // e.g., "fas fa-envelope"
   url?: string; // e.g., "mailto:contact@firstvideos.com"
 };
+
+// New type for Pricing Tiers
+export type PricingTier = Models.Document & {
+  title: string;
+  description: string;
+  price: number;
+  currency: string;
+  features: string[];
+  order: number;
+  isFeatured?: boolean;
+  buttonText: string;
+  buttonUrl?: string;
+};
