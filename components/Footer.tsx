@@ -54,6 +54,19 @@ const Footer: React.FC = () => {
             </a>
           ))}
         </div>
+
+        <div className="mb-6 flex justify-center">
+            {theme === 'dark' ? (
+                <a href="https://app.aikido.dev/audit-report/external/W0St3inA97N1SI7rcEQPLvs4/request" target="_blank" rel="noopener noreferrer">
+                    <img src="https://app.aikido.dev/assets/badges/label-only-dark-theme.svg" alt="Aikido Security Audit Report" height="40" />    
+                </a>
+            ) : (
+                <a href="https://app.aikido.dev/audit-report/external/W0St3inA97N1SI7rcEQPLvs4/request" target="_blank" rel="noopener noreferrer">
+                    <img src="https://app.aikido.dev/assets/badges/label-only-light-theme.svg" alt="Aikido Security Audit Report" height="40" />    
+                </a>
+            )}
+        </div>
+
         <p>{footerText}</p>
         <div className="mt-4 flex justify-center items-center flex-wrap gap-x-4 gap-y-2">
           <Link to="/admin" className="text-xs hover:text-[var(--primary-color)] transition-colors">Admin Login</Link>

@@ -816,7 +816,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                                                                 </div>
                                                                             ))}
                                                                         </div>
-                                                                        {/* FIX: The form submission handler has been refactored to safely access field values using the FormData API. This prevents a TypeScript error where `e.currentTarget.elements` is not strongly typed, and provides a more robust way to handle form submissions. */}
+                                                                        {/* FIX: Safely access form field value using FormData to resolve TypeScript error on `e.currentTarget.elements`. */}
                                                                         <form
                                                                             onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
                                                                                 e.preventDefault();
