@@ -43,7 +43,7 @@ Make sure to fill in all the required values before running the application. The
 
 ## 4. Collection Setup
 
-We need seventeen collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", "SlateEntries", "ProductionTasks", "Departments", "DepartmentRoles", "DepartmentCrew", "ProjectDepartmentCrew", "ProductionElements", "StaticContactInfo", and "PricingTiers".
+We need eighteen collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", "SlateEntries", "ProductionTasks", "Departments", "DepartmentRoles", "DepartmentCrew", "ProjectDepartmentCrew", "ProductionElements", "StaticContactInfo", "PricingTiers", and "Soundtracks".
 
 ### 4.1. About Collection
 
@@ -533,6 +533,31 @@ This collection stores the pricing plans displayed on the public website.
 
 #### Indexes
 -   Create a `key` index on the `order` attribute to ensure correct sorting on the public page.
+
+### 4.18. Soundtracks Collection
+
+This collection stores metadata for the Soundtrack Management module.
+
+-   **Name**: `Soundtracks`
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `SOUNDTRACKS_COLLECTION_ID`.
+
+#### Attributes
+
+| Key           | Type   | Size | Required | Array | Notes                                                        |
+| :------------ | :----- | :--- | :------- | :---- | :----------------------------------------------------------- |
+| `title`       | String | 255  | Yes      | No    | The display name of the soundtrack.                          |
+| `productionIds` | String | 255  | Yes      | Yes   | Array of Project document IDs this track is associated with. |
+| `type`        | String | 50   | Yes      | No    | e.g., 'Background Music', 'Licensed Track', 'Score Cue'.     |
+| `composer`    | String | 255  | Yes      | No    | The name of the composer or artist.                          |
+| `licenseInfo` | String | 1000 | Yes      | No    | Details about the licensing for the track.                   |
+| `fileId`      | String | 255  | Yes      | No    | Corresponds to the file's `$id` in the `fvg_media` storage bucket. |
+
+#### Settings (Permissions)
+-   **Permissions**: Set Read, Create, Update, and Delete access to **role:member** (Users).
+
+#### Indexes
+-   Create a `key` index on the `fileId` attribute.
+-   Create a `key` index on the `productionIds` attribute to allow querying by project.
 
 ## 5. Storage (Media Bucket) Setup
 

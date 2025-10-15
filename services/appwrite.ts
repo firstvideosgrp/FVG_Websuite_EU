@@ -1,7 +1,7 @@
 // FIX: Imported the `Models` namespace to resolve reference errors below.
 import { Client, Account, Databases, ID, Query, Models, Storage, Functions } from 'appwrite';
-import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID, SLATE_ENTRIES_COLLECTION_ID, TASKS_COLLECTION_ID, DEPARTMENTS_COLLECTION_ID, DEPARTMENT_ROLES_COLLECTION_ID, DEPARTMENT_CREW_COLLECTION_ID, PROJECT_DEPARTMENT_CREW_COLLECTION_ID, PRODUCTION_ELEMENTS_COLLECTION_ID, PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID, STATIC_CONTACT_INFO_COLLECTION_ID, PRICING_TIERS_COLLECTION_ID } from '../constants';
-import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, SlateEntry, ProductionTask, Department, DepartmentRole, DepartmentCrew, ProjectDepartmentCrew, ProductionElement, ProductionElementType, ProductionElementFile, UnifiedMediaFile, StaticContactInfo, PricingTier } from '../types';
+import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID, SLATE_ENTRIES_COLLECTION_ID, TASKS_COLLECTION_ID, DEPARTMENTS_COLLECTION_ID, DEPARTMENT_ROLES_COLLECTION_ID, DEPARTMENT_CREW_COLLECTION_ID, PROJECT_DEPARTMENT_CREW_COLLECTION_ID, PRODUCTION_ELEMENTS_COLLECTION_ID, PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID, STATIC_CONTACT_INFO_COLLECTION_ID, PRICING_TIERS_COLLECTION_ID, SOUNDTRACKS_COLLECTION_ID, SOUNDTRACKS_STORAGE_BUCKET_ID } from '../constants';
+import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, SlateEntry, ProductionTask, Department, DepartmentRole, DepartmentCrew, ProjectDepartmentCrew, ProductionElement, ProductionElementType, ProductionElementFile, UnifiedMediaFile, StaticContactInfo, PricingTier, Soundtrack, SoundtrackFile } from '../types';
 
 // FIX: Removed the check for placeholder credentials. The constants are hardcoded, making this check unnecessary and causing a TypeScript error due to non-overlapping literal types.
 const client = new Client();
@@ -542,6 +542,96 @@ export const deleteProductionElementFile = async (fileId: string) => {
         console.warn(`File ${fileId} was deleted from storage, but its metadata could not be removed.`, dbError);
     }
 };
+
+// --- Soundtrack Management ---
+
+export const listSoundtrackFiles = async (): Promise<SoundtrackFile[]> => {
+    try {
+        const [storageFilesResponse, metadataDocsResponse] = await Promise.all([
+            storage.listFiles(SOUNDTRACKS_STORAGE_BUCKET_ID),
+            databases.listDocuments<Soundtrack>(APPWRITE_DATABASE_ID, SOUNDTRACKS_COLLECTION_ID, [Query.limit(5000)])
+        ]);
+        
+        const metadataMap = new Map<string, Soundtrack>();
+        for (const doc of metadataDocsResponse.documents) {
+            metadataMap.set(doc.fileId, doc);
+        }
+
+        const mergedFiles: SoundtrackFile[] = storageFilesResponse.files
+            .map(file => {
+                const metadata = metadataMap.get(file.$id);
+                if (!metadata) return null; // Only include files that have metadata
+                return {
+                    ...file,
+                    title: metadata.title,
+                    productionIds: metadata.productionIds,
+                    type: metadata.type,
+                    composer: metadata.composer,
+                    licenseInfo: metadata.licenseInfo,
+                };
+            })
+            .filter((file): file is SoundtrackFile => file !== null);
+
+        return mergedFiles.sort((a, b) => new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime());
+    } catch (error) {
+        console.error("Failed to list soundtrack files:", error);
+        return [];
+    }
+};
+
+export const uploadSoundtrackFile = async (file: File, data: Omit<Soundtrack, 'fileId' | keyof Models.Document>) => {
+    const storageFile = await storage.createFile(SOUNDTRACKS_STORAGE_BUCKET_ID, ID.unique(), file);
+    try {
+        await databases.createDocument(APPWRITE_DATABASE_ID, SOUNDTRACKS_COLLECTION_ID, ID.unique(), {
+            ...data,
+            fileId: storageFile.$id,
+        });
+    } catch (dbError) {
+        console.error("Failed to create soundtrack metadata, cleaning up storage file.", dbError);
+        await storage.deleteFile(SOUNDTRACKS_STORAGE_BUCKET_ID, storageFile.$id);
+        throw dbError;
+    }
+    return storageFile;
+};
+
+export const updateSoundtrack = async (fileId: string, data: Partial<Omit<Soundtrack, 'fileId' | keyof Models.Document>>) => {
+    try {
+        const metadataDocs = await databases.listDocuments<Soundtrack>(APPWRITE_DATABASE_ID, SOUNDTRACKS_COLLECTION_ID, [
+            Query.equal('fileId', fileId),
+            Query.limit(1)
+        ]);
+
+        if (metadataDocs.documents.length > 0) {
+            const documentId = metadataDocs.documents[0].$id;
+            return await databases.updateDocument(APPWRITE_DATABASE_ID, SOUNDTRACKS_COLLECTION_ID, documentId, data);
+        } else {
+            throw new Error(`No metadata found for fileId: ${fileId}. Cannot update.`);
+        }
+    } catch (error) {
+        console.error("Failed to update soundtrack metadata:", error);
+        throw error;
+    }
+};
+
+export const getSoundtrackFilePreviewUrl = (fileId: string): string => {
+    return storage.getFileView(SOUNDTRACKS_STORAGE_BUCKET_ID, fileId).toString();
+};
+
+export const deleteSoundtrackFile = async (fileId: string) => {
+    await storage.deleteFile(SOUNDTRACKS_STORAGE_BUCKET_ID, fileId);
+    try {
+        const metadataDocs = await databases.listDocuments(APPWRITE_DATABASE_ID, SOUNDTRACKS_COLLECTION_ID, [
+            Query.equal('fileId', fileId),
+            Query.limit(1)
+        ]);
+        if (metadataDocs.documents.length > 0) {
+            await databases.deleteDocument(APPWRITE_DATABASE_ID, SOUNDTRACKS_COLLECTION_ID, metadataDocs.documents[0].$id);
+        }
+    } catch (dbError) {
+        console.warn(`File ${fileId} was deleted from storage, but its metadata could not be removed.`, dbError);
+    }
+};
+
 
 // Storage / Media
 export const listFiles = async (): Promise<MediaFile[]> => {

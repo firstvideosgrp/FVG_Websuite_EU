@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { logout, getProjects, createProject, updateProject, deleteProject, getCast, createCastMember, updateCastMember, deleteCastMember, getCrew, getTasks, getProductionPhasesForProject, getDepartments, getDepartmentRoles, getProjectDepartmentCrew, assignCrewToProjectDepartment, unassignCrewFromProjectDepartment } from '../services/appwrite';
 import type { Models } from 'appwrite';
@@ -11,6 +12,7 @@ import SlatePanel from './SlatePanel';
 import TasksPanel from './TasksPanel';
 import DepartmentsPanel from './DepartmentsPanel';
 import ProductionElementsPanel from './ProductionElementsPanel';
+import SoundtrackPanel from './SoundtrackPanel';
 import MediaLibraryModal from './MediaLibraryModal';
 import { useSettings } from '../contexts/SettingsContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -45,6 +47,7 @@ const viewTitles: { [key: string]: string } = {
     departments: 'Departments & Crew',
     cast: 'Cast Members',
     elements: 'Elements Library',
+    soundtracks: 'Soundtrack Management',
 };
 
 const viewDescriptions: { [key: string]: string } = {
@@ -56,6 +59,7 @@ const viewDescriptions: { [key: string]: string } = {
     departments: 'Organize company departments and assign crew roles.',
     cast: 'Manage the central database of all cast members.',
     elements: 'Manage internal production assets like soundtracks and documents.',
+    soundtracks: 'Organize, upload, and manage all audio assets for productions.',
 };
 
 
@@ -607,6 +611,7 @@ const ProductionHubDashboard: React.FC<ProductionHubDashboardProps> = ({ user, o
                         )}
 
                         {activeView === 'elements' && <ProductionElementsPanel projects={projects} />}
+                        {activeView === 'soundtracks' && <SoundtrackPanel projects={projects} />}
                     </main>
                     
                     {(isEditingProject || isCreatingProject) && (
@@ -764,7 +769,7 @@ const ProductionHubDashboard: React.FC<ProductionHubDashboardProps> = ({ user, o
                                         <div className="flex-grow overflow-y-auto pr-4 space-y-2">
                                              {allCrew.map(member => (
                                                 <label key={member.$id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-[var(--bg-secondary)] cursor-pointer">
-                                                    <input type="checkbox" checked={selectedCrewIds.has(member.$id)} onChange={() => handleAssignmentToggle(member.$id, 'crew')} className="h-5 w-5 rounded bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
+                                                    <input type="checkbox" checked={selectedCrewIds.has(member.$id)} onChange={() => handleAssignmentToggle(member.$id, 'crew')} className="h-5 w-5 rounded bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
                                                     <span>{member.name} <span className="text-sm text-[var(--text-secondary)]">({member.role})</span></span>
                                                 </label>
                                             ))}

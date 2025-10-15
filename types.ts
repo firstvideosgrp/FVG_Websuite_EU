@@ -232,3 +232,23 @@ export type PricingTier = Models.Document & {
   buttonText: string;
   buttonUrl?: string;
 };
+
+// New types for Soundtrack Management
+export type SoundtrackType = 'Background Music' | 'Licensed Track' | 'Score Cue' | 'Sound Design Element' | 'Foley';
+
+export type Soundtrack = Models.Document & {
+  title: string;
+  productionIds: string[];
+  type: SoundtrackType;
+  composer: string; // Artist / Composer
+  licenseInfo: string;
+  fileId: string;
+};
+
+export type SoundtrackFile = Models.File & {
+  title: string;
+  productionIds: string[];
+  type: SoundtrackType;
+  composer: string;
+  licenseInfo: string;
+};
