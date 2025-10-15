@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Models } from 'appwrite';
 import { useSettings } from '../contexts/SettingsContext';
@@ -11,30 +12,9 @@ interface AdminSidebarProps {
     setActiveView: (view: string) => void;
 }
 
-// Define the new navigation structure
 const navStructure = [
     { type: 'item', id: 'home', label: 'Dashboard', icon: 'fas fa-tachometer-alt' },
-    {
-        type: 'group',
-        label: 'Project Management',
-        icon: 'fas fa-project-diagram',
-        items: [
-            { id: 'projects', label: 'Projects Overview', icon: 'fas fa-film' },
-            { id: 'phases', label: 'Production Phases', icon: 'fas fa-tasks' },
-            { id: 'tasks', label: 'Task Manager', icon: 'fas fa-check-square' },
-            { id: 'departments', label: 'Departments & Crew', icon: 'fas fa-building' },
-            { id: 'cast', label: 'Cast Members', icon: 'fas fa-user-friends' },
-            { id: 'elements', label: 'Elements Library', icon: 'fas fa-archive' },
-        ],
-    },
-    {
-        type: 'group',
-        label: 'Tools',
-        icon: 'fas fa-tools',
-        items: [
-            { id: 'slate', label: 'Timecode Slate', icon: 'fas fa-clipboard' },
-        ],
-    },
+    { type: 'link', href: '/production-hub', label: 'Production Hub', icon: 'fas fa-tv' },
     { type: 'item', id: 'media', label: 'Media Library', icon: 'fas fa-photo-video' },
     { type: 'item', id: 'settings', label: 'Site Settings', icon: 'fas fa-cogs' },
 ];
@@ -42,24 +22,11 @@ const navStructure = [
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ user, onLogout, activeView, setActiveView }) => {
     const { settings } = useSettings();
     const { adminTheme, toggleAdminTheme } = useTheme();
-    const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(['Project Management', 'Tools'])); // Default open groups
 
     const adminTitle = settings?.adminTitle || 'FirstVideos Admin';
     const adminTitleParts = adminTitle.split(' ');
     const coloredPart = adminTitleParts.pop() || 'Admin';
     const mainPart = adminTitleParts.join(' ');
-
-    const toggleGroup = (label: string) => {
-        setOpenGroups(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(label)) {
-                newSet.delete(label);
-            } else {
-                newSet.add(label);
-            }
-            return newSet;
-        });
-    };
 
     return (
         <div className="w-64 bg-[var(--bg-card)] text-[var(--text-primary)] flex flex-col h-screen fixed top-0 left-0 border-r border-[var(--border-color)]">
@@ -85,40 +52,19 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ user, onLogout, activeView,
                                 </li>
                             );
                         }
-                        if (navItem.type === 'group') {
-                            const isOpen = openGroups.has(navItem.label);
-                            const isActiveGroup = navItem.items.some(item => item.id === activeView);
+                        if (navItem.type === 'link') {
                             return (
-                                <li key={navItem.label}>
-                                    <button
-                                        onClick={() => toggleGroup(navItem.label)}
-                                        className={`w-full text-left flex items-center justify-between p-3 my-1 rounded-lg transition-colors duration-200 ${isActiveGroup ? 'text-[var(--primary-color)]' : 'text-[var(--text-primary)]'} hover:bg-[var(--bg-secondary)]`}
-                                        aria-expanded={isOpen}
+                                <li key={navItem.href}>
+                                    <Link
+                                        to={navItem.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full text-left flex items-center p-3 my-1 rounded-lg transition-colors duration-200 hover:bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                                     >
-                                        <div className="flex items-center">
-                                            <i className={`${navItem.icon} w-6 text-center text-lg`}></i>
-                                            <span className="ml-3 font-medium">{navItem.label}</span>
-                                        </div>
-                                        <i className={`fas fa-chevron-down transform transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}></i>
-                                    </button>
-                                    {isOpen && (
-                                        <ul className="pl-6 border-l-2 border-[var(--border-color)] ml-5">
-                                            {navItem.items.map(subItem => (
-                                                <li key={subItem.id}>
-                                                    <button
-                                                        onClick={() => setActiveView(subItem.id)}
-                                                        className={`w-full text-left flex items-center p-2 my-1 rounded-md transition-colors duration-200 ${
-                                                            activeView === subItem.id ? 'bg-[var(--primary-color)] text-gray-900 font-bold' : 'hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                                                        }`}
-                                                         aria-current={activeView === subItem.id ? 'page' : undefined}
-                                                    >
-                                                        <i className={`${subItem.icon} w-6 text-center text-sm`}></i>
-                                                        <span className="ml-2 text-sm">{subItem.label}</span>
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
+                                        <i className={`${navItem.icon} w-6 text-center text-lg`}></i>
+                                        <span className="ml-3 font-medium">{navItem.label}</span>
+                                        <i className="fas fa-external-link-alt ml-auto text-xs text-[var(--text-secondary)]"></i>
+                                    </Link>
                                 </li>
                             );
                         }
