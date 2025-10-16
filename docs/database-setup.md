@@ -1,3 +1,4 @@
+
 # Appwrite Database Setup for FirstVideos Group
 
 This document outlines the necessary steps to configure the Appwrite backend for the FirstVideos Group website. Follow these instructions to set up the database, collections, attributes, and users required for the application to function correctly.
@@ -101,6 +102,13 @@ Create the following attributes for the `Projects` collection:
 | `rating`             | String  | 50   | No       | No    | e.g., "PG-13", "7.8/10".                            |
 | `genres`             | String  | 50   | No       | Yes   | Array of genres, e.g., ["Action", "Sci-Fi"].        |
 | `departments`        | String  | -    | No       | Yes   | Array of Department document IDs.                   |
+| `productionStage`    | String  | 50   | No       | No    | e.g., 'Development', 'Pre-Production', etc.         |
+| `stageProgress`      | Integer | -    | No       | No    | Progress percentage (0-100) for the current stage.  |
+| `stageStartDate`     | Datetime| -    | No       | No    | Start date of the current stage.                    |
+| `stageEndDate`       | Datetime| -    | No       | No    | End date of the current stage.                      |
+| `stageAssignedDeptIds` | String  | -    | No       | Yes   | Array of Department document IDs assigned to the stage. |
+| `stageLeadCrewId`    | String  | 255  | No       | No    | Crew member ID for the stage lead.                  |
+| `stageNotes`         | String  | 10000| No       | No    | Notes or status updates for the current stage.      |
 
 
 #### Settings (Permissions)
@@ -514,17 +522,19 @@ This collection stores the pricing plans displayed on the public website.
 
 #### Attributes
 
-| Key          | Type    | Size | Required | Array | Notes                                      |
-| :----------- | :------ | :--- | :------- | :---- | :----------------------------------------- |
-| `title`      | String  | 255  | Yes      | No    | e.g., "Basic", "Pro".                      |
-| `description`| String  | 1000 | Yes      | No    | A short description of the plan.           |
-| `price`      | Float   | -    | Yes      | No    | The numerical price.                       |
-| `currency`   | String  | 10   | Yes      | No    | e.g., "USD", "EUR", "HUF".                 |
-| `features`   | String  | 255  | Yes      | Yes   | List of features included in the plan.     |
-| `order`      | Integer | -    | Yes      | No    | The display order on the page (0, 1, 2...).|
-| `isFeatured` | Boolean | -    | No       | No    | If true, the plan will be highlighted.     |
-| `buttonText` | String  | 50   | Yes      | No    | The text for the call-to-action button.    |
-| `buttonUrl`  | URL     | 2048 | No       | No    | The link for the call-to-action button.    |
+| Key                  | Type    | Size | Required | Array | Notes                                        |
+| :------------------- | :------ | :--- | :------- | :---- | :------------------------------------------- |
+| `title`              | String  | 255  | Yes      | No    | e.g., "Basic", "Pro".                        |
+| `description`        | String  | 1000 | Yes      | No    | A short description of the plan.             |
+| `priceMonthly`       | Float   | -    | Yes      | No    | The numerical price for monthly billing.     |
+| `priceYearly`        | Float   | -    | Yes      | No    | The numerical price for yearly billing.      |
+| `currency`           | String  | 10   | Yes      | No    | e.g., "USD", "EUR", "HUF".                   |
+| `features`           | String  | 255  | Yes      | Yes   | List of features included in the plan.       |
+| `order`              | Integer | -    | Yes      | No    | The display order on the page (0, 1, 2...).  |
+| `isFeatured`         | Boolean | -    | No       | No    | If true, the plan will be highlighted.       |
+| `buttonText`         | String  | 50   | Yes      | No    | The text for the call-to-action button.      |
+| `buttonUrl`          | URL     | 2048 | No       | No    | The link for the call-to-action button.      |
+| `yearlyDiscountText` | String  | 255  | No       | No    | e.g., "Save 20%" or "2 months free".         |
 
 #### Settings (Permissions)
 -   **Permissions**:

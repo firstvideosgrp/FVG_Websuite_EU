@@ -1,7 +1,10 @@
+
 import { Models } from 'appwrite';
 
 export type ProjectType = 'Movie' | 'Short' | 'Series';
 export type ProjectStatus = 'Upcoming' | 'In Production' | 'Released';
+
+export type ProductionStageName = 'Development' | 'Pre-Production' | 'Shooting' | 'Post-Production' | 'Released';
 
 export type CastMember = Models.Document & {
   name: string;
@@ -39,6 +42,14 @@ export type Project = Models.Document & {
   rating?: string;
   genres?: string[];
   departments?: string[]; // Array of Department document IDs
+  // New fields for Production Stages Dashboard
+  productionStage?: ProductionStageName;
+  stageProgress?: number; // 0-100
+  stageStartDate?: string; // ISO date string
+  stageEndDate?: string; // ISO date string
+  stageAssignedDeptIds?: string[];
+  stageLeadCrewId?: string;
+  stageNotes?: string;
 };
 
 export type AboutContent = Models.Document & {
@@ -224,13 +235,15 @@ export type StaticContactInfo = Models.Document & {
 export type PricingTier = Models.Document & {
   title: string;
   description: string;
-  price: number;
+  priceMonthly: number;
+  priceYearly: number;
   currency: string;
   features: string[];
   order: number;
   isFeatured?: boolean;
   buttonText: string;
   buttonUrl?: string;
+  yearlyDiscountText?: string;
 };
 
 // New types for Soundtrack Management

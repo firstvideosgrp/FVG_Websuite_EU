@@ -15,6 +15,7 @@ interface AdminSidebarProps {
 const navStructure = [
     { type: 'item', id: 'home', label: 'Dashboard', icon: 'fas fa-tachometer-alt' },
     { type: 'link', href: '/production-hub', label: 'Production Hub', icon: 'fas fa-tv' },
+    { type: 'link', href: '/production-stages', label: 'Production Stages', icon: 'fas fa-stream' },
     { type: 'item', id: 'media', label: 'Media Library', icon: 'fas fa-photo-video' },
     { type: 'item', id: 'settings', label: 'Site Settings', icon: 'fas fa-cogs' },
 ];

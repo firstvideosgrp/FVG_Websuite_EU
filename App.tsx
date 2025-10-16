@@ -11,6 +11,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { ConfirmationDialogProvider } from './contexts/ConfirmationDialogContext';
 import NotificationContainer from './components/NotificationContainer';
 import ConfirmationDialog from './components/ConfirmationDialog';
+import ProductionStagesPage from './pages/ProductionStagesPage';
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function AppContent() {
           <Route path="/" element={<HomePage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/production-hub" element={<ProductionHubPage />} />
+          <Route path="/production-stages" element={<ProductionStagesPage />} />
         </Routes>
       </HashRouter>
       <NotificationContainer />

@@ -1,5 +1,6 @@
 
 
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Models } from 'appwrite';
@@ -15,6 +16,7 @@ interface ProductionHubSidebarProps {
 
 const navStructure = [
     { id: 'home', label: 'Hub Dashboard', icon: 'fas fa-tv' },
+    { type: 'link', href: '/production-stages', label: 'Production Stages', icon: 'fas fa-stream' },
     { id: 'projects', label: 'Projects Overview', icon: 'fas fa-film' },
     { id: 'phases', label: 'Production Phases', icon: 'fas fa-tasks' },
     { id: 'tasks', label: 'Task Manager', icon: 'fas fa-check-square' },
@@ -41,20 +43,41 @@ const ProductionHubSidebar: React.FC<ProductionHubSidebarProps> = ({ user, onLog
             </div>
             <nav className="flex-grow p-4 overflow-y-auto">
                 <ul>
-                    {navStructure.map(navItem => (
-                        <li key={navItem.id}>
-                            <button
-                                onClick={() => setActiveView(navItem.id)}
-                                className={`w-full text-left flex items-center p-3 my-1 rounded-lg transition-colors duration-200 ${
-                                    activeView === navItem.id ? 'bg-[var(--primary-color)] text-gray-900 font-bold' : 'hover:bg-[var(--bg-secondary)] text-[var(--text-primary)]'
-                                }`}
-                                aria-current={activeView === navItem.id ? 'page' : undefined}
-                            >
-                                <i className={`${navItem.icon} w-6 text-center text-lg`}></i>
-                                <span className="ml-3 font-medium">{navItem.label}</span>
-                            </button>
-                        </li>
-                    ))}
+                    {navStructure.map(navItem => {
+                        if ('id' in navItem) {
+                            return (
+                                <li key={navItem.id}>
+                                    <button
+                                        onClick={() => setActiveView(navItem.id)}
+                                        className={`w-full text-left flex items-center p-3 my-1 rounded-lg transition-colors duration-200 ${
+                                            activeView === navItem.id ? 'bg-[var(--primary-color)] text-gray-900 font-bold' : 'hover:bg-[var(--bg-secondary)] text-[var(--text-primary)]'
+                                        }`}
+                                        aria-current={activeView === navItem.id ? 'page' : undefined}
+                                    >
+                                        <i className={`${navItem.icon} w-6 text-center text-lg`}></i>
+                                        <span className="ml-3 font-medium">{navItem.label}</span>
+                                    </button>
+                                </li>
+                            );
+                        }
+                        if ('href' in navItem) {
+                             return (
+                                <li key={navItem.href}>
+                                    <Link
+                                        to={navItem.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full text-left flex items-center p-3 my-1 rounded-lg transition-colors duration-200 hover:bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+                                    >
+                                        <i className={`${navItem.icon} w-6 text-center text-lg`}></i>
+                                        <span className="ml-3 font-medium">{navItem.label}</span>
+                                        <i className="fas fa-external-link-alt ml-auto text-xs text-[var(--text-secondary)]"></i>
+                                    </Link>
+                                </li>
+                            );
+                        }
+                        return null;
+                    })}
                 </ul>
             </nav>
             <div className="p-4 border-t border-[var(--border-color)]">

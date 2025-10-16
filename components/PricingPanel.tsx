@@ -18,13 +18,15 @@ const PricingPanel: React.FC = () => {
     const [formState, setFormState] = useState({
         title: '',
         description: '',
-        price: 0,
+        priceMonthly: 0,
+        priceYearly: 0,
         currency: 'USD',
         features: '',
         order: 0,
         isFeatured: false,
         buttonText: 'Get Started',
         buttonUrl: '',
+        yearlyDiscountText: '',
     });
 
     const fetchTiers = useCallback(async () => {
@@ -49,25 +51,29 @@ const PricingPanel: React.FC = () => {
             setFormState({
                 title: tier.title,
                 description: tier.description,
-                price: tier.price,
+                priceMonthly: tier.priceMonthly,
+                priceYearly: tier.priceYearly,
                 currency: tier.currency,
                 features: tier.features.join('\n'),
                 order: tier.order,
                 isFeatured: tier.isFeatured || false,
                 buttonText: tier.buttonText,
                 buttonUrl: tier.buttonUrl || '',
+                yearlyDiscountText: tier.yearlyDiscountText || '',
             });
         } else {
             setFormState({
                 title: '',
                 description: '',
-                price: 0,
+                priceMonthly: 0,
+                priceYearly: 0,
                 currency: 'USD',
                 features: '',
                 order: tiers.length,
                 isFeatured: false,
                 buttonText: 'Get Started',
                 buttonUrl: '',
+                yearlyDiscountText: '',
             });
         }
         setIsModalOpen(true);
@@ -80,7 +86,7 @@ const PricingPanel: React.FC = () => {
         const checked = (e.target as HTMLInputElement).checked;
         setFormState(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : type === 'number' ? parseFloat(value) : value
+            [name]: type === 'checkbox' ? checked : type === 'number' ? parseFloat(value) || 0 : value
         }));
     };
 
@@ -91,6 +97,7 @@ const PricingPanel: React.FC = () => {
                 ...formState,
                 features: formState.features.split('\n').filter(f => f.trim() !== ''),
                 buttonUrl: formState.buttonUrl || undefined,
+                yearlyDiscountText: formState.yearlyDiscountText || undefined,
             };
 
             if (editingTier) {
@@ -146,7 +153,7 @@ const PricingPanel: React.FC = () => {
                                         {tier.title}
                                         {tier.isFeatured && <span className="bg-yellow-500/20 text-yellow-300 text-xs font-medium px-2 py-0.5 rounded-full">Featured</span>}
                                     </h3>
-                                    <p className="text-sm text-[var(--text-secondary)]">{tier.price} {tier.currency} &bull; {tier.features.length} features</p>
+                                    <p className="text-sm text-[var(--text-secondary)]">{tier.priceMonthly}/{tier.priceYearly} {tier.currency} &bull; {tier.features.length} features</p>
                                 </div>
                             </div>
                             <div className="flex space-x-2">
@@ -180,10 +187,14 @@ const PricingPanel: React.FC = () => {
                                 <label htmlFor="description" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Description</label>
                                 <textarea name="description" value={formState.description} onChange={handleChange} required rows={2} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
-                                    <label htmlFor="price" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Price</label>
-                                    <input type="number" name="price" value={formState.price} onChange={handleChange} step="0.01" required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
+                                    <label htmlFor="priceMonthly" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Price (Monthly)</label>
+                                    <input type="number" name="priceMonthly" value={formState.priceMonthly} onChange={handleChange} step="0.01" required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
+                                </div>
+                                <div>
+                                    <label htmlFor="priceYearly" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Price (Yearly)</label>
+                                    <input type="number" name="priceYearly" value={formState.priceYearly} onChange={handleChange} step="0.01" required className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
                                 </div>
                                 <div>
                                     <label htmlFor="currency" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Currency</label>
@@ -191,6 +202,10 @@ const PricingPanel: React.FC = () => {
                                         {CURRENCY_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                 </div>
+                            </div>
+                            <div>
+                                <label htmlFor="yearlyDiscountText" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Yearly Discount Text (Optional)</label>
+                                <input type="text" name="yearlyDiscountText" value={formState.yearlyDiscountText} onChange={handleChange} placeholder="e.g., Save 20% or 2 months free" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
                             </div>
                             <div>
                                 <label htmlFor="features" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Features (one per line)</label>
