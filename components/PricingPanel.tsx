@@ -111,6 +111,7 @@ const PricingPanel: React.FC = () => {
             fetchTiers();
         } catch (error) {
             addNotification('error', 'Save Failed', 'Could not save the pricing tier.');
+            console.error('Pricing Tier Save Error:', error);
         }
     };
 
@@ -135,7 +136,12 @@ const PricingPanel: React.FC = () => {
         <>
             <div className="flex justify-between items-center mb-4">
                 <p className="text-sm text-[var(--text-secondary)]">Manage the plans that appear on your public website.</p>
-                <button onClick={() => openModal(null)} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors flex items-center space-x-2 text-sm">
+                <button 
+                    onClick={() => openModal(null)} 
+                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors flex items-center space-x-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled
+                    title="This feature is temporarily disabled."
+                >
                     <i className="fas fa-plus"></i><span>Add New Tier</span>
                 </button>
             </div>
