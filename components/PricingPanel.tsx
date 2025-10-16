@@ -90,8 +90,7 @@ const PricingPanel: React.FC = () => {
         }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         try {
             const dataToSubmit = {
                 ...formState,
@@ -172,7 +171,7 @@ const PricingPanel: React.FC = () => {
                     <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 rounded-lg shadow-2xl w-full max-w-2xl relative text-[var(--text-primary)] max-h-[90vh] overflow-y-auto">
                         <button onClick={closeModal} className="absolute top-4 right-4 text-[var(--text-secondary)] text-2xl">&times;</button>
                         <h2 className="text-2xl font-bold mb-6">{editingTier ? 'Edit' : 'Create'} Pricing Tier</h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Title</label>
@@ -229,9 +228,9 @@ const PricingPanel: React.FC = () => {
                             </div>
                             <div className="flex justify-end space-x-4 pt-4">
                                 <button type="button" onClick={closeModal} className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Cancel</button>
-                                <button type="submit" className="bg-[var(--primary-color)] hover:brightness-110 text-gray-900 font-bold py-2 px-4 rounded">Save Tier</button>
+                                <button type="button" onClick={handleSubmit} className="bg-[var(--primary-color)] hover:brightness-110 text-gray-900 font-bold py-2 px-4 rounded">Save Tier</button>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             )}

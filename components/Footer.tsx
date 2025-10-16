@@ -67,6 +67,10 @@ const Footer: React.FC = () => {
             )}
         </div>
 
+        <div className="mb-6 flex justify-center">
+            <a href="https://www.reverbnation.com/firstvideosgrp"><img src="https://d16o2fplq2wi4c.cloudfront.net/20250915133535/images/my_links_badges/mylinks_profile_page.png" alt="Mylinks profile page" /></a>
+        </div>
+
         <p>{footerText}</p>
         <div className="mt-4 flex justify-center items-center flex-wrap gap-x-4 gap-y-2">
           <Link to="/admin" className="text-xs hover:text-[var(--primary-color)] transition-colors">Admin Login</Link>

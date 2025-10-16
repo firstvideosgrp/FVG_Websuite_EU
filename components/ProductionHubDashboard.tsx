@@ -1,6 +1,9 @@
 
 
 
+
+
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { logout, getProjects, createProject, updateProject, deleteProject, getCast, createCastMember, updateCastMember, deleteCastMember, getCrew, getTasks, getProductionPhasesForProject, getDepartments, getDepartmentRoles, getProjectDepartmentCrew, assignCrewToProjectDepartment, unassignCrewFromProjectDepartment } from '../services/appwrite';
 import type { Models } from 'appwrite';
@@ -825,10 +828,10 @@ const ProductionHubDashboard: React.FC<ProductionHubDashboardProps> = ({ user, o
                                                                                 </div>
                                                                             ))}
                                                                         </div>
-                                                                        {/* FIX: Safely access form field value using FormData to resolve TypeScript error on `e.currentTarget.elements`. */}
                                                                         <form
                                                                             onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
                                                                                 e.preventDefault();
+                                                                                // FIX: Safely access form field value using FormData to resolve TypeScript error on `e.currentTarget.elements`.
                                                                                 const formData = new FormData(e.currentTarget);
                                                                                 const crewId = formData.get('crewId');
                                                                                 if (typeof crewId === 'string' && crewId) {
