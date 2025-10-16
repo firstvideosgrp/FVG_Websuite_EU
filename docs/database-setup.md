@@ -1,4 +1,3 @@
-
 # Appwrite Database Setup for FirstVideos Group
 
 This document outlines the necessary steps to configure the Appwrite backend for the FirstVideos Group website. Follow these instructions to set up the database, collections, attributes, and users required for the application to function correctly.
