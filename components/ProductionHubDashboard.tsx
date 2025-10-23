@@ -4,6 +4,8 @@
 
 
 
+
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { logout, getProjects, createProject, updateProject, deleteProject, getCast, createCastMember, updateCastMember, deleteCastMember, getCrew, getTasks, getProductionPhasesForProject, getDepartments, getDepartmentRoles, getProjectDepartmentCrew, assignCrewToProjectDepartment, unassignCrewFromProjectDepartment } from '../services/appwrite';
 import type { Models } from 'appwrite';
@@ -655,7 +657,7 @@ const ProductionHubDashboard: React.FC<ProductionHubDashboardProps> = ({ user, o
                                             <span>Has Subtitles?</span>
                                         </label>
                                         <label htmlFor="isRework" className="flex items-center space-x-2 text-sm font-medium text-[var(--text-secondary)] cursor-pointer">
-                                            <input type="checkbox" id="isRework" name="isRework" checked={projectForm.isRework} onChange={handleProjectFormChange} className="h-4 w-4 rounded bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
+                                            <input type="checkbox" id="isRework" name="isRework" checked={projectForm.isRework} onChange={handleProjectFormChange} className="h-4 w-4 rounded bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
                                             <span>Is a Rework?</span>
                                         </label>
                                         {projectForm.hasSubtitles && (
@@ -831,7 +833,7 @@ const ProductionHubDashboard: React.FC<ProductionHubDashboardProps> = ({ user, o
                                                                         <form
                                                                             onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
                                                                                 e.preventDefault();
-                                                                                // FIX: Safely access form field value using FormData to resolve TypeScript error on `e.currentTarget.elements`.
+                                                                                // FIX: Replaced direct DOM access with FormData API to safely get form values and resolve the TypeScript error.
                                                                                 const formData = new FormData(e.currentTarget);
                                                                                 const crewId = formData.get('crewId');
                                                                                 if (typeof crewId === 'string' && crewId) {
