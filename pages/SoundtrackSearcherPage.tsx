@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -6,12 +7,16 @@ import { getPublicSoundtracks } from '../services/appwrite';
 import type { PublicSoundtrack } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 
+const ITEMS_PER_PAGE = 12; // Adjusted for better grid layout
+
 const SoundtrackSearcherPage: React.FC = () => {
     const { siteTheme } = useTheme();
     const [soundtracks, setSoundtracks] = useState<PublicSoundtrack[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('movieTitle-asc');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -54,11 +59,29 @@ const SoundtrackSearcherPage: React.FC = () => {
         });
     }, [soundtracks, searchTerm, sortBy]);
     
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, sortBy, viewMode]);
+
+    const totalPages = Math.ceil(filteredAndSortedSoundtracks.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const currentTracks = filteredAndSortedSoundtracks.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+            const listElement = document.getElementById('soundtrack-list');
+            if (listElement) {
+                listElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    };
+
     return (
         <div className={`bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300 ${siteTheme} min-h-screen flex flex-col`}>
           <Header />
           <main className="flex-grow container mx-auto px-6 py-28 md:py-32">
-            <div className="text-center mb-12">
+            <div id="soundtrack-list" className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-black uppercase tracking-wider text-[var(--text-primary)]">
                 Soundtrack <span className="text-[var(--primary-color)]">Searcher</span>
               </h1>
@@ -81,8 +104,7 @@ const SoundtrackSearcherPage: React.FC = () => {
                         className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-full py-3 px-4 pl-12 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] transition-all" 
                     />
                 </div>
-                <div className="flex-shrink-0">
-                    <label htmlFor="sort-by" className="sr-only">Sort by</label>
+                <div className="flex items-center gap-4">
                     <select
                         id="sort-by"
                         value={sortBy}
@@ -98,44 +120,129 @@ const SoundtrackSearcherPage: React.FC = () => {
                         <option value="releaseYear-desc">Release Year (Newest)</option>
                         <option value="releaseYear-asc">Release Year (Oldest)</option>
                     </select>
+                     <div className="flex-shrink-0 flex items-center bg-[var(--input-bg)] border border-[var(--border-color)] rounded-full p-1">
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={`px-3 py-2 rounded-full transition-colors ${viewMode === 'grid' ? 'bg-[var(--primary-color)] text-gray-900' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'}`}
+                            aria-label="Grid view"
+                            title="Grid view"
+                        >
+                            <i className="fas fa-th-large"></i>
+                        </button>
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`px-3 py-2 rounded-full transition-colors ${viewMode === 'list' ? 'bg-[var(--primary-color)] text-gray-900' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'}`}
+                            aria-label="List view"
+                            title="List view"
+                        >
+                            <i className="fas fa-bars"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {loading ? (
                 <div className="flex justify-center py-10"><LoadingSpinner /></div>
-            ) : filteredAndSortedSoundtracks.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {filteredAndSortedSoundtracks.map(track => (
-                        <div key={track.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg overflow-hidden shadow-lg flex flex-col">
-                            {track.albumArtUrl ? (
-                                <img src={track.albumArtUrl} alt={`${track.songTitle} album art`} className="w-full h-48 object-cover" />
+            ) : (
+                <>
+                    {currentTracks.length > 0 ? (
+                        <div>
+                            {viewMode === 'grid' ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                    {currentTracks.map(track => (
+                                        <div key={track.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg overflow-hidden shadow-lg flex flex-col">
+                                            {track.albumArtUrl ? (
+                                                <img src={track.albumArtUrl} alt={`${track.songTitle} album art`} className="w-full h-48 object-cover" />
+                                            ) : (
+                                                <div className="w-full h-48 bg-[var(--bg-primary)] flex items-center justify-center text-[var(--text-secondary)]">
+                                                    <i className="fas fa-music text-5xl"></i>
+                                                </div>
+                                            )}
+                                            <div className="p-4 flex flex-col flex-grow">
+                                                <h3 className="font-bold text-lg text-[var(--text-primary)] truncate" title={track.songTitle}>{track.songTitle}</h3>
+                                                <p className="text-sm text-[var(--text-secondary)]">by {track.artistName}</p>
+                                                <p className="text-sm text-[var(--primary-color)] mt-1 font-semibold truncate" title={track.movieTitle}>
+                                                    <i className="fas fa-film mr-2"></i>{track.movieTitle} {track.releaseYear && `(${track.releaseYear})`}
+                                                </p>
+                                                <div className="mt-auto pt-4 flex items-center justify-end gap-4 text-xl">
+                                                    {track.imdbUrl && <a href={track.imdbUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-yellow-500" title="View on IMDb"><i className="fab fa-imdb"></i></a>}
+                                                    {track.youtubeUrl && <a href={track.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-red-500" title="Watch on YouTube"><i className="fab fa-youtube"></i></a>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             ) : (
-                                <div className="w-full h-48 bg-[var(--bg-primary)] flex items-center justify-center text-[var(--text-secondary)]">
-                                    <i className="fas fa-music text-5xl"></i>
+                                <div className="space-y-4">
+                                    {currentTracks.map(track => (
+                                        <div key={track.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg shadow-lg flex items-center p-4 gap-4 transition-all hover:shadow-xl hover:border-[var(--primary-color)]/50">
+                                            {track.albumArtUrl ? (
+                                                <img src={track.albumArtUrl} alt={`${track.songTitle} album art`} className="w-16 h-16 object-cover rounded-md flex-shrink-0" />
+                                            ) : (
+                                                <div className="w-16 h-16 bg-[var(--bg-primary)] flex-shrink-0 flex items-center justify-center rounded-md text-[var(--text-secondary)]">
+                                                    <i className="fas fa-music text-3xl"></i>
+                                                </div>
+                                            )}
+                                            <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-1">
+                                                <div>
+                                                    <span className="md:hidden text-xs font-bold uppercase text-[var(--text-secondary)]">Song</span>
+                                                    <h3 className="font-bold text-md text-[var(--text-primary)] truncate" title={track.songTitle}>{track.songTitle}</h3>
+                                                </div>
+                                                <div>
+                                                    <span className="md:hidden text-xs font-bold uppercase text-[var(--text-secondary)]">Artist</span>
+                                                    <p className="text-sm text-[var(--text-secondary)] truncate" title={track.artistName}>{track.artistName}</p>
+                                                </div>
+                                                <div>
+                                                    <span className="md:hidden text-xs font-bold uppercase text-[var(--text-secondary)]">Movie</span>
+                                                    <p className="text-sm text-[var(--primary-color)] font-semibold truncate" title={track.movieTitle}>
+                                                        {track.movieTitle} {track.releaseYear && `(${track.releaseYear})`}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center justify-end gap-4 text-xl ml-4">
+                                                {track.imdbUrl && <a href={track.imdbUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-yellow-500" title="View on IMDb"><i className="fab fa-imdb"></i></a>}
+                                                {track.youtubeUrl && <a href={track.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-red-500" title="Watch on YouTube"><i className="fab fa-youtube"></i></a>}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
-                            <div className="p-4 flex flex-col flex-grow">
-                                <h3 className="font-bold text-lg text-[var(--text-primary)] truncate" title={track.songTitle}>{track.songTitle}</h3>
-                                <p className="text-sm text-[var(--text-secondary)]">by {track.artistName}</p>
-                                <p className="text-sm text-[var(--primary-color)] mt-1 font-semibold truncate" title={track.movieTitle}>
-                                    <i className="fas fa-film mr-2"></i>{track.movieTitle} {track.releaseYear && `(${track.releaseYear})`}
-                                </p>
-                                <div className="mt-auto pt-4 flex items-center justify-end gap-4 text-xl">
-                                    {track.imdbUrl && <a href={track.imdbUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-yellow-500" title="View on IMDb"><i className="fab fa-imdb"></i></a>}
-                                    {track.youtubeUrl && <a href={track.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-red-500" title="Watch on YouTube"><i className="fab fa-youtube"></i></a>}
-                                </div>
-                            </div>
                         </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center py-20 text-[var(--text-secondary)]">
-                    <i className="fas fa-compact-disc text-4xl mb-4 animate-spin" style={{ animationDuration: '3s' }}></i>
-                    <h3 className="text-xl font-bold">No Soundtracks Found</h3>
-                    <p>Try adjusting your search term, or check back later!</p>
-                </div>
-            )}
+                    ) : (
+                        <div className="text-center py-20 text-[var(--text-secondary)]">
+                            <i className="fas fa-compact-disc text-4xl mb-4 animate-spin" style={{ animationDuration: '3s' }}></i>
+                            <h3 className="text-xl font-bold">No Soundtracks Found</h3>
+                            <p>Try adjusting your search term, or check back later!</p>
+                        </div>
+                    )}
 
+                    {totalPages > 1 && (
+                        <nav aria-label="Pagination" className="mt-12 flex justify-center items-center gap-4 text-[var(--text-secondary)]">
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-md hover:bg-[var(--bg-card)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                aria-label="Go to previous page"
+                            >
+                                <i className="fas fa-chevron-left"></i> Previous
+                            </button>
+
+                            <span className="font-semibold text-[var(--text-primary)]" aria-current="page">
+                                Page {currentPage} of {totalPages}
+                            </span>
+
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-md hover:bg-[var(--bg-card)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                aria-label="Go to next page"
+                            >
+                                Next <i className="fas fa-chevron-right"></i>
+                            </button>
+                        </nav>
+                    )}
+                </>
+            )}
           </main>
           <Footer />
         </div>
