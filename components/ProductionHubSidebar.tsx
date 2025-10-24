@@ -1,6 +1,7 @@
 
 
 
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Models } from 'appwrite';
@@ -24,6 +25,7 @@ const navStructure = [
     { id: 'cast', label: 'Cast Members', icon: 'fas fa-user-friends' },
     { id: 'elements', label: 'Elements Library', icon: 'fas fa-archive' },
     { id: 'soundtracks', label: 'Soundtracks', icon: 'fas fa-music' },
+    { id: 'public-soundtracks', label: 'Soundtrack Searcher DB', icon: 'fas fa-search-dollar' },
     { id: 'slate', label: 'Timecode Slate', icon: 'fas fa-clipboard' },
 ];
 

@@ -6,6 +6,9 @@
 
 
 
+
+
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { logout, getProjects, createProject, updateProject, deleteProject, getCast, createCastMember, updateCastMember, deleteCastMember, getCrew, getTasks, getProductionPhasesForProject, getDepartments, getDepartmentRoles, getProjectDepartmentCrew, assignCrewToProjectDepartment, unassignCrewFromProjectDepartment } from '../services/appwrite';
 import type { Models } from 'appwrite';
@@ -18,6 +21,7 @@ import TasksPanel from './TasksPanel';
 import DepartmentsPanel from './DepartmentsPanel';
 import ProductionElementsPanel from './ProductionElementsPanel';
 import SoundtrackPanel from './SoundtrackPanel';
+import PublicSoundtrackPanel from './PublicSoundtrackPanel';
 import MediaLibraryModal from './MediaLibraryModal';
 import { useSettings } from '../contexts/SettingsContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -53,6 +57,7 @@ const viewTitles: { [key: string]: string } = {
     cast: 'Cast Members',
     elements: 'Elements Library',
     soundtracks: 'Soundtrack Management',
+    'public-soundtracks': 'Soundtrack Searcher DB',
 };
 
 const viewDescriptions: { [key: string]: string } = {
@@ -65,6 +70,7 @@ const viewDescriptions: { [key: string]: string } = {
     cast: 'Manage the central database of all cast members.',
     elements: 'Manage internal production assets like soundtracks and documents.',
     soundtracks: 'Organize, upload, and manage all audio assets for productions.',
+    'public-soundtracks': 'Manage the public database for the Soundtrack Searcher tool.',
 };
 
 
@@ -617,6 +623,8 @@ const ProductionHubDashboard: React.FC<ProductionHubDashboardProps> = ({ user, o
 
                         {activeView === 'elements' && <ProductionElementsPanel projects={projects} />}
                         {activeView === 'soundtracks' && <SoundtrackPanel projects={projects} />}
+                        {activeView === 'public-soundtracks' && <PublicSoundtrackPanel fileUsageMap={fileUsageMap} />}
+                        {activeView === 'slate' && <SlatePanel />}
                     </main>
                     
                     {(isEditingProject || isCreatingProject) && (
@@ -657,7 +665,7 @@ const ProductionHubDashboard: React.FC<ProductionHubDashboardProps> = ({ user, o
                                             <span>Has Subtitles?</span>
                                         </label>
                                         <label htmlFor="isRework" className="flex items-center space-x-2 text-sm font-medium text-[var(--text-secondary)] cursor-pointer">
-                                            <input type="checkbox" id="isRework" name="isRework" checked={projectForm.isRework} onChange={handleProjectFormChange} className="h-4 w-4 rounded bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
+                                            <input type="checkbox" id="isRework" name="isRework" checked={projectForm.isRework} onChange={handleProjectFormChange} className="h-4 w-4 rounded bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
                                             <span>Is a Rework?</span>
                                         </label>
                                         {projectForm.hasSubtitles && (
@@ -774,7 +782,7 @@ const ProductionHubDashboard: React.FC<ProductionHubDashboardProps> = ({ user, o
                                         <div className="flex-grow overflow-y-auto pr-4 space-y-2">
                                              {allCrew.map(member => (
                                                 <label key={member.$id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-[var(--bg-secondary)] cursor-pointer">
-                                                    <input type="checkbox" checked={selectedCrewIds.has(member.$id)} onChange={() => handleAssignmentToggle(member.$id, 'crew')} className="h-5 w-5 rounded bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
+                                                    <input type="checkbox" checked={selectedCrewIds.has(member.$id)} onChange={() => handleAssignmentToggle(member.$id, 'crew')} className="h-5 w-5 rounded bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" />
                                                     <span>{member.name} <span className="text-sm text-[var(--text-secondary)]">({member.role})</span></span>
                                                 </label>
                                             ))}
@@ -833,7 +841,7 @@ const ProductionHubDashboard: React.FC<ProductionHubDashboardProps> = ({ user, o
                                                                         <form
                                                                             onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
                                                                                 e.preventDefault();
-                                                                                // FIX: Replaced direct DOM access with FormData API to safely get form values and resolve the TypeScript error.
+                                                                                // FIX: Replaced direct, untyped DOM access with the FormData API. This safely retrieves the selected 'crewId' from the form submission, resolving the TypeScript error where 'value' was being accessed on a potentially unknown type.
                                                                                 const formData = new FormData(e.currentTarget);
                                                                                 const crewId = formData.get('crewId');
                                                                                 if (typeof crewId === 'string' && crewId) {

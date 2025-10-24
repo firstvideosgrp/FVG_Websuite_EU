@@ -43,7 +43,7 @@ Make sure to fill in all the required values before running the application. The
 
 ## 4. Collection Setup
 
-We need eighteen collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", "SlateEntries", "ProductionTasks", "Departments", "DepartmentRoles", "DepartmentCrew", "ProjectDepartmentCrew", "ProductionElements", "StaticContactInfo", "PricingTiers", and "Soundtracks".
+We need nineteen collections: "About", "Projects", "Settings", "MediaMetadata", "Cast", "Crew", "ProductionPhases", "PhaseSteps", "SlateEntries", "ProductionTasks", "Departments", "DepartmentRoles", "DepartmentCrew", "ProjectDepartmentCrew", "ProductionElements", "StaticContactInfo", "PricingTiers", "Soundtracks", and "PublicSoundtracks".
 
 ### 4.1. About Collection
 
@@ -567,6 +567,31 @@ This collection stores metadata for the Soundtrack Management module.
 #### Indexes
 -   Create a `key` index on the `fileId` attribute.
 -   Create a `key` index on the `productionIds` attribute to allow querying by project.
+
+### 4.19. Public Soundtracks Collection
+
+This collection stores data for the public-facing "Soundtrack Searcher" tool.
+
+-   **Name**: `PublicSoundtracks`
+-   **Collection ID**: Copy the generated ID and add it to `src/constants.ts` for `PUBLIC_SOUNDTRACKS_COLLECTION_ID`.
+
+#### Attributes
+
+| Key           | Type    | Size | Required | Array | Notes                                     |
+| :------------ | :------ | :--- | :------- | :---- | :---------------------------------------- |
+| `movieTitle`  | String  | 255  | Yes      | No    | Title of the movie.                       |
+| `songTitle`   | String  | 255  | Yes      | No    | Title of the song.                        |
+| `artistName`  | String  | 255  | Yes      | No    | Name of the artist.                       |
+| `imdbUrl`     | URL     | 2048 | No       | No    | Link to the movie's IMDb page.            |
+| `youtubeUrl`  | URL     | 2048 | No       | No    | Link to the song on YouTube.              |
+| `albumArtUrl` | URL     | 2048 | No       | No    | Link to the album art image.              |
+| `releaseYear` | Integer | -    | No       | No    | The release year of the movie/soundtrack. |
+| `genre`       | String  | 100  | No       | No    | e.g., "Score", "Pop", "Rock".             |
+
+#### Settings (Permissions)
+-   **Permissions**:
+    -   Select **Read Access** and choose **role:all** (Any).
+    -   Select **Write Access** and choose **role:member** (Users).
 
 ## 5. Storage (Media Bucket) Setup
 

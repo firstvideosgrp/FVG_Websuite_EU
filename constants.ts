@@ -21,6 +21,7 @@ export const PRODUCTION_ELEMENTS_COLLECTION_ID = "fvg_production_elements"; // R
 export const STATIC_CONTACT_INFO_COLLECTION_ID = "fvg_static_contact_info"; // Replace with your actual static contact info collection ID
 export const PRICING_TIERS_COLLECTION_ID = "fvg_pricing_tiers"; // Replace with your actual pricing tiers collection ID
 export const SOUNDTRACKS_COLLECTION_ID = "fvg_soundtracks"; // Replace with your actual soundtracks collection ID
+export const PUBLIC_SOUNDTRACKS_COLLECTION_ID = "fvg_soundtrack_search_tool"; // Replace with your actual public soundtracks collection ID
 export const APPWRITE_STORAGE_BUCKET_ID = "fvg_media"; // Replace with your actual storage bucket ID
 export const PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID = "fvg_media"; // Replace with your actual production elements storage bucket ID
 export const SOUNDTRACKS_STORAGE_BUCKET_ID = "fvg_media"; // Using the same bucket for all production media

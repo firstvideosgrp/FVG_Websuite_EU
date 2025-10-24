@@ -265,3 +265,15 @@ export type SoundtrackFile = Models.File & {
   composer: string;
   licenseInfo: string;
 };
+
+// New type for Soundtrack Searcher Tool
+export type PublicSoundtrack = Models.Document & {
+  movieTitle: string;
+  songTitle: string;
+  artistName: string;
+  imdbUrl?: string;
+  youtubeUrl?: string;
+  albumArtUrl?: string;
+  releaseYear?: number;
+  genre?: string;
+};

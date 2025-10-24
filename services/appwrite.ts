@@ -1,7 +1,7 @@
 // FIX: Imported the `Models` namespace to resolve reference errors below.
 import { Client, Account, Databases, ID, Query, Models, Storage, Functions } from 'appwrite';
-import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID, SLATE_ENTRIES_COLLECTION_ID, TASKS_COLLECTION_ID, DEPARTMENTS_COLLECTION_ID, DEPARTMENT_ROLES_COLLECTION_ID, DEPARTMENT_CREW_COLLECTION_ID, PROJECT_DEPARTMENT_CREW_COLLECTION_ID, PRODUCTION_ELEMENTS_COLLECTION_ID, PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID, STATIC_CONTACT_INFO_COLLECTION_ID, PRICING_TIERS_COLLECTION_ID, SOUNDTRACKS_COLLECTION_ID, SOUNDTRACKS_STORAGE_BUCKET_ID } from '../constants';
-import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, SlateEntry, ProductionTask, Department, DepartmentRole, DepartmentCrew, ProjectDepartmentCrew, ProductionElement, ProductionElementType, ProductionElementFile, UnifiedMediaFile, StaticContactInfo, PricingTier, Soundtrack, SoundtrackFile } from '../types';
+import { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_DATABASE_ID, PROJECTS_COLLECTION_ID, ABOUT_COLLECTION_ID, SITE_SETTINGS_COLLECTION_ID, APPWRITE_STORAGE_BUCKET_ID, MEDIA_METADATA_COLLECTION_ID, CONTACT_FORM_FUNCTION_ID, TEST_EMAIL_FUNCTION_ID, CAST_COLLECTION_ID, CREW_COLLECTION_ID, PRODUCTION_PHASES_COLLECTION_ID, PHASE_STEPS_COLLECTION_ID, SLATE_ENTRIES_COLLECTION_ID, TASKS_COLLECTION_ID, DEPARTMENTS_COLLECTION_ID, DEPARTMENT_ROLES_COLLECTION_ID, DEPARTMENT_CREW_COLLECTION_ID, PROJECT_DEPARTMENT_CREW_COLLECTION_ID, PRODUCTION_ELEMENTS_COLLECTION_ID, PRODUCTION_ELEMENTS_STORAGE_BUCKET_ID, STATIC_CONTACT_INFO_COLLECTION_ID, PRICING_TIERS_COLLECTION_ID, SOUNDTRACKS_COLLECTION_ID, SOUNDTRACKS_STORAGE_BUCKET_ID, PUBLIC_SOUNDTRACKS_COLLECTION_ID } from '../constants';
+import type { AboutContent, Project, SiteSettings, MediaFile, MediaMetadata, MediaCategory, CastMember, CrewMember, ProductionPhase, ProductionPhaseStep, SlateEntry, ProductionTask, Department, DepartmentRole, DepartmentCrew, ProjectDepartmentCrew, ProductionElement, ProductionElementType, ProductionElementFile, UnifiedMediaFile, StaticContactInfo, PricingTier, Soundtrack, SoundtrackFile, PublicSoundtrack } from '../types';
 
 // FIX: Removed the check for placeholder credentials. The constants are hardcoded, making this check unnecessary and causing a TypeScript error due to non-overlapping literal types.
 const client = new Client();
@@ -778,4 +778,32 @@ export const getUnifiedFilePreviewUrl = (file: UnifiedMediaFile): string => {
         return getProductionElementFilePreviewUrl(file.fileId);
     }
     return getFilePreviewUrl(file.fileId);
+};
+
+// --- New Public Soundtracks (for Searcher Tool) ---
+
+export const getPublicSoundtracks = async (): Promise<PublicSoundtrack[]> => {
+    try {
+        const response = await databases.listDocuments<PublicSoundtrack>(
+            APPWRITE_DATABASE_ID,
+            PUBLIC_SOUNDTRACKS_COLLECTION_ID,
+            [Query.limit(2000), Query.orderDesc('$createdAt')]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to fetch public soundtracks:", error);
+        return [];
+    }
+};
+
+export const createPublicSoundtrack = (data: Omit<PublicSoundtrack, keyof Models.Document>) => {
+    return databases.createDocument(APPWRITE_DATABASE_ID, PUBLIC_SOUNDTRACKS_COLLECTION_ID, ID.unique(), data);
+};
+
+export const updatePublicSoundtrack = (documentId: string, data: Partial<Omit<PublicSoundtrack, keyof Models.Document>>) => {
+    return databases.updateDocument(APPWRITE_DATABASE_ID, PUBLIC_SOUNDTRACKS_COLLECTION_ID, documentId, data);
+};
+
+export const deletePublicSoundtrack = (documentId: string) => {
+    return databases.deleteDocument(APPWRITE_DATABASE_ID, PUBLIC_SOUNDTRACKS_COLLECTION_ID, documentId);
 };

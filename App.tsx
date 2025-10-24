@@ -12,6 +12,7 @@ import { ConfirmationDialogProvider } from './contexts/ConfirmationDialogContext
 import NotificationContainer from './components/NotificationContainer';
 import ConfirmationDialog from './components/ConfirmationDialog';
 import ProductionStagesPage from './pages/ProductionStagesPage';
+import SoundtrackSearcherPage from './pages/SoundtrackSearcherPage';
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function AppContent() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/production-hub" element={<ProductionHubPage />} />
           <Route path="/production-stages" element={<ProductionStagesPage />} />
+          <Route path="/tools/soundtrack-searcher" element={<SoundtrackSearcherPage />} />
         </Routes>
       </HashRouter>
       <NotificationContainer />
