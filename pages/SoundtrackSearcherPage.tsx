@@ -46,7 +46,8 @@ const SoundtrackSearcherPage: React.FC = () => {
                 s.songTitle.toLowerCase().includes(lowerCaseSearch) ||
                 s.artistName.toLowerCase().includes(lowerCaseSearch) ||
                 s.imdbUrl?.toLowerCase().includes(lowerCaseSearch) ||
-                s.youtubeUrl?.toLowerCase().includes(lowerCaseSearch)
+                s.youtubeUrl?.toLowerCase().includes(lowerCaseSearch) ||
+                s.trackType?.toLowerCase().includes(lowerCaseSearch)
             );
         }
 
@@ -121,6 +122,7 @@ const SoundtrackSearcherPage: React.FC = () => {
                                             <p className="text-sm text-[var(--primary-color)] mt-1 font-semibold truncate" title={track.movieTitle}>
                                                 <i className="fas fa-film mr-2"></i>{track.movieTitle} {track.releaseYear && `(${track.releaseYear})`}
                                             </p>
+                                            {track.trackType && <span className="mt-2 inline-block bg-gray-500/20 text-gray-300 text-xs font-bold px-2 py-1 rounded-full self-start">{track.trackType}</span>}
                                             <div className="mt-auto pt-3 flex items-center justify-end gap-4 text-lg">
                                                 {track.imdbUrl && <a href={track.imdbUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-yellow-500" title="View on IMDb"><i className="fab fa-imdb"></i></a>}
                                                 {track.youtubeUrl && <a href={track.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-red-500" title="Watch on YouTube"><i className="fab fa-youtube"></i></a>}
@@ -201,6 +203,7 @@ const SoundtrackSearcherPage: React.FC = () => {
                                                 <p className="text-sm text-[var(--primary-color)] mt-1 font-semibold truncate" title={track.movieTitle}>
                                                     <i className="fas fa-film mr-2"></i>{track.movieTitle} {track.releaseYear && `(${track.releaseYear})`}
                                                 </p>
+                                                {track.trackType && <span className="mt-2 inline-block bg-gray-500/20 text-gray-300 text-xs font-bold px-2 py-1 rounded-full self-start">{track.trackType}</span>}
                                                 <div className="mt-auto pt-4 flex items-center justify-end gap-4 text-xl">
                                                     {track.imdbUrl && <a href={track.imdbUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-yellow-500" title="View on IMDb"><i className="fab fa-imdb"></i></a>}
                                                     {track.youtubeUrl && <a href={track.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-red-500" title="Watch on YouTube"><i className="fab fa-youtube"></i></a>}
@@ -224,6 +227,7 @@ const SoundtrackSearcherPage: React.FC = () => {
                                                 <div>
                                                     <span className="md:hidden text-xs font-bold uppercase text-[var(--text-secondary)]">Song</span>
                                                     <h3 className="font-bold text-md text-[var(--text-primary)] truncate" title={track.songTitle}>{track.songTitle}</h3>
+                                                    {track.trackType && <span className="text-xs text-gray-400">{track.trackType}</span>}
                                                 </div>
                                                 <div>
                                                     <span className="md:hidden text-xs font-bold uppercase text-[var(--text-secondary)]">Artist</span>

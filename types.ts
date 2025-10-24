@@ -278,4 +278,5 @@ export type PublicSoundtrack = Models.Document & {
   releaseYear?: number;
   genre?: string;
   isRecommended?: boolean;
+  trackType?: string;
 };

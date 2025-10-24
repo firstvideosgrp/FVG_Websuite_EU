@@ -25,6 +25,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
         releaseYear: new Date().getFullYear(),
         genre: '',
         isRecommended: false,
+        trackType: '',
     });
     const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
     const { addNotification } = useNotification();
@@ -59,6 +60,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                 releaseYear: track.releaseYear || new Date().getFullYear(),
                 genre: track.genre || '',
                 isRecommended: track.isRecommended || false,
+                trackType: track.trackType || '',
             });
         } else {
             setFormState({
@@ -71,6 +73,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                 releaseYear: new Date().getFullYear(),
                 genre: '',
                 isRecommended: false,
+                trackType: '',
             });
         }
         setIsModalOpen(true);
@@ -97,6 +100,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                 youtubeUrl: formState.youtubeUrl || undefined,
                 albumArtUrl: formState.albumArtUrl || undefined,
                 genre: formState.genre || undefined,
+                trackType: formState.trackType || undefined,
             };
 
             if (editingTrack) {
@@ -175,7 +179,10 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                                     )}
                                     <div>
                                         <h3 className="font-bold text-lg text-[var(--text-primary)]">{track.songTitle}</h3>
-                                        <p className="text-sm text-[var(--text-secondary)]">{track.artistName} &bull; <span className="font-semibold">{track.movieTitle} ({track.releaseYear})</span></p>
+                                        <p className="text-sm text-[var(--text-secondary)]">
+                                            {track.artistName} &bull; <span className="font-semibold">{track.movieTitle} ({track.releaseYear})</span>
+                                            {track.trackType && <span className="ml-2 bg-gray-500/20 text-gray-300 px-2 py-0.5 rounded text-xs">{track.trackType}</span>}
+                                        </p>
                                     </div>
                                 </div>
                                 <div className="flex space-x-2">
@@ -223,9 +230,15 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                                     <input type="number" name="releaseYear" value={formState.releaseYear} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Genre (Optional)</label>
-                                <input type="text" name="genre" value={formState.genre} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Genre (Optional)</label>
+                                    <input type="text" name="genre" value={formState.genre} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Track Type (Optional)</label>
+                                    <input type="text" name="trackType" value={formState.trackType} onChange={handleChange} placeholder="e.g., End Credits" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Album Art URL</label>

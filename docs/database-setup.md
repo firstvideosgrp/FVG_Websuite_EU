@@ -588,6 +588,7 @@ This collection stores data for the public-facing "Soundtrack Searcher" tool.
 | `releaseYear`   | Integer | -    | No       | No    | The release year of the movie/soundtrack. |
 | `genre`         | String  | 100  | No       | No    | e.g., "Score", "Pop", "Rock".             |
 | `isRecommended` | Boolean | -    | No       | No    | Highlights the track on the public page.  |
+| `trackType`     | String  | 255  | No       | No    | e.g., "End credits", "Opening theme".     |
 
 #### Settings (Permissions)
 -   **Permissions**:
