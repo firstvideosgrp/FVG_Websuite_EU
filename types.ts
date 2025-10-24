@@ -1,4 +1,5 @@
 
+
 import { Models } from 'appwrite';
 
 export type ProjectType = 'Movie' | 'Short' | 'Series';
@@ -276,4 +277,5 @@ export type PublicSoundtrack = Models.Document & {
   albumArtUrl?: string;
   releaseYear?: number;
   genre?: string;
+  isRecommended?: boolean;
 };

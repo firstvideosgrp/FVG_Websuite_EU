@@ -24,6 +24,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
         albumArtUrl: '',
         releaseYear: new Date().getFullYear(),
         genre: '',
+        isRecommended: false,
     });
     const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
     const { addNotification } = useNotification();
@@ -57,6 +58,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                 albumArtUrl: track.albumArtUrl || '',
                 releaseYear: track.releaseYear || new Date().getFullYear(),
                 genre: track.genre || '',
+                isRecommended: track.isRecommended || false,
             });
         } else {
             setFormState({
@@ -68,6 +70,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                 albumArtUrl: '',
                 releaseYear: new Date().getFullYear(),
                 genre: '',
+                isRecommended: false,
             });
         }
         setIsModalOpen(true);
@@ -77,9 +80,10 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
+        const checked = (e.target as HTMLInputElement).checked;
         setFormState(prev => ({
             ...prev,
-            [name]: type === 'number' ? parseInt(value) || 0 : value
+            [name]: type === 'checkbox' ? checked : type === 'number' ? parseInt(value) || 0 : value
         }));
     };
 
@@ -127,6 +131,24 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
         }
     };
 
+    const handleToggleRecommended = async (track: PublicSoundtrack) => {
+        const newStatus = !track.isRecommended;
+        
+        setTracks(prevTracks => 
+            prevTracks.map(t => t.$id === track.$id ? {...t, isRecommended: newStatus} : t)
+        );
+
+        try {
+            await api.updatePublicSoundtrack(track.$id, { isRecommended: newStatus });
+            addNotification('info', 'Status Updated', `"${track.songTitle}" recommendation status updated.`);
+        } catch (error) {
+            addNotification('error', 'Update Failed', 'Could not update recommendation status.');
+            setTracks(prevTracks => 
+                prevTracks.map(t => t.$id === track.$id ? {...t, isRecommended: track.isRecommended} : t)
+            );
+        }
+    };
+
     return (
         <>
             <div className="bg-[var(--bg-primary)] p-6 rounded-lg shadow-lg border border-[var(--border-color)]">
@@ -157,6 +179,13 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                                     </div>
                                 </div>
                                 <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => handleToggleRecommended(track)}
+                                        className={`font-bold py-2 px-3 rounded text-sm transition-colors ${track.isRecommended ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/40' : 'bg-gray-500/20 text-gray-400 hover:bg-gray-500/40'}`}
+                                        title={track.isRecommended ? "Un-recommend" : "Recommend"}
+                                    >
+                                        <i className={`fas fa-star`}></i>
+                                    </button>
                                     <button onClick={() => openModal(track)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-pencil-alt"></i></button>
                                     <button onClick={() => handleDelete(track)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm"><i className="fas fa-trash"></i></button>
                                 </div>
@@ -214,6 +243,18 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                                     <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">YouTube URL (Optional)</label>
                                     <input type="url" name="youtubeUrl" value={formState.youtubeUrl} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
                                 </div>
+                            </div>
+                            <div>
+                                <label className="flex items-center space-x-2 text-sm font-medium text-[var(--text-secondary)] cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        name="isRecommended" 
+                                        checked={formState.isRecommended} 
+                                        onChange={handleChange} 
+                                        className="h-4 w-4 rounded bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" 
+                                    />
+                                    <span>Mark as Recommended</span>
+                                </label>
                             </div>
                             <div className="flex justify-end space-x-4 pt-4">
                                 <button type="button" onClick={closeModal} className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Cancel</button>

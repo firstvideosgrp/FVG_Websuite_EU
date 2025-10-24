@@ -577,16 +577,17 @@ This collection stores data for the public-facing "Soundtrack Searcher" tool.
 
 #### Attributes
 
-| Key           | Type    | Size | Required | Array | Notes                                     |
-| :------------ | :------ | :--- | :------- | :---- | :---------------------------------------- |
-| `movieTitle`  | String  | 255  | Yes      | No    | Title of the movie.                       |
-| `songTitle`   | String  | 255  | Yes      | No    | Title of the song.                        |
-| `artistName`  | String  | 255  | Yes      | No    | Name of the artist.                       |
-| `imdbUrl`     | URL     | 2048 | No       | No    | Link to the movie's IMDb page.            |
-| `youtubeUrl`  | URL     | 2048 | No       | No    | Link to the song on YouTube.              |
-| `albumArtUrl` | URL     | 2048 | No       | No    | Link to the album art image.              |
-| `releaseYear` | Integer | -    | No       | No    | The release year of the movie/soundtrack. |
-| `genre`       | String  | 100  | No       | No    | e.g., "Score", "Pop", "Rock".             |
+| Key             | Type    | Size | Required | Array | Notes                                     |
+| :-------------- | :------ | :--- | :------- | :---- | :---------------------------------------- |
+| `movieTitle`    | String  | 255  | Yes      | No    | Title of the movie.                       |
+| `songTitle`     | String  | 255  | Yes      | No    | Title of the song.                        |
+| `artistName`    | String  | 255  | Yes      | No    | Name of the artist.                       |
+| `imdbUrl`       | URL     | 2048 | No       | No    | Link to the movie's IMDb page.            |
+| `youtubeUrl`    | URL     | 2048 | No       | No    | Link to the song on YouTube.              |
+| `albumArtUrl`   | URL     | 2048 | No       | No    | Link to the album art image.              |
+| `releaseYear`   | Integer | -    | No       | No    | The release year of the movie/soundtrack. |
+| `genre`         | String  | 100  | No       | No    | e.g., "Score", "Pop", "Rock".             |
+| `isRecommended` | Boolean | -    | No       | No    | Highlights the track on the public page.  |
 
 #### Settings (Permissions)
 -   **Permissions**:
