@@ -227,7 +227,12 @@ const SoundtrackSearcherPage: React.FC = () => {
                             <div id="top-picks-content" className={`transition-all duration-500 ease-in-out overflow-hidden ${isTopPicksOpen ? 'max-h-[2000px] mt-6' : 'max-h-0'}`}>
                                 <div className="space-y-4">
                                     {topPicks.map(pick => (
-                                        <div key={pick.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg shadow-lg flex items-center p-4 gap-4 transition-all hover:shadow-xl hover:border-[var(--primary-color)]/50">
+                                        <div key={pick.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg shadow-lg flex items-center p-4 gap-4 transition-all hover:shadow-xl hover:border-[var(--primary-color)]/50 relative">
+                                            {pick.isSeries && (
+                                                <span className="absolute top-2 right-2 bg-cyan-500/20 text-cyan-300 text-xs font-bold px-2 py-0.5 rounded-full">
+                                                    SERIES
+                                                </span>
+                                            )}
                                             <span className="font-black text-3xl text-[var(--primary-color)] w-10 text-center flex-shrink-0">{pick.topPickOrder}</span>
                                             {pick.albumArtUrl ? (
                                                 <img src={pick.albumArtUrl} alt={`${pick.songTitle} album art`} className="w-16 h-16 object-cover rounded-md flex-shrink-0" />
@@ -267,7 +272,12 @@ const SoundtrackSearcherPage: React.FC = () => {
                             </h2>
                             <div className="flex gap-6 overflow-x-auto pb-4 -mb-4">
                                 {recommendedTracks.map(track => (
-                                    <div key={track.$id} className="flex-shrink-0 w-64 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg overflow-hidden shadow-lg flex flex-col">
+                                    <div key={track.$id} className="flex-shrink-0 w-64 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg overflow-hidden shadow-lg flex flex-col relative">
+                                        {track.isSeries && (
+                                            <span className="absolute top-2 right-2 bg-cyan-500/20 text-cyan-300 text-xs font-bold px-2 py-0.5 rounded-full z-10">
+                                                SERIES
+                                            </span>
+                                        )}
                                         {track.albumArtUrl ? (
                                             <img src={track.albumArtUrl} alt={`${track.songTitle} album art`} className="w-full h-40 object-cover" />
                                         ) : (
@@ -353,7 +363,12 @@ const SoundtrackSearcherPage: React.FC = () => {
                             {viewMode === 'grid' ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                     {currentTracks.map(track => (
-                                        <div key={track.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg overflow-hidden shadow-lg flex flex-col">
+                                        <div key={track.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg overflow-hidden shadow-lg flex flex-col relative">
+                                            {track.isSeries && (
+                                                <span className="absolute top-2 right-2 bg-cyan-500/20 text-cyan-300 text-xs font-bold px-2 py-0.5 rounded-full z-10">
+                                                    SERIES
+                                                </span>
+                                            )}
                                             {track.albumArtUrl ? (
                                                 <img src={track.albumArtUrl} alt={`${track.songTitle} album art`} className="w-full h-48 object-cover" />
                                             ) : (
@@ -384,7 +399,12 @@ const SoundtrackSearcherPage: React.FC = () => {
                             ) : (
                                 <div className="space-y-4">
                                     {currentTracks.map(track => (
-                                        <div key={track.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg shadow-lg flex items-center p-4 gap-4 transition-all hover:shadow-xl hover:border-[var(--primary-color)]/50">
+                                        <div key={track.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg shadow-lg flex items-center p-4 gap-4 transition-all hover:shadow-xl hover:border-[var(--primary-color)]/50 relative">
+                                            {track.isSeries && (
+                                                <span className="absolute top-2 right-2 bg-cyan-500/20 text-cyan-300 text-xs font-bold px-2 py-0.5 rounded-full">
+                                                    SERIES
+                                                </span>
+                                            )}
                                             {track.albumArtUrl ? (
                                                 <img src={track.albumArtUrl} alt={`${track.songTitle} album art`} className="w-16 h-16 object-cover rounded-md flex-shrink-0" />
                                             ) : (

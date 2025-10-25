@@ -27,6 +27,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
         isRecommended: false,
         trackType: '',
         topPickOrder: 0,
+        isSeries: false,
     });
     const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
     const { addNotification } = useNotification();
@@ -63,6 +64,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                 isRecommended: track.isRecommended || false,
                 trackType: track.trackType || '',
                 topPickOrder: track.topPickOrder || 0,
+                isSeries: track.isSeries || false,
             });
         } else {
             setFormState({
@@ -77,6 +79,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                 isRecommended: false,
                 trackType: '',
                 topPickOrder: 0,
+                isSeries: false,
             });
         }
         setIsModalOpen(true);
@@ -184,6 +187,11 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                                     <div>
                                         <h3 className="font-bold text-lg text-[var(--text-primary)] flex items-center gap-2">
                                             {track.songTitle}
+                                            {track.isSeries && (
+                                                <span className="bg-cyan-500/20 text-cyan-300 text-xs font-bold px-2 py-0.5 rounded-full">
+                                                    Series
+                                                </span>
+                                            )}
                                             {track.topPickOrder && track.topPickOrder > 0 && (
                                                 <span className="bg-amber-500/20 text-amber-300 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                                                     <i className="fas fa-medal"></i>
@@ -275,7 +283,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                                     <input type="url" name="youtubeUrl" value={formState.youtubeUrl} onChange={handleChange} className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
                                 </div>
                             </div>
-                            <div>
+                            <div className="flex gap-4">
                                 <label className="flex items-center space-x-2 text-sm font-medium text-[var(--text-secondary)] cursor-pointer">
                                     <input 
                                         type="checkbox" 
@@ -285,6 +293,16 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                                         className="h-4 w-4 rounded bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" 
                                     />
                                     <span>Mark as Recommended</span>
+                                </label>
+                                <label className="flex items-center space-x-2 text-sm font-medium text-[var(--text-secondary)] cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        name="isSeries" 
+                                        checked={formState.isSeries} 
+                                        onChange={handleChange} 
+                                        className="h-4 w-4 rounded bg-[var(--input-bg)] border-[var(--border-color)] text-[var(--primary-color)] focus:ring-[var(--primary-color)]" 
+                                    />
+                                    <span>From a Series</span>
                                 </label>
                             </div>
                             <div className="flex justify-end space-x-4 pt-4">

@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { sendTestEmail } from '../services/appwrite';
-import type { Models } from 'appwrite';
+// FIX: Changed to a value import to ensure the 'Models' namespace is resolved correctly by TypeScript,
+// which fixes type inference issues for 'settingsToSave' later in the file.
+import { Models } from 'appwrite';
 import type { SocialLink, FooterLink, SiteSettings, StaticContactInfo, AboutContent } from '../types';
 import MediaLibraryModal from './MediaLibraryModal';
 import { useNotification } from '../contexts/NotificationContext';

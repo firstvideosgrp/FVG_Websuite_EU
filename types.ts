@@ -282,4 +282,5 @@ export type PublicSoundtrack = Models.Document & {
   isRecommended?: boolean;
   trackType?: string;
   topPickOrder?: number;
+  isSeries?: boolean;
 };

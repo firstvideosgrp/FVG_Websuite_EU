@@ -590,6 +590,7 @@ This collection stores data for the public-facing "Soundtrack Searcher" tool.
 | `isRecommended` | Boolean | -    | No       | No    | Highlights the track on the public page.  |
 | `trackType`     | String  | 255  | No       | No    | e.g., "End credits", "Opening theme".     |
 | `topPickOrder`  | Integer | -    | No       | No    | Ranking for "Top Picks" (e.g., 1-10).     |
+| `isSeries`      | Boolean | -    | No       | No    | Marks the soundtrack as from a series.    |
 
 
 #### Settings (Permissions)
