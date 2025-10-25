@@ -77,8 +77,6 @@ This collection stores the individual projects showcased on the website.
 
 #### Attributes
 
-Create the following attributes for the `Projects` collection:
-
 | Key                  | Type    | Size | Required | Array | Notes                                               |
 | :------------------- | :------ | :--- | :------- | :---- | :-------------------------------------------------- |
 | `title`              | String  | 255  | Yes      | No    |                                                     |
@@ -154,6 +152,7 @@ This collection stores the global settings for the website, such as title and th
 | `customBeepSoundUrl` | URL     | 2048 | No       | No    | URL for the custom slate beep sound.|
 | `strSrcNotificationEnabled` | Boolean | - | No | No | Enables notification on soundtrack page.|
 | `strSrcNotificationText` | String | 36 | No | No | Text for soundtrack page notification.|
+| `strSrcTopPicksEnabled` | Boolean | - | No | No | Enables Top 10 Picks on soundtrack page.|
 
 #### Settings (Permissions)
 
@@ -590,6 +589,8 @@ This collection stores data for the public-facing "Soundtrack Searcher" tool.
 | `genre`         | String  | 100  | No       | No    | e.g., "Score", "Pop", "Rock".             |
 | `isRecommended` | Boolean | -    | No       | No    | Highlights the track on the public page.  |
 | `trackType`     | String  | 255  | No       | No    | e.g., "End credits", "Opening theme".     |
+| `topPickOrder`  | Integer | -    | No       | No    | Ranking for "Top Picks" (e.g., 1-10).     |
+
 
 #### Settings (Permissions)
 -   **Permissions**:

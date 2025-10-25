@@ -40,6 +40,7 @@ const defaultSettings: Omit<SiteSettings, keyof Models.Document> = {
     customBeepSoundUrl: '',
     strSrcNotificationEnabled: false,
     strSrcNotificationText: '',
+    strSrcTopPicksEnabled: true,
 };
 
 

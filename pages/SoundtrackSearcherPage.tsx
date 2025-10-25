@@ -29,6 +29,19 @@ const SoundtrackSearcherPage: React.FC = () => {
     const playerRef = useRef<any>(null);
     const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
     const [isNotificationVisible, setIsNotificationVisible] = useState(true);
+    const [isTopPicksOpen, setIsTopPicksOpen] = useState(window.innerWidth >= 768);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 768 && isTopPicksOpen) {
+                setIsTopPicksOpen(false);
+            } else if (window.innerWidth >= 768 && !isTopPicksOpen) {
+                setIsTopPicksOpen(true);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [isTopPicksOpen]);
 
     useEffect(() => {
         const isDismissed = sessionStorage.getItem('soundtrackNotificationDismissed');
@@ -102,8 +115,8 @@ const SoundtrackSearcherPage: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await getPublicSoundtracks();
-                setSoundtracks(data);
+                const soundtrackData = await getPublicSoundtracks();
+                setSoundtracks(soundtrackData);
             } catch (error) {
                 console.error("Failed to load soundtracks:", error);
             } finally {
@@ -112,6 +125,12 @@ const SoundtrackSearcherPage: React.FC = () => {
         };
         fetchData();
     }, []);
+
+    const topPicks = useMemo(() => {
+        return soundtracks
+            .filter(s => s.topPickOrder && s.topPickOrder > 0)
+            .sort((a, b) => a.topPickOrder! - b.topPickOrder!);
+    }, [soundtracks]);
 
     const recommendedTracks = useMemo(() =>
         soundtracks.filter(s => s.isRecommended),
@@ -139,7 +158,8 @@ const SoundtrackSearcherPage: React.FC = () => {
                 return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
             }
             if (typeof valA === 'number' && typeof valB === 'number') {
-                return order === 'asc' ? valA - valB : valB - a;
+                // FIX: Corrected typo 'a' to 'valA' in the sort comparison logic.
+                return order === 'asc' ? valA - valB : valB - valA;
             }
             return 0;
         });
@@ -197,6 +217,55 @@ const SoundtrackSearcherPage: React.FC = () => {
                 <div className="flex justify-center py-10"><LoadingSpinner /></div>
             ) : (
                 <>
+                    {settings?.strSrcTopPicksEnabled && topPicks.length > 0 && (
+                        <section className="mb-16">
+                            <button
+                                className="w-full flex justify-between items-center text-left"
+                                onClick={() => setIsTopPicksOpen(!isTopPicksOpen)}
+                                aria-expanded={isTopPicksOpen}
+                                aria-controls="top-picks-content"
+                            >
+                                <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-wider text-[var(--text-primary)]">
+                                    Top {topPicks.length} <span className="text-[var(--primary-color)]">Editor's Picks</span>
+                                </h2>
+                                <i className={`fas fa-chevron-down text-2xl text-[var(--text-secondary)] transition-transform duration-300 ${isTopPicksOpen ? 'rotate-180' : ''}`}></i>
+                            </button>
+                            <div id="top-picks-content" className={`transition-all duration-500 ease-in-out overflow-hidden ${isTopPicksOpen ? 'max-h-[2000px] mt-6' : 'max-h-0'}`}>
+                                <div className="space-y-4">
+                                    {topPicks.map(pick => (
+                                        <div key={pick.$id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg shadow-lg flex items-center p-4 gap-4 transition-all hover:shadow-xl hover:border-[var(--primary-color)]/50">
+                                            <span className="font-black text-3xl text-[var(--primary-color)] w-10 text-center flex-shrink-0">{pick.topPickOrder}</span>
+                                            {pick.albumArtUrl ? (
+                                                <img src={pick.albumArtUrl} alt={`${pick.songTitle} album art`} className="w-16 h-16 object-cover rounded-md flex-shrink-0" />
+                                            ) : (
+                                                <div className="w-16 h-16 bg-[var(--bg-primary)] flex-shrink-0 flex items-center justify-center rounded-md text-[var(--text-secondary)]">
+                                                    <i className="fas fa-music text-3xl"></i>
+                                                </div>
+                                            )}
+                                            <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-1">
+                                                <div>
+                                                    <h3 className="font-bold text-md text-[var(--text-primary)] truncate" title={pick.songTitle}>{pick.songTitle}</h3>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm text-[var(--text-secondary)] truncate" title={pick.artistName}>{pick.artistName}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm text-[var(--primary-color)] font-semibold truncate" title={pick.movieTitle}>
+                                                        {pick.movieTitle}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center justify-end gap-4 text-xl ml-4">
+                                                {pick.imdbUrl && <a href={pick.imdbUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-yellow-500" title="View on IMDb"><i className="fab fa-imdb"></i></a>}
+                                                {pick.youtubeUrl && <a href={pick.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-red-500" title="Watch on YouTube"><i className="fab fa-youtube"></i></a>}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
                     {recommendedTracks.length > 0 && (
                         <section className="mb-16">
                             <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-wider text-[var(--text-primary)] mb-6">

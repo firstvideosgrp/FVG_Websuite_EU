@@ -1,7 +1,3 @@
-
-
-
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Models } from 'appwrite';

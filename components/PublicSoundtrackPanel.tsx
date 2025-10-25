@@ -26,6 +26,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
         genre: '',
         isRecommended: false,
         trackType: '',
+        topPickOrder: 0,
     });
     const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
     const { addNotification } = useNotification();
@@ -61,6 +62,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                 genre: track.genre || '',
                 isRecommended: track.isRecommended || false,
                 trackType: track.trackType || '',
+                topPickOrder: track.topPickOrder || 0,
             });
         } else {
             setFormState({
@@ -74,6 +76,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                 genre: '',
                 isRecommended: false,
                 trackType: '',
+                topPickOrder: 0,
             });
         }
         setIsModalOpen(true);
@@ -96,6 +99,7 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
             const dataToSubmit = {
                 ...formState,
                 releaseYear: Number(formState.releaseYear) || undefined,
+                topPickOrder: Number(formState.topPickOrder) > 0 ? Number(formState.topPickOrder) : undefined,
                 imdbUrl: formState.imdbUrl || undefined,
                 youtubeUrl: formState.youtubeUrl || undefined,
                 albumArtUrl: formState.albumArtUrl || undefined,
@@ -178,7 +182,15 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                                         <div className="w-12 h-12 bg-[var(--bg-primary)] flex items-center justify-center rounded-md text-[var(--text-secondary)]"><i className="fas fa-music text-2xl"></i></div>
                                     )}
                                     <div>
-                                        <h3 className="font-bold text-lg text-[var(--text-primary)]">{track.songTitle}</h3>
+                                        <h3 className="font-bold text-lg text-[var(--text-primary)] flex items-center gap-2">
+                                            {track.songTitle}
+                                            {track.topPickOrder && track.topPickOrder > 0 && (
+                                                <span className="bg-amber-500/20 text-amber-300 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                    <i className="fas fa-medal"></i>
+                                                    Top Pick #{track.topPickOrder}
+                                                </span>
+                                            )}
+                                        </h3>
                                         <p className="text-sm text-[var(--text-secondary)]">
                                             {track.artistName} &bull; <span className="font-semibold">{track.movieTitle} ({track.releaseYear})</span>
                                             {track.trackType && <span className="ml-2 bg-gray-500/20 text-gray-300 px-2 py-0.5 rounded text-xs">{track.trackType}</span>}
@@ -238,6 +250,12 @@ const PublicSoundtrackPanel: React.FC<PublicSoundtrackPanelProps> = ({ fileUsage
                                 <div>
                                     <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Track Type (Optional)</label>
                                     <input type="text" name="trackType" value={formState.trackType} onChange={handleChange} placeholder="e.g., End Credits" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Top Pick Order (Optional)</label>
+                                    <input type="number" name="topPickOrder" value={formState.topPickOrder} onChange={handleChange} min="0" placeholder="0 for none" className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-2" />
                                 </div>
                             </div>
                             <div>

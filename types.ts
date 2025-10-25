@@ -100,6 +100,7 @@ export type SiteSettings = Models.Document & {
   // Soundtrack Searcher Notification Settings
   strSrcNotificationEnabled?: boolean;
   strSrcNotificationText?: string;
+  strSrcTopPicksEnabled?: boolean;
 };
 
 // New types for Media Library
@@ -280,4 +281,5 @@ export type PublicSoundtrack = Models.Document & {
   genre?: string;
   isRecommended?: boolean;
   trackType?: string;
+  topPickOrder?: number;
 };

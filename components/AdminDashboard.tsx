@@ -1,11 +1,11 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { logout, getProjects, getCast, getCrew, getTasks, getProductionPhasesForProject, getDepartments } from '../services/appwrite';
 import type { Models } from 'appwrite';
 import type { Project, CastMember, CrewMember, ProductionTask, ProductionPhase } from '../types';
 import LoadingSpinner from './LoadingSpinner';
 import AdminSidebar from './AdminSidebar';
-import SiteSettingsPanel from './SiteSettingsPanel';
+// FIX: Changed import to a named import. The error indicates that SiteSettingsPanel is not a default export.
+import { SiteSettingsPanel } from './SiteSettingsPanel';
 import MediaPanel from './MediaPanel';
 import { useSettings } from '../contexts/SettingsContext';
 import AdminHome from './AdminHome';
