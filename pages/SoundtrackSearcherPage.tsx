@@ -32,18 +32,6 @@ const SoundtrackSearcherPage: React.FC = () => {
     const [isTopPicksOpen, setIsTopPicksOpen] = useState(window.innerWidth >= 768);
 
     useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth < 768 && isTopPicksOpen) {
-                setIsTopPicksOpen(false);
-            } else if (window.innerWidth >= 768 && !isTopPicksOpen) {
-                setIsTopPicksOpen(true);
-            }
-        };
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [isTopPicksOpen]);
-
-    useEffect(() => {
         const isDismissed = sessionStorage.getItem('soundtrackNotificationDismissed');
         if (isDismissed === 'true') {
             setIsNotificationVisible(false);
