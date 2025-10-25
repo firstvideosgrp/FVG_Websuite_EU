@@ -1,12 +1,19 @@
 
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { getPublicSoundtracks } from '../services/appwrite';
 import type { PublicSoundtrack } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+
+declare global {
+  interface Window {
+    onYouTubeIframeAPIReady?: () => void;
+    YT?: any;
+  }
+}
 
 const ITEMS_PER_PAGE = 12; // Adjusted for better grid layout
 
@@ -18,6 +25,66 @@ const SoundtrackSearcherPage: React.FC = () => {
     const [sortBy, setSortBy] = useState('movieTitle-asc');
     const [currentPage, setCurrentPage] = useState(1);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    
+    const playerRef = useRef<any>(null);
+    const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const initializePlayer = () => {
+            if (playerRef.current || !document.getElementById('youtube-player')) {
+                return;
+            }
+            playerRef.current = new window.YT.Player('youtube-player', {
+                height: '0',
+                width: '0',
+                playerVars: { 'playsinline': 1 },
+                events: {
+                    'onStateChange': (event: any) => {
+                        if (event.data === window.YT.PlayerState.ENDED) {
+                            setPlayingTrackId(null);
+                        }
+                    }
+                }
+            });
+        };
+
+        if (window.YT && window.YT.Player) {
+            initializePlayer();
+        } else {
+            window.onYouTubeIframeAPIReady = initializePlayer;
+        }
+
+        return () => {
+            if (playerRef.current && typeof playerRef.current.destroy === 'function') {
+                playerRef.current.destroy();
+            }
+            playerRef.current = null;
+            window.onYouTubeIframeAPIReady = undefined;
+        };
+    }, []);
+
+    const getYouTubeVideoId = (url: string): string | null => {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
+
+    const handlePlayToggle = (track: PublicSoundtrack) => {
+        const player = playerRef.current;
+        if (!player || !track.youtubeUrl) return;
+
+        if (playingTrackId === track.$id) {
+            player.stopVideo();
+            setPlayingTrackId(null);
+        } else {
+            const videoId = getYouTubeVideoId(track.youtubeUrl);
+            if (videoId) {
+                player.loadVideoById(videoId);
+                setPlayingTrackId(track.$id);
+            }
+        }
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -59,7 +126,7 @@ const SoundtrackSearcherPage: React.FC = () => {
                 return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
             }
             if (typeof valA === 'number' && typeof valB === 'number') {
-                return order === 'asc' ? valA - valB : valB - valA;
+                return order === 'asc' ? valA - valB : valB - a;
             }
             return 0;
         });
@@ -87,6 +154,7 @@ const SoundtrackSearcherPage: React.FC = () => {
         <div className={`bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300 ${siteTheme} min-h-screen flex flex-col`}>
           <Header />
           <main className="flex-grow container mx-auto px-6 py-28 md:py-32">
+            <div id="youtube-player" className="hidden"></div>
             <div id="soundtrack-list" className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-black uppercase tracking-wider text-[var(--text-primary)]">
                 Soundtrack <span className="text-[var(--primary-color)]">Searcher</span>
@@ -124,6 +192,11 @@ const SoundtrackSearcherPage: React.FC = () => {
                                             </p>
                                             {track.trackType && <span className="mt-2 inline-block bg-gray-500/20 text-gray-300 text-xs font-bold px-2 py-1 rounded-full self-start">{track.trackType}</span>}
                                             <div className="mt-auto pt-3 flex items-center justify-end gap-4 text-lg">
+                                                {track.youtubeUrl && (
+                                                    <button type="button" onClick={() => handlePlayToggle(track)} className="text-[var(--text-secondary)] hover:text-[var(--primary-color)] transition-colors" title={playingTrackId === track.$id ? "Stop Audio" : "Play Audio"} aria-label={playingTrackId === track.$id ? "Stop Audio" : "Play Audio"}>
+                                                        <i className={`fas ${playingTrackId === track.$id ? 'fa-stop-circle' : 'fa-play-circle'}`}></i>
+                                                    </button>
+                                                )}
                                                 {track.imdbUrl && <a href={track.imdbUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-yellow-500" title="View on IMDb"><i className="fab fa-imdb"></i></a>}
                                                 {track.youtubeUrl && <a href={track.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-red-500" title="Watch on YouTube"><i className="fab fa-youtube"></i></a>}
                                             </div>
@@ -205,6 +278,11 @@ const SoundtrackSearcherPage: React.FC = () => {
                                                 </p>
                                                 {track.trackType && <span className="mt-2 inline-block bg-gray-500/20 text-gray-300 text-xs font-bold px-2 py-1 rounded-full self-start">{track.trackType}</span>}
                                                 <div className="mt-auto pt-4 flex items-center justify-end gap-4 text-xl">
+                                                    {track.youtubeUrl && (
+                                                        <button type="button" onClick={() => handlePlayToggle(track)} className="text-[var(--text-secondary)] hover:text-[var(--primary-color)] transition-colors" title={playingTrackId === track.$id ? "Stop Audio" : "Play Audio"} aria-label={playingTrackId === track.$id ? "Stop Audio" : "Play Audio"}>
+                                                            <i className={`fas ${playingTrackId === track.$id ? 'fa-stop-circle' : 'fa-play-circle'}`}></i>
+                                                        </button>
+                                                    )}
                                                     {track.imdbUrl && <a href={track.imdbUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-yellow-500" title="View on IMDb"><i className="fab fa-imdb"></i></a>}
                                                     {track.youtubeUrl && <a href={track.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-red-500" title="Watch on YouTube"><i className="fab fa-youtube"></i></a>}
                                                 </div>
@@ -241,6 +319,11 @@ const SoundtrackSearcherPage: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-end gap-4 text-xl ml-4">
+                                                {track.youtubeUrl && (
+                                                    <button type="button" onClick={() => handlePlayToggle(track)} className="text-[var(--text-secondary)] hover:text-[var(--primary-color)] transition-colors" title={playingTrackId === track.$id ? "Stop Audio" : "Play Audio"} aria-label={playingTrackId === track.$id ? "Stop Audio" : "Play Audio"}>
+                                                        <i className={`fas ${playingTrackId === track.$id ? 'fa-stop-circle' : 'fa-play-circle'}`}></i>
+                                                    </button>
+                                                )}
                                                 {track.imdbUrl && <a href={track.imdbUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-yellow-500" title="View on IMDb"><i className="fab fa-imdb"></i></a>}
                                                 {track.youtubeUrl && <a href={track.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-secondary)] hover:text-red-500" title="Watch on YouTube"><i className="fab fa-youtube"></i></a>}
                                             </div>
