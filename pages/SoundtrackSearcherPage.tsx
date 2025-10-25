@@ -30,6 +30,7 @@ const SoundtrackSearcherPage: React.FC = () => {
     const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
     const [isNotificationVisible, setIsNotificationVisible] = useState(true);
     const [isTopPicksOpen, setIsTopPicksOpen] = useState(window.innerWidth >= 768);
+    const [recommendedTracks, setRecommendedTracks] = useState<PublicSoundtrack[]>([]);
 
     useEffect(() => {
         const isDismissed = sessionStorage.getItem('soundtrackNotificationDismissed');
@@ -120,9 +121,14 @@ const SoundtrackSearcherPage: React.FC = () => {
             .sort((a, b) => a.topPickOrder! - b.topPickOrder!);
     }, [soundtracks]);
 
-    const recommendedTracks = useMemo(() =>
-        soundtracks.filter(s => s.isRecommended),
-        [soundtracks]);
+    useEffect(() => {
+        if (soundtracks.length > 0) {
+            const allRecommended = soundtracks.filter(s => s.isRecommended);
+            // Simple shuffle and slice to get 5 random tracks
+            const shuffled = [...allRecommended].sort(() => 0.5 - Math.random());
+            setRecommendedTracks(shuffled.slice(0, 5));
+        }
+    }, [soundtracks]);
 
     const filteredAndSortedSoundtracks = useMemo(() => {
         const lowerCaseSearch = searchTerm.toLowerCase();
