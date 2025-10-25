@@ -82,6 +82,9 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
             mailSmtpPassword: settings?.mailSmtpPassword || '',
             // Slate Settings
             customBeepSoundUrl: settings?.customBeepSoundUrl || '',
+            // Soundtrack Searcher
+            strSrcNotificationEnabled: settings?.strSrcNotificationEnabled ?? false,
+            strSrcNotificationText: settings?.strSrcNotificationText || '',
         }
     }, [settings]);
     
@@ -644,6 +647,43 @@ const SiteSettingsPanel: React.FC<SiteSettingsPanelProps> = ({ fileUsageMap }) =
                                     </button>
                                 </div>
                                 <p className="text-xs text-[var(--text-secondary)] mt-1">Upload an audio file (e.g., MP3, WAV) in the Media Library under the 'Audio Clip' category.</p>
+                            </div>
+                        </div>
+                    </section>
+                    <section className="mt-8">
+                        <h3 className="text-lg font-semibold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 mb-4 flex justify-between items-center">
+                            <span>Soundtrack Searcher Page</span>
+                            <label htmlFor="strSrcNotificationEnabled" className="flex items-center cursor-pointer">
+                                <span className="mr-3 text-sm font-medium text-[var(--text-secondary)]">Enable Notification Bar</span>
+                                <div className="relative">
+                                    <input
+                                        type="checkbox"
+                                        id="strSrcNotificationEnabled"
+                                        name="strSrcNotificationEnabled"
+                                        className="sr-only"
+                                        checked={formState.strSrcNotificationEnabled}
+                                        onChange={handleChange}
+                                    />
+                                    <div className="block bg-gray-600 w-14 h-8 rounded-full"></div>
+                                    <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formState.strSrcNotificationEnabled ? 'translate-x-6' : ''}`}></div>
+                                </div>
+                            </label>
+                        </h3>
+                        <div className={`space-y-4 transition-opacity ${formState.strSrcNotificationEnabled ? 'opacity-100' : 'opacity-50'}`}>
+                            <div>
+                                <label htmlFor="strSrcNotificationText" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Notification Text</label>
+                                <textarea
+                                    id="strSrcNotificationText"
+                                    name="strSrcNotificationText"
+                                    value={formState.strSrcNotificationText}
+                                    onChange={handleChange}
+                                    rows={2}
+                                    maxLength={36}
+                                    className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-md p-3"
+                                    placeholder="e.g., New tracks added!"
+                                    disabled={!formState.strSrcNotificationEnabled}
+                                />
+                                <p className="text-xs text-right text-[var(--text-secondary)] mt-1">{formState.strSrcNotificationText.length} / 36</p>
                             </div>
                         </div>
                     </section>

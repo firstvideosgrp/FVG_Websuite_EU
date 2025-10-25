@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -7,6 +5,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { getPublicSoundtracks } from '../services/appwrite';
 import type { PublicSoundtrack } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSettings } from '../contexts/SettingsContext';
 
 declare global {
   interface Window {
@@ -19,6 +18,7 @@ const ITEMS_PER_PAGE = 12; // Adjusted for better grid layout
 
 const SoundtrackSearcherPage: React.FC = () => {
     const { siteTheme } = useTheme();
+    const { settings } = useSettings();
     const [soundtracks, setSoundtracks] = useState<PublicSoundtrack[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -28,6 +28,19 @@ const SoundtrackSearcherPage: React.FC = () => {
     
     const playerRef = useRef<any>(null);
     const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
+    const [isNotificationVisible, setIsNotificationVisible] = useState(true);
+
+    useEffect(() => {
+        const isDismissed = sessionStorage.getItem('soundtrackNotificationDismissed');
+        if (isDismissed === 'true') {
+            setIsNotificationVisible(false);
+        }
+    }, []);
+    
+    const handleDismissNotification = () => {
+        setIsNotificationVisible(false);
+        sessionStorage.setItem('soundtrackNotificationDismissed', 'true');
+    };
 
     useEffect(() => {
         const initializePlayer = () => {
@@ -153,7 +166,22 @@ const SoundtrackSearcherPage: React.FC = () => {
     return (
         <div className={`bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300 ${siteTheme} min-h-screen flex flex-col`}>
           <Header />
-          <main className="flex-grow container mx-auto px-6 py-28 md:py-32">
+          {settings?.strSrcNotificationEnabled && settings.strSrcNotificationText && isNotificationVisible && (
+              <div className="bg-[var(--primary-color)]/20 text-[var(--primary-color)] px-6 py-3 fixed top-[73px] left-0 right-0 z-40 animate-fade-in-down flex items-center justify-between gap-4">
+                  <p className="text-sm font-medium text-center flex-grow">
+                      <i className="fas fa-info-circle mr-2"></i>
+                      {settings.strSrcNotificationText}
+                  </p>
+                  <button
+                      onClick={handleDismissNotification}
+                      className="text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20 rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0"
+                      aria-label="Dismiss notification"
+                  >
+                      <i className="fas fa-times"></i>
+                  </button>
+              </div>
+          )}
+          <main className={`flex-grow container mx-auto px-6 py-28 md:py-32 transition-all duration-300 ${settings?.strSrcNotificationEnabled && settings.strSrcNotificationText && isNotificationVisible ? 'mt-12' : ''}`}>
             <div id="youtube-player" className="hidden"></div>
             <div id="soundtrack-list" className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-black uppercase tracking-wider text-[var(--text-primary)]">

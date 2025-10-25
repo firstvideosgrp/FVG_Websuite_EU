@@ -152,7 +152,8 @@ This collection stores the global settings for the website, such as title and th
 | `logoLightUrl`       | URL     | 2048 | No       | No    | URL for the light theme logo.       |
 | `logoDarkUrl`        | URL     | 2048 | No       | No    | URL for the dark theme logo.        |
 | `customBeepSoundUrl` | URL     | 2048 | No       | No    | URL for the custom slate beep sound.|
-
+| `strSrcNotificationEnabled` | Boolean | - | No | No | Enables notification on soundtrack page.|
+| `strSrcNotificationText` | String | 36 | No | No | Text for soundtrack page notification.|
 
 #### Settings (Permissions)
 

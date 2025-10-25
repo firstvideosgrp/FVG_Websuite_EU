@@ -1,5 +1,3 @@
-
-
 import { Models } from 'appwrite';
 
 export type ProjectType = 'Movie' | 'Short' | 'Series';
@@ -99,6 +97,9 @@ export type SiteSettings = Models.Document & {
   logoDarkUrl?: string;
   // Slate Settings
   customBeepSoundUrl?: string;
+  // Soundtrack Searcher Notification Settings
+  strSrcNotificationEnabled?: boolean;
+  strSrcNotificationText?: string;
 };
 
 // New types for Media Library

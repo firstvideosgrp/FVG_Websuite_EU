@@ -38,6 +38,8 @@ const defaultSettings: Omit<SiteSettings, keyof Models.Document> = {
     logoLightUrl: '',
     logoDarkUrl: '',
     customBeepSoundUrl: '',
+    strSrcNotificationEnabled: false,
+    strSrcNotificationText: '',
 };
 
 
